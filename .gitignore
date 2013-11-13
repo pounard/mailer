@@ -1,0 +1,13 @@
+# PHP project basis
+composer.lock
+phpunit.xml
+vendor/*
+
+# Project specifics
+etc/nginx.conf
+
+# Eclipse IDE files
+.buildpath
+.metadata
+.project
+.settings

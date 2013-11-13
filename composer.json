@@ -1,0 +1,21 @@
+{
+    "name": "pounard/mailer",
+    "description": "Simple webmail",
+    "authors": [
+        {
+            "name": "Pierre Rineau",
+            "email": "pierre.rineau-php@processus.org",
+            "homepage": "http://blog.processus.org",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Mailer": "src/"
+        }
+    },
+    "require": {
+        "zendframework/zend-http": "2.*",
+        "zendframework/zend-mime": "2.*"
+    }
+}
