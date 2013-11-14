@@ -30,7 +30,7 @@ class Request extends DefaultRequest
         switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'GET':
-                $content = self::fetchBodyContent();
+                $method  = RequestInterface::METHOD_GET;
                 break;
 
             case 'POST':
