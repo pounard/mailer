@@ -25,6 +25,16 @@ class DefaultRequest implements RequestInterface
     protected $options;
 
     /**
+     * @var string
+     */
+    protected $inputType;
+
+    /**
+     * @var array
+     */
+    protected $outputType = array();
+
+    /**
      * Default constructor
      *
      * @param string $path
@@ -70,5 +80,25 @@ class DefaultRequest implements RequestInterface
         } else {
             return $default;
         }
+    }
+
+    public function setInputContentType($contentType)
+    {
+        $this->inputType[] = $contentType;
+    }
+
+    public function getInputContentType()
+    {
+        return $this->inputType;
+    }
+
+    public function setOutputContentTypes(array $contentTypeList)
+    {
+        $this->outputType[] = $contentTypeList;
+    }
+
+    public function getOutputContentTypes()
+    {
+        return $this->outputType;
     }
 }

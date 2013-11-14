@@ -57,4 +57,22 @@ class Request extends DefaultRequest
 
         return new Request($_GET['resource'], $content, $_GET, $method);
     }
+
+    public function __construct($path, $content = null, array $options = array(), $method = RequestInterface::METHOD_GET)
+    {
+        parent::__construct($path, $content, $options, $method);
+
+        if (isset($_SERVER['CONTENT_TYPE'])) {
+            $this->setInputContentType($_SERVER['CONTENT_TYPE']);
+        } else {
+            $this->setInputContentType('application/x-www-form-urlencoded');
+        }
+
+        if (isset($_SERVER['HTTP_ACCEPT'])) {
+          // FIXME
+            $this->setOutputContentTypes(array('text/html'));
+        } else {
+            $this->setOutputContentTypes(array('text/html'));
+        }
+    }
 }

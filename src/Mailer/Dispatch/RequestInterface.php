@@ -88,4 +88,20 @@ interface RequestInterface
      * @return mixed
      */
     public function getOption($name, $default = null);
+
+    /**
+     * Get the input content type whenever possible
+     *
+     * @return string
+     *    Mime type or null
+     */
+    public function getInputContentType();
+
+    /**
+     * Get the output content type whenever possible
+     *
+     * @return string[]
+     *   Mime types or an empty array if none found
+     */
+    public function getOutputContentTypes();
 }
