@@ -15,7 +15,5 @@
         }
     },
     "require": {
-        "zendframework/zend-http": "2.*",
-        "zendframework/zend-mime": "2.*"
     }
 }
