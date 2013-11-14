@@ -2,7 +2,7 @@
 
 namespace Mailer\Dispatch;
 
-use Mailer\Dispatch\Http\Request;
+use Mailer\Dispatch\Http\HttpRequest;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\Error;
@@ -16,7 +16,7 @@ class Dispatcher
     static public function run()
     {
         $dispatcher = new self();
-        $request    = new Request();
+        $request    = HttpRequest::createFromGlobals();
 
         return $dispatcher->dispatch($request);
     }
@@ -58,23 +58,33 @@ class Dispatcher
     public function dispatch(RequestInterface $request)
     {
         try {
-            $controller = $this
-                ->getRouter()
-                ->findController(
-                    $request->getResource()
-                );
+            // @todo Determine converter
+            // @todo Determine renderer
+            $renderer = new \Mailer\Renderer\HtmlRenderer();
+            $response = new \Mailer\Dispatch\Http\HttpResponse();
 
-            // At this point, response should derivated from the incomming
-            // request
+            try {
+                $controller = $this
+                    ->getRouter()
+                    ->findController(
+                        $request->getResource()
+                    );
 
-            // Renderer too
+                // @todo controller return view
+                $view = null;
+                // @todo Find the appropriate response depending on accept
 
-        } catch (LogicError $e) { // FIXME
-            echo "<pre>", $e->getMessage(), "\n", $e->getTraceAsString();
-        } catch (Error $e) {
-            echo "<pre>", $e->getMessage(), "\n", $e->getTraceAsString();
+                $response->send($renderer->render($view));
+
+            } catch (\Exception $e) {
+                // Move this out into a specific renderer
+                $renderer = new \Mailer\Renderer\HtmlErrorRenderer();
+                $response->send($renderer->render($e));
+            }
         } catch (\Exception $e) {
-            echo "<pre>", $e->getMessage(), "\n", $e->getTraceAsString();
+            // Very critical error renderer and response could not be
+            // spawned: display the raw stack trace
+            echo "<pre>", $e->getMessage(), "\n", $e->getTraceAsString() . "</pre>";
         }
     }
 }

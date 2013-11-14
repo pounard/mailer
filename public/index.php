@@ -4,10 +4,10 @@
  */
 
 use Mailer\Dispatch\Dispatcher;
-use Mailer\Dispatch\Http\Request;
+use Mailer\Dispatch\Http\HttpRequest;
 
 chdir(dirname(__DIR__));
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $dispatcher = new Dispatcher();
-$dispatcher->dispatch(Request::createFromGlobals());
+$dispatcher->dispatch(HttpRequest::createFromGlobals());

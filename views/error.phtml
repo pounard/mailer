@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mailer : Exception caught</title>
+    </head>
+    <body>
+        <?php if (isset($e) && $e instanceof \Exception): ?>
+        <h2>Message was: <?php echo $e->getMessage(); ?></h2>
+        <pre><?php echo $e->getTraceAsString(); ?></pre>
+        <?php else: ?>
+        <pre><?php echo print_r($return); ?></pre>
+        <?php endif; ?>
+    </body>
+</html>

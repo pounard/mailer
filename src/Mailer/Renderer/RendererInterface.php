@@ -6,6 +6,8 @@ interface RendererInterface
 {
     /**
      * Render content
+     *
+     * @param mixed $return
      */
-    public function render();
+    public function render($return);
 }

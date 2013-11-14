@@ -2,7 +2,7 @@
 
 namespace Mailer\Dispatch;
 
-interface ResponsableInterface
+interface ResponseInterface
 {
     /**
      * Send response to pertinent output

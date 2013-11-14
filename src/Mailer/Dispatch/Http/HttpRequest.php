@@ -8,7 +8,7 @@ use Mailer\Dispatch\RequestInterface;
 /**
  * HTTP request implementation
  */
-class Request extends DefaultRequest
+class HttpRequest extends DefaultRequest
 {
     /**
      * Fetch HTTP request body content
@@ -21,7 +21,7 @@ class Request extends DefaultRequest
     /**
      * Get incomming request from PHP globals
      *
-     * @return Request
+     * @return HttpRequest
      */
     static public function createFromGlobals()
     {
@@ -55,7 +55,7 @@ class Request extends DefaultRequest
             $_GET['resource'] = null;
         }
 
-        return new Request($_GET['resource'], $content, $_GET, $method);
+        return new self($_GET['resource'], $content, $_GET, $method);
     }
 
     public function __construct($path, $content = null, array $options = array(), $method = RequestInterface::METHOD_GET)
