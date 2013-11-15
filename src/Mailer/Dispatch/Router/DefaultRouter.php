@@ -12,14 +12,19 @@ class DefaultRouter implements RouterInterface
 {
     public function findController($resource)
     {
+        $resource = trim($resource);
+        $resource = trim($resource, '/\\');
+
         $parts = explode('/', $resource);
         $path  = array();
         $args  = array();
+        $done  = false;
 
         if (1 < count($parts)) {
             foreach ($parts as $index => $part) {
-                if (is_numeric($part)) {
-                    $args = array_slice($parts, max(0, $index - 1));
+                if ($done || is_numeric($part)) {
+                    $done = true;
+                    $args[] = $part;
                 } else {
                     $path[] = $part;
                 }
@@ -43,6 +48,6 @@ class DefaultRouter implements RouterInterface
             throw new BadRequestError("Invalid resource path");
         }
 
-        return new $className();
+        return array(new $className(), $args);
     }
 }

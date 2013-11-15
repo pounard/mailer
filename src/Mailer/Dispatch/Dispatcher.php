@@ -57,16 +57,16 @@ class Dispatcher extends AbstractContainerAware
         return $this->router;
     }
 
-    protected function executeController(RequestInterface $request, $controller)
+    protected function executeController(RequestInterface $request, $controller, $args)
     {
         if ($controller instanceof ContainerAwareInterface) {
             $controller->setContainer($this->getContainer());
         }
 
         if ($controller instanceof ControllerInterface) {
-            return $controller->dispatch($request);
+            return $controller->dispatch($request, $args);
         } else if (is_callable($controller)) {
-            return call_user_func($controller, $request);
+            return call_user_func($controller, $request, $args);
         } else {
             throw new LogicError("Controller is broken");
         }
@@ -94,18 +94,15 @@ class Dispatcher extends AbstractContainerAware
                 $response->setContainer($this->getContainer());
             }
 
-            try {
-                // Just for fun: over-indentation!!!!!!
-                $view = $this
-                    ->executeController(
-                        $request,
-                        $this
-                            ->getRouter()
-                            ->findController(
-                                $request
-                                    ->getResource()
-                            )
+            list($controller, $args) = $this
+                ->getRouter()
+                ->findController(
+                    $request
+                        ->getResource()
                 );
+
+            try {
+                $view = $this->executeController($request, $controller, $args);
 
                 $response->send($renderer->render($view));
 

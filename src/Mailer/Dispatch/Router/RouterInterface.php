@@ -12,7 +12,7 @@ interface RouterInterface
      *
      * @param string $resource
      *
-     * @return ControllerInterface
+     * @return (controller, args)
      */
     public function findController($resource);
 }

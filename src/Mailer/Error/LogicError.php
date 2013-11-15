@@ -5,7 +5,7 @@ namespace Mailer\Error;
 /**
  * Generic business logic error
  */
-abstract class LogicError extends \RuntimeException implements Error
+class LogicError extends \RuntimeException implements Error
 {
     public function getStatusCode()
     {

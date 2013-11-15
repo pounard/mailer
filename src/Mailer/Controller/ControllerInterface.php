@@ -9,5 +9,5 @@ use Mailer\Dispatch\RequestInterface;
  */
 interface ControllerInterface
 {
-    public function dispatch(RequestInterface $request);
+    public function dispatch(RequestInterface $request, array $args);
 }
