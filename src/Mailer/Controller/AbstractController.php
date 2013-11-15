@@ -2,11 +2,13 @@
 
 namespace Mailer\Controller;
 
+use Mailer\Core\AbstractContainerAware;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\MethodNotAllowedError;
 
-abstract class AbstractController implements ControllerInterface
+abstract class AbstractController extends AbstractContainerAware implements
+    ControllerInterface
 {
     public function dispatch(RequestInterface $request)
     {

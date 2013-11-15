@@ -15,5 +15,6 @@
         }
     },
     "require": {
+        "pimple/pimple": "2.*@dev"
     }
 }

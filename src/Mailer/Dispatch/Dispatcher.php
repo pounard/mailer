@@ -3,13 +3,15 @@
 namespace Mailer\Dispatch;
 
 use Mailer\Controller\ControllerInterface;
+use Mailer\Core\AbstractContainerAware;
+use Mailer\Core\ContainerAwareInterface;
 use Mailer\Dispatch\Http\HttpRequest;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\Error;
 use Mailer\Error\LogicError;
 
-class Dispatcher
+class Dispatcher extends AbstractContainerAware
 {
     /**
      * Dispatch from the current environement
@@ -35,6 +37,10 @@ class Dispatcher
     public function setRouter(RouterInterface $router)
     {
         $this->router = $router;
+
+        if ($this->router instanceof ContainerAwareInterface) {
+            $this->router->setContainer($this->getContainer());
+        }
     }
 
     /**
@@ -45,7 +51,7 @@ class Dispatcher
     public function getRouter()
     {
         if (null === $this->router) {
-            $this->router = new DefaultRouter();
+            $this->setRouter(new DefaultRouter());
         }
 
         return $this->router;
@@ -53,6 +59,10 @@ class Dispatcher
 
     protected function executeController(RequestInterface $request, $controller)
     {
+        if ($controller instanceof ContainerAwareInterface) {
+            $controller->setContainer($this->getContainer());
+        }
+
         if ($controller instanceof ControllerInterface) {
             return $controller->dispatch($request);
         } else if (is_callable($controller)) {
@@ -73,7 +83,16 @@ class Dispatcher
             // @todo Determine converter
             // @todo Determine renderer
             $renderer = new \Mailer\Renderer\HtmlRenderer();
+            // @todo Find the appropriate response depending on accept
+            // and short-circuit if not supported
             $response = new \Mailer\Dispatch\Http\HttpResponse();
+
+            if ($renderer instanceof ContainerAwareInterface) {
+                $renderer->setContainer($this->getContainer());
+            }
+            if ($response instanceof ContainerAwareInterface) {
+                $response->setContainer($this->getContainer());
+            }
 
             try {
                 $view = $this->executeController(
@@ -85,8 +104,6 @@ class Dispatcher
                                 ->getResource()
                         )
                 );
-
-                // @todo Find the appropriate response depending on accept
 
                 $response->send($renderer->render($view));
 
