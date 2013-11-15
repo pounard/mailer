@@ -23,26 +23,6 @@ namespace Mailer\Dispatch;
 interface RequestInterface
 {
     /**
-     * GET
-     */
-    const METHOD_GET = 0;
-
-    /**
-     * POST
-     */
-    const METHOD_POST = 1;
-
-    /**
-     * PUT
-     */
-    const METHOD_PUT = 2;
-
-    /**
-     * DELETE
-     */
-    const METHOD_DELETE = 3;
-
-    /**
      * Get asked resource or command
      *
      * @return string

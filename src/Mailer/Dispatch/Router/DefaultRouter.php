@@ -24,6 +24,8 @@ class DefaultRouter implements RouterInterface
                     $path[] = $part;
                 }
             }
+        } else {
+            $path = $parts;
         }
 
         if (empty($path)) {

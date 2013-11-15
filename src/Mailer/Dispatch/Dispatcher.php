@@ -2,6 +2,7 @@
 
 namespace Mailer\Dispatch;
 
+use Mailer\Controller\ControllerInterface;
 use Mailer\Dispatch\Http\HttpRequest;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
@@ -50,6 +51,17 @@ class Dispatcher
         return $this->router;
     }
 
+    protected function executeController(RequestInterface $request, $controller)
+    {
+        if ($controller instanceof ControllerInterface) {
+            return $controller->dispatch($request);
+        } else if (is_callable($controller)) {
+            return call_user_func($controller, $request);
+        } else {
+            throw new LogicError("Controller is broken");
+        }
+    }
+
     /**
      * Dispatch incomming request
      *
@@ -64,14 +76,16 @@ class Dispatcher
             $response = new \Mailer\Dispatch\Http\HttpResponse();
 
             try {
-                $controller = $this
-                    ->getRouter()
-                    ->findController(
-                        $request->getResource()
-                    );
+                $view = $this->executeController(
+                    $request,
+                    $this
+                        ->getRouter()
+                        ->findController(
+                            $request
+                                ->getResource()
+                        )
+                );
 
-                // @todo controller return view
-                $view = null;
                 // @todo Find the appropriate response depending on accept
 
                 $response->send($renderer->render($view));

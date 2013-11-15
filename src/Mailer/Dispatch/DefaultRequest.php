@@ -41,7 +41,7 @@ class DefaultRequest implements RequestInterface
      * @param string $content
      * @param array $options
      */
-    public function __construct($path, $content = null, array $options = array(), $method = RequestInterface::METHOD_GET)
+    public function __construct($path, $content = null, array $options = array(), $method = Request::METHOD_GET)
     {
         $this->path    = $path;
         $this->content = $content;

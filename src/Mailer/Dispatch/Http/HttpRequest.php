@@ -3,7 +3,7 @@
 namespace Mailer\Dispatch\Http;
 
 use Mailer\Dispatch\DefaultRequest;
-use Mailer\Dispatch\RequestInterface;
+use Mailer\Dispatch\Request;
 
 /**
  * HTTP request implementation
@@ -30,21 +30,21 @@ class HttpRequest extends DefaultRequest
         switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'GET':
-                $method  = RequestInterface::METHOD_GET;
+                $method  = Request::METHOD_GET;
                 break;
 
             case 'POST':
-                $method  = RequestInterface::METHOD_POST;
+                $method  = Request::METHOD_POST;
                 $content = self::fetchBodyContent();
                 break;
 
             case 'PUT':
-                $method  = RequestInterface::METHOD_PUT;
+                $method  = Request::METHOD_PUT;
                 $content = self::fetchBodyContent();
                 break;
 
             case 'DELETE':
-                $method  = RequestInterface::METHOD_DELETE;
+                $method  = Request::METHOD_DELETE;
                 break;
 
             default:
@@ -58,7 +58,7 @@ class HttpRequest extends DefaultRequest
         return new self($_GET['resource'], $content, $_GET, $method);
     }
 
-    public function __construct($path, $content = null, array $options = array(), $method = RequestInterface::METHOD_GET)
+    public function __construct($path, $content = null, array $options = array(), $method = Request::METHOD_GET)
     {
         parent::__construct($path, $content, $options, $method);
 
