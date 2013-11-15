@@ -3,7 +3,7 @@
  * Mailer bootstrap.
  */
 
-use Core\Bootstrap;
+use Mailer\Core\Bootstrap;
 use Mailer\Dispatch\Dispatcher;
 use Mailer\Dispatch\Http\HttpRequest;
 
@@ -16,5 +16,5 @@ $request = HttpRequest::createFromGlobals();
 $dispatcher = new Dispatcher();
 
 $config = require_once __DIR__ . '/../etc/config.php';
-Bootstrap::bootstrap($dispatcher, $request);
-$dispatcher->dispatch();
+Bootstrap::bootstrap($dispatcher, $request, $config);
+$dispatcher->dispatch($request);

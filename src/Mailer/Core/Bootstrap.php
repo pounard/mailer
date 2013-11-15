@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Mailer\Core;
 
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Dispatch\RequestInterface;
@@ -12,7 +12,8 @@ class Bootstrap
 {
     static public function bootstrap(
         ContainerAwareInterface $component,
-        RequestInterface $request)
+        RequestInterface $request,
+        $config)
     {
         $container = $component->getContainer();
 
