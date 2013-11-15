@@ -4,6 +4,7 @@ phpunit.xml
 vendor/*
 
 # Project specifics
+etc/config.php
 etc/nginx/nginx.conf
 
 # Eclipse IDE files
