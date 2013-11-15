@@ -4,6 +4,7 @@ namespace Mailer\Model\Server;
 
 use Mailer\Error\LogicError;
 use Mailer\Model\Folder;
+use Mailer\Error\NotFoundError;
 
 /**
  * Imap server connection using the PHP IMAP extension
@@ -124,11 +125,14 @@ class ImapServer extends AbstractServer implements ImapServerInterface
 
     /**
      * "Not proud of this one" (TM)
+     *
+     * Recursive function for listFolders() method. I'd prefer to have a
+     * recursive anonymous function but PHP cannot really do that, sadly.
+     *
+     * PHP is really a very very wrong language.
      */
-    private function addFolder($data, &$map, &$ret)
+    private function addFolder($data, &$map)
     {
-        $folder = null;
-
         if (false !== ($pos = strrpos($data->name, "}"))) {
             $path = substr($data->name, $pos + 1);
         } else {
@@ -143,6 +147,9 @@ class ImapServer extends AbstractServer implements ImapServerInterface
             $name = $path;
         }
 
+        $folder = new Folder($name, $data->delimiter);
+        $map[$path] = $folder;
+
         // Our folders have been sorted by parenting order before
         if (isset($parent)) {
 
@@ -152,31 +159,25 @@ class ImapServer extends AbstractServer implements ImapServerInterface
                 // valid, therefore when we hit this kind of use case we
                 // need to instanciate a false folder and consider it as
                 // existing
-                $this->addFolder(
-                    (object)array(
-                        'name' => $parent,
-                        'delimiter' => $data->delimiter,
-                    ),
-                    $map,
-                    $ret
-                );
+                $this->addFolder((object)array(
+                    'name' => $parent,
+                    'delimiter' => $data->delimiter,
+                ), $map);
             }
 
             $parent = $map[$parent];
-            $folder = new Folder($name, $parent, $data->delimiter);
             $parent->addChild($folder);
-
-        } else {
-            $folder = $ret[$name] = new Folder($name, null, $data->delimiter);
         }
-
-        $map[$path] = $folder;
     }
 
-    public function listFolders($parent = null)
+    public function getFolderMap($parent = null, $refresh = false)
     {
-        $ret = array();
+        // Forcing refresh will be ignored from here since that implementation
+        // is supposed to fetch info directly from the IMAP server and do no
+        // caching. Note that $parent parameter will be ignored too
+
         $map = array();
+        $folder = null;
 
         $folders = imap_getmailboxes($this->connect($parent), $this->getMailboxName($parent), "*");
 
@@ -188,16 +189,24 @@ class ImapServer extends AbstractServer implements ImapServerInterface
         });
 
         foreach ($folders as $data) {
-            $this->addFolder($data, $map, $ret);
+            $this->addFolder($data, $map);
         }
 
-        return $ret;
+        return $map;
     }
 
-    public function getFolder($name)
+    public function getFolder($name, $refresh = false)
     {
-        $resource = $this->connect($name);
+        // Forcing refresh will be ignored from here since that implementation
+        // is supposed to fetch info directly from the IMAP server and do no
+        // caching
 
-        // @todo
+        $map = $this->getFolderMap();
+
+        if (!isset($map[$name])) {
+            throw new NotFoundError(sprintf("Folder '%s' does not exist", $name));
+        }
+
+        return $map;
     }
 }

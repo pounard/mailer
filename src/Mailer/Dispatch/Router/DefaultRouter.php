@@ -15,39 +15,24 @@ class DefaultRouter implements RouterInterface
         $resource = trim($resource);
         $resource = trim($resource, '/\\');
 
-        $parts = explode('/', $resource);
-        $path  = array();
-        $args  = array();
-        $done  = false;
+        $path = explode('/', $resource);
+        $args = array();
 
-        if (1 < count($parts)) {
-            foreach ($parts as $index => $part) {
-                if ($done || is_numeric($part)) {
-                    $done = true;
-                    $args[] = $part;
-                } else {
-                    $path[] = $part;
-                }
+        while (!empty($path)) {
+
+            $name = $path;
+            array_walk($name, function (&$value) {
+                $value = ucfirst(strtolower($value));
+            });
+            $className = '\\Mailer\\Controller\\' . implode('\\', $name) . 'Controller';
+
+            if (class_exists($className)) {
+                return array(new $className(), $args);
+            } else {
+                array_unshift($args, array_pop($path));
             }
-        } else {
-            $path = $parts;
         }
 
-        if (empty($path)) {
-            // We have only numeric identifiers
-            throw new BadRequestError("Invalid resource path");
-        }
-
-        array_walk($path, function (&$value) {
-            $value = ucfirst(strtolower($value));
-        });
-
-        $className = '\\Mailer\\Controller\\' . implode('\\', $path) . 'Controller';
-
-        if (!class_exists($className)) {
-            throw new BadRequestError("Invalid resource path");
-        }
-
-        return array(new $className(), $args);
+        throw new BadRequestError("Invalid resource path");
     }
 }

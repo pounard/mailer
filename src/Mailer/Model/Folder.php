@@ -15,11 +15,6 @@ class Folder
     private $delimiter;
 
     /**
-     * @var Folder
-     */
-    private $parent;
-
-    /**
      * @var Folder[]
      */
     private $children = array();
@@ -31,10 +26,9 @@ class Folder
      * @param Folder $parent
      * @param string $delimiter
      */
-    public function __construct($name, Folder $parent = null, $delimiter = '.', $children = array())
+    public function __construct($name, $delimiter = '.', $children = array())
     {
         $this->name = $name;
-        $this->parent = $parent;
         $this->delimiter = $delimiter;
 
         foreach ($this->children as $child) {
@@ -60,26 +54,6 @@ class Folder
     public function getDelimiter()
     {
         return $this->delimiter;
-    }
-
-    /**
-     * Get parent if not top level
-     *
-     * @return Folder
-     */
-    public function getParent()
-    {
-        return $this->parent;
-    }
-
-    /**
-     * Is this folder top level
-     *
-     * @return boolean
-     */
-    public function isTopLevel()
-    {
-        return null === $this->parent;
     }
 
     /**

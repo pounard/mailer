@@ -44,7 +44,7 @@ class FolderController extends AbstractController
             $name = array_shift($args);
             $folder = $server->getFolder($name);
         } else {
-            $folderList = $server->listFolders();
+            $folderList = $server->getFolderMap();
         }
     }
 }

@@ -8,20 +8,22 @@ namespace Mailer\Model\Server;
 interface ImapServerInterface extends ServerInterface
 {
     /**
-     * List folders
+     * Get folder flat map
      *
      * @param string $parent
+     * @param boolean $refresh
      *
      * @return Folder[]
      */
-    public function listFolders($parent = null);
+    public function getFolderMap($parent = null, $refresh = false);
 
     /**
      * Get a single folder
      *
      * @param string $name
+     * @param boolean $refresh
      *
      * @return Folder
      */
-    public function getFolder($name);
+    public function getFolder($name, $refresh = false);
 }
