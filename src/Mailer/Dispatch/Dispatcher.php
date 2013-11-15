@@ -95,14 +95,16 @@ class Dispatcher extends AbstractContainerAware
             }
 
             try {
-                $view = $this->executeController(
-                    $request,
-                    $this
-                        ->getRouter()
-                        ->findController(
-                            $request
-                                ->getResource()
-                        )
+                // Just for fun: over-indentation!!!!!!
+                $view = $this
+                    ->executeController(
+                        $request,
+                        $this
+                            ->getRouter()
+                            ->findController(
+                                $request
+                                    ->getResource()
+                            )
                 );
 
                 $response->send($renderer->render($view));
