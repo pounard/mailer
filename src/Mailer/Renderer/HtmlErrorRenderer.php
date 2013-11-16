@@ -19,4 +19,9 @@ class HtmlErrorRenderer extends HtmlRenderer
             return $return;
         }
     }
+
+    public function needsSerialize()
+    {
+        return false;
+    }
 }

@@ -13,4 +13,9 @@ class JsonRenderer implements RendererInterface
     {
         return "application/json";
     }
+
+    public function needsSerialize()
+    {
+        return true;
+    }
 }

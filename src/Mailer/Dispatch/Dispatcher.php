@@ -5,26 +5,16 @@ namespace Mailer\Dispatch;
 use Mailer\Controller\ControllerInterface;
 use Mailer\Core\AbstractContainerAware;
 use Mailer\Core\ContainerAwareInterface;
-use Mailer\Dispatch\Http\HttpRequest;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
-use Mailer\Error\Error;
 use Mailer\Error\LogicError;
 use Mailer\Model\ArrayConverter;
 
+/**
+ * Front dispatcher (application runner)
+ */
 class Dispatcher extends AbstractContainerAware
 {
-    /**
-     * Dispatch from the current environement
-     */
-    static public function run()
-    {
-        $dispatcher = new self();
-        $request    = HttpRequest::createFromGlobals();
-
-        return $dispatcher->dispatch($request);
-    }
-
     /**
      * @var RouterInterface
      */
@@ -107,13 +97,13 @@ class Dispatcher extends AbstractContainerAware
 
             try {
                 $result = $this->executeController($request, $controller, $args);
-                $converter = new ArrayConverter();
 
-                $response->send(
-                    $renderer->render(
-                        $converter->serialize($result)
-                    )
-                );
+                if ($renderer->needsSerialize()) {
+                    $converter = new ArrayConverter();
+                    $result = $converter->serialize($result);
+                }
+
+                $response->send($renderer->render($result));
 
             } catch (\Exception $e) {
                 $renderer = new \Mailer\Renderer\HtmlErrorRenderer();
@@ -125,4 +115,3 @@ class Dispatcher extends AbstractContainerAware
         }
     }
 }
-

@@ -17,4 +17,11 @@ interface RendererInterface
      * @return string
      */
     public function getContentType();
+
+    /**
+     * Does this renderer needs structured data
+     *
+     * @return boolean
+     */
+    public function needsSerialize();
 }

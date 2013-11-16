@@ -37,4 +37,9 @@ class HtmlRenderer implements RendererInterface
     {
         return "application/html";
     }
+
+    public function needsSerialize()
+    {
+        return false;
+    }
 }
