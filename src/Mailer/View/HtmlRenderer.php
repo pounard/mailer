@@ -42,6 +42,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         $config = $container['config'];
 
         $ret['title'] = $config['/html/title'];
+        $ret['pagetitle'] = "Server response";
 
         return $ret;
     }
