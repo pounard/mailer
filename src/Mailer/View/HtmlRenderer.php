@@ -15,7 +15,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
     public function findTemplate($template = null)
     {
         if (empty($template)) {
-            $template = 'index';
+            $template = 'debug';
         }
 
         return 'views/' . $template . '.phtml';
@@ -30,7 +30,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
      * @return array
      *   Variables for the template
      */
-    public function prepareVariables($values)
+    protected function prepareVariables($values)
     {
         if (is_array($values)) {
             $ret = $values;
@@ -42,23 +42,28 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         $config = $container['config'];
 
         $ret['title'] = $config['/html/title'];
-        $ret['pagetitle'] = "Server response";
+        $ret['basepath'] = $container['basepath'];
+        $ret['pagetitle'] = isset($values['pagetitle']) ? $values['pagetitle'] : null;
 
         return $ret;
     }
 
-    public function render(View $view)
+    /**
+     * Render template and fetch output
+     *
+     * @param mixed $values
+     * @param string $template
+     */
+    protected function renderTemplate($values, $template = null)
     {
-        $template = $view->getTemplate();
-
         if (!$file = $this->findTemplate($template)) {
             throw new TechnicalError(sprintf("Could not find any template to use"));
         }
 
-        $return = $this->prepareVariables($view->getValues());
-
         ob_start();
-        extract($return);
+
+        extract($values);
+
         if (!(bool)include $file) {
             ob_flush(); // Never leave an opened resource
 
@@ -66,6 +71,25 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         }
 
         return ob_get_clean();
+    }
+
+    public function render(View $view)
+    {
+        // Render the content template
+        $partial = $this->renderTemplate(
+            $this->prepareVariables(
+                $view->getValues()
+            ),
+            $view->getTemplate()
+        );
+
+        // Wrap the rendering into an full HTML page
+        return $this->renderTemplate(
+            $this->prepareVariables(
+                array('content' => $partial)
+            ),
+            'layout'
+        );
     }
 
     public function getContentType()

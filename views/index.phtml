@@ -1,10 +1,2 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title><?php echo $pagetitle; ?> | <?php echo $title; ?></title>
-</head>
-<body>
-<h1><?php echo $pagetitle; ?></h1>
+<h1><?php echo isset($pagetitle) ? $pagetitle: $title; ?></h1>
 <?php echo $content; ?>
-</body>
-</html>

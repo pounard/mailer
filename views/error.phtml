@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Exception caught | <?php echo $title; ?></title>
-</head>
-<body>
-<h1>Exception caught</h1>
+<h1>Error</h1>
 <?php if (isset($e) && $e instanceof \Exception): ?>
 <h2>Message was: <?php echo $e->getMessage(); ?></h2>
-<pre><?php echo $e->getTraceAsString(); ?></pre>
+<pre class="error"><?php echo $e->getTraceAsString(); ?></pre>
 <?php else: ?>
-<pre><?php echo print_r($content); ?></pre>
+<pre class="debug"><?php echo print_r($content); ?></pre>
 <?php endif; ?>
-</body>
-</html>

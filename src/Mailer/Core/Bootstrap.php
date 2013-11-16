@@ -21,6 +21,10 @@ class Bootstrap
     {
         $container = $component->getContainer();
 
+        // Set some global dynamic parameters
+        // FIXME
+        $container['basepath'] = '';
+
         // Server wide configuration
         $container['config'] = function () use ($config) {
             return new MemoryBackend($config['config']);
