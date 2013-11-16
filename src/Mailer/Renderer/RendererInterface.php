@@ -10,4 +10,11 @@ interface RendererInterface
      * @param mixed $return
      */
     public function render($return);
+
+    /**
+     * Get return content mime type
+     *
+     * @return string
+     */
+    public function getContentType();
 }

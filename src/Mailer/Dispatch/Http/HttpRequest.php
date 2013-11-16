@@ -75,4 +75,9 @@ class HttpRequest extends DefaultRequest
             $this->setOutputContentTypes(array('text/html'));
         }
     }
+
+    public function createResponse()
+    {
+        return new HttpResponse($this);
+    }
 }

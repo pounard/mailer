@@ -19,14 +19,15 @@ class Bootstrap
     {
         $container = $component->getContainer();
 
-        // @todo
-        // Add items to the container
+        // Server wide configuration
+        $container['config'] = $config['config'];
 
+        // Services
         $container['imap'] = function () use ($config) {
-            return new ImapServer($config['imap']);
+            return new ImapServer($config['servers']['imap']);
         };
         $container['smtp'] = function () use ($config) {
-            return new SmtpServer($config['stmp']);
+            return new SmtpServer($config['servers']['stmp']);
         };
     }
 }

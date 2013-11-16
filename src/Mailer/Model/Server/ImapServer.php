@@ -147,7 +147,7 @@ class ImapServer extends AbstractServer implements ImapServerInterface
             $name = $path;
         }
 
-        $folder = new Folder($name, $data->delimiter);
+        $folder = new Folder($name, $data->delimiter, array());
         $map[$path] = $folder;
 
         // Our folders have been sorted by parenting order before

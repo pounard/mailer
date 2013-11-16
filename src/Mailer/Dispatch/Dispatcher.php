@@ -10,6 +10,7 @@ use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\Error;
 use Mailer\Error\LogicError;
+use Mailer\Model\ArrayConverter;
 
 class Dispatcher extends AbstractContainerAware
 {
@@ -80,12 +81,15 @@ class Dispatcher extends AbstractContainerAware
     public function dispatch(RequestInterface $request)
     {
         try {
-            // @todo Determine converter
-            // @todo Determine renderer
-            $renderer = new \Mailer\Renderer\HtmlRenderer();
-            // @todo Find the appropriate response depending on accept
-            // and short-circuit if not supported
-            $response = new \Mailer\Dispatch\Http\HttpResponse();
+            // Response highly depend on request so let the request
+            // a chance to give the appropriate response implementation
+            $response = $request->createResponse();
+            if (null === $response) {
+                $response = new DefaultResponse();
+            }
+
+            // @todo Find the appropriate renderer depending on accept
+            $renderer = new \Mailer\Renderer\JsonRenderer();
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());
@@ -102,19 +106,23 @@ class Dispatcher extends AbstractContainerAware
                 );
 
             try {
-                $view = $this->executeController($request, $controller, $args);
+                $result = $this->executeController($request, $controller, $args);
+                $converter = new ArrayConverter();
 
-                $response->send($renderer->render($view));
+                $response->send(
+                    $renderer->render(
+                        $converter->serialize($result)
+                    )
+                );
 
             } catch (\Exception $e) {
-                // Move this out into a specific renderer
                 $renderer = new \Mailer\Renderer\HtmlErrorRenderer();
                 $response->send($renderer->render($e));
             }
         } catch (\Exception $e) {
-            // Very critical error renderer and response could not be
-            // spawned: display the raw stack trace
-            echo "<pre>", $e->getMessage(), "\n", $e->getTraceAsString() . "</pre>";
+            $response = new DefaultResponse();
+            $response->send($e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
 }
+

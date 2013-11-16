@@ -8,4 +8,9 @@ class JsonRenderer implements RendererInterface
     {
         return json_encode($return);
     }
+
+    public function getContentType()
+    {
+        return "application/json";
+    }
 }

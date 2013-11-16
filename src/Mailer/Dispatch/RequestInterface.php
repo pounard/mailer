@@ -84,4 +84,14 @@ interface RequestInterface
      *   Mime types or an empty array if none found
      */
     public function getOutputContentTypes();
+
+    /**
+     * Create an appropriate response
+     *
+     * This method can return null case in which the dispatcher will just
+     * send a default implementation that sends plain text
+     *
+     * @return ResponseInterface
+     */
+    public function createResponse();
 }

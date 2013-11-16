@@ -1,15 +1,22 @@
 <?php
 return array(
-    'smtp' => array(
-        'secure' => true,
-        'host' => 'smtp.example.com',
-        'username' => 'someuser',
-        'password' => 'somepassword',
+    'config' => array(
+        'debug' => false,
     ),
-    'imap' => array(
-        'secure' => true,
-        'host' => 'imap.example.com',
-        'username' => 'someuser',
-        'password' => 'somepassword',
+    'servers' => array(
+        'smtp' => array(
+            'host' => 'smtp.example.com',
+            'username' => 'someuser',
+            'password' => 'somepassword',
+            'secure' => true,
+            'secure_invalid' => false,
+        ),
+        'imap' => array(
+            'host' => 'imap.example.com',
+            'username' => 'someuser',
+            'password' => 'somepassword',
+            'secure' => true,
+            'secure_invalid' => false,
+        ),
     ),
 );

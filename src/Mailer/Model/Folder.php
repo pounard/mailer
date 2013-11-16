@@ -2,7 +2,9 @@
 
 namespace Mailer\Model;
 
-class Folder
+use Mailer\Error\LogicError;
+
+class Folder implements ExchangeInterface
 {
     /**
      * @var string
@@ -17,7 +19,7 @@ class Folder
     /**
      * @var Folder[]
      */
-    private $children = array();
+    private $children = null;
 
     /**
      * Default constructor
@@ -26,13 +28,16 @@ class Folder
      * @param Folder $parent
      * @param string $delimiter
      */
-    public function __construct($name, $delimiter = '.', $children = array())
+    public function __construct($name, $delimiter = '.', array $children = null)
     {
         $this->name = $name;
         $this->delimiter = $delimiter;
 
-        foreach ($this->children as $child) {
-            $this->addChild($child);
+        if (null !== $children) {
+            $this->children = array();
+            foreach ($this->children as $child) {
+                $this->addChild($child);
+            }
         }
     }
 
@@ -73,10 +78,32 @@ class Folder
      */
     public function addChild(Folder $child)
     {
+        if (null === $this->children) {
+            throw new LogicError("Children have not been initialized");
+        }
+
         $this->children[] = $child;
 
         uasort($this->children, function ($a, $b) {
             return strcmp($a->getName(), $b->getName());
         });
+    }
+
+    public function toArray()
+    {
+        return array(
+            'name' => $this->name,
+            'delimiter' => $this->delimiter,
+            'hasChildren' => !empty($this->children),
+            'childCount' => count($this->children),
+        );
+    }
+
+    public function fromArray(array $array)
+    {
+        // Only name can be edited by the client side
+        if (isset($array['name'])) {
+            $this->name = $array['name'];
+        }
     }
 }

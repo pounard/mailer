@@ -6,10 +6,41 @@ use Mailer\Dispatch\ResponseInterface;
 
 class HttpResponse implements ResponseInterface
 {
-    public function send($output)
+    /**
+     * @var string[]
+     */
+    protected $headers = array();
+
+    /**
+     * @var HttpRequest
+     */
+    protected $request;
+
+    /**
+     * Specific constructor
+     */
+    public function __construct(HttpRequest $request = null)
+    {
+        if (null !== $request) {
+            $this->request = $request;
+        }
+    }
+
+    public function sendHeaders()
+    {
+        // @todo
+        $this->headers += array(
+            "Content-Type" => "text/html",
+        );
+    }
+
+    public function sendContent($output)
     {
         echo $output;
+    }
 
+    public function closeResponse()
+    {
         // Code from Symfony 2.0 HttpFoundation component.
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
@@ -35,5 +66,12 @@ class HttpResponse implements ResponseInterface
             }
             flush();
         }
+    }
+
+    public function send($output)
+    {
+        $this->sendHeaders();
+        $this->sendContent($output);
+        $this->closeResponse();
     }
 }

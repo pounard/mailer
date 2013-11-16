@@ -5,7 +5,7 @@ namespace Mailer\Dispatch;
 interface ResponseInterface
 {
     /**
-     * Send response to pertinent output
+     * Send response to output stream
      *
      * @param string $output
      */

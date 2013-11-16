@@ -32,4 +32,9 @@ class HtmlRenderer implements RendererInterface
         include $template;
         return ob_get_clean();
     }
+
+    public function getContentType()
+    {
+        return "application/html";
+    }
 }

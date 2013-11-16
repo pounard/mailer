@@ -42,9 +42,9 @@ class FolderController extends AbstractController
 
         if (!empty($args)) {
             $name = array_shift($args);
-            $folder = $server->getFolder($name);
+            return $server->getFolder($name);
         } else {
-            $folderList = $server->getFolderMap();
+            return $server->getFolderMap();
         }
     }
 }

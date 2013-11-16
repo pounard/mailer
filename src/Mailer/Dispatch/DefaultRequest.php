@@ -101,4 +101,9 @@ class DefaultRequest implements RequestInterface
     {
         return $this->outputType;
     }
+
+    public function createResponse()
+    {
+        return null;
+    }
 }
