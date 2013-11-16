@@ -7,6 +7,8 @@ use Mailer\Dispatch\RequestInterface;
 use Mailer\Model\Server\ImapServer;
 use Mailer\Model\Server\SmtpServer;
 
+use Config\Impl\Memory\MemoryBackend;
+
 /**
  * OK this is far from ideal nevertheless it works
  */
@@ -20,7 +22,7 @@ class Bootstrap
         $container = $component->getContainer();
 
         // Server wide configuration
-        $container['config'] = $config['config'];
+        $container['config'] = new MemoryBackend($config['config']);
 
         // Services
         $container['imap'] = function () use ($config) {
