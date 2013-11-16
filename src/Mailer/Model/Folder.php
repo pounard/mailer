@@ -14,31 +14,33 @@ class Folder implements ExchangeInterface
     /**
      * @var string
      */
+    private $path;
+
+    /**
+     * @var string
+     */
     private $delimiter;
 
     /**
-     * @var Folder[]
+     * Direct parent key
+     *
+     * @var string
      */
-    private $children = null;
+    private $parent;
 
     /**
      * Default constructor
      *
      * @param string $name
-     * @param Folder $parent
+     * @param string $parent
      * @param string $delimiter
      */
-    public function __construct($name, $delimiter = '.', array $children = null)
+    public function __construct($name, $path, $parent, $delimiter = '.')
     {
         $this->name = $name;
+        $this->path = $path;
+        $this->parent = $parent;
         $this->delimiter = $delimiter;
-
-        if (null !== $children) {
-            $this->children = array();
-            foreach ($this->children as $child) {
-                $this->addChild($child);
-            }
-        }
     }
 
     /**
@@ -52,6 +54,16 @@ class Folder implements ExchangeInterface
     }
 
     /**
+     * Get folder path
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    /**
      * Get delimiter
      *
      * @return string
@@ -62,40 +74,22 @@ class Folder implements ExchangeInterface
     }
 
     /**
-     * Get children
+     * Get parent key
      *
-     * @return Folder[]
+     * @return string
      */
-    public function getChildren()
+    public function getParentKey()
     {
-        return $this->children;
-    }
-
-    /**
-     * Add child
-     *
-     * @param Folder $child
-     */
-    public function addChild(Folder $child)
-    {
-        if (null === $this->children) {
-            throw new LogicError("Children have not been initialized");
-        }
-
-        $this->children[] = $child;
-
-        uasort($this->children, function ($a, $b) {
-            return strcmp($a->getName(), $b->getName());
-        });
+        return $this->parent;
     }
 
     public function toArray()
     {
         return array(
             'name' => $this->name,
+            'path' => $this->path,
+            'parent' => $this->parent,
             'delimiter' => $this->delimiter,
-            'hasChildren' => !empty($this->children),
-            'childCount' => count($this->children),
         );
     }
 

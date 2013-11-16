@@ -147,7 +147,7 @@ class ImapServer extends AbstractServer implements ImapServerInterface
             $name = $path;
         }
 
-        $folder = new Folder($name, $data->delimiter, array());
+        $folder = new Folder($name, $path, $parent, $data->delimiter);
         $map[$path] = $folder;
 
         // Our folders have been sorted by parenting order before
@@ -166,7 +166,6 @@ class ImapServer extends AbstractServer implements ImapServerInterface
             }
 
             $parent = $map[$parent];
-            $parent->addChild($folder);
         }
     }
 
