@@ -101,7 +101,7 @@ class Dispatcher extends AbstractContainerAware
 
             // @todo Find the appropriate renderer depending on accept
             // and controller return
-            $renderer = new \Mailer\View\JsonRenderer();
+            $renderer = new \Mailer\View\HtmlRenderer();
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());

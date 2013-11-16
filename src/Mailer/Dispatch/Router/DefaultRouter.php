@@ -3,8 +3,9 @@
 namespace Mailer\Dispatch\Router;
 
 use Mailer\Controller\ControllerInterface;
+use Mailer\Controller\IndexController;
 use Mailer\Dispatch\RequestInterface;
-use Mailer\Error\BadRequestError;
+use Mailer\Error\NotFoundError;
 
 /**
  * Router interface
@@ -16,6 +17,15 @@ class DefaultRouter implements RouterInterface
         $resource = $request->getResource();
         $resource = trim($resource);
         $resource = trim($resource, '/\\');
+
+        // Special case: when requested is HTML and no path is given
+        // provide the index controller
+        if (empty($resource)) {
+            $accept = $request->getOutputContentTypes();
+            if (in_array("text/html", $accept) || in_array("application/html", $accept)) {
+                return array(new IndexController(), array());
+            }
+        }
 
         $path = explode('/', $resource);
         $args = array();
@@ -35,6 +45,6 @@ class DefaultRouter implements RouterInterface
             }
         }
 
-        throw new BadRequestError("Invalid resource path");
+        throw new NotFoundError("Not found");
     }
 }
