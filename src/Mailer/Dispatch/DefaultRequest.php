@@ -94,7 +94,7 @@ class DefaultRequest implements RequestInterface
 
     public function setOutputContentTypes(array $contentTypeList)
     {
-        $this->outputType[] = $contentTypeList;
+        $this->outputType = $contentTypeList;
     }
 
     public function getOutputContentTypes()

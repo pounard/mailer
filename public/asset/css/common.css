@@ -1,0 +1,107 @@
+/**
+ * Mailer common CSS code.
+ *
+ * This code takes a few pieces of Twitter Bootstrap v2.3.2 especially for the
+ * navbar a few typography related hints.
+ *
+ * This skin also includes the glyphicons set from Bootstrap as well. Why would
+ * we not bother takign them while they have a very good looking?
+ */
+
+html, body {
+  height: 100%;
+}
+
+body {
+    color: #333333;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857;
+    position: relative;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#nav {
+    top: 0;
+    left: 0;
+    margin-bottom: 0;
+    position: fixed;
+    right: 0;
+    z-index: 1030;
+    background-color: #1B1B1B;
+    background-image: linear-gradient(to bottom, #222222, #111111);
+    background-repeat: repeat-x;
+    border-color: #252525;
+}
+
+#nav * {
+    color: #999999;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    font-size: 13px;
+}
+
+#nav ul {
+    padding: 0;
+    margin: 0;
+}
+
+#nav li {
+    line-height: 20px;
+    display: inline-block;
+}
+
+#nav a {
+    float: none;
+    padding: 7px 15px;
+    text-decoration: none;
+    display: block;
+    text-decoration: none;
+}
+
+#nav .active, #nav a:hover, #nav a:focus {
+    color: #ffffff;
+}
+
+.nav-right {
+    float: right;
+}
+
+.clear {
+  clear: both;
+}
+
+#main {
+  position: absolute;
+  top: 34px; /* For nav bar */
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+#folders {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  width: 200px;
+}
+#inbox {
+  height: 100%;
+}
+#views {
+  position: absolute;
+  left: 200px; /* Width of #folders */
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+#viewpane {
+  float: right;
+  min-width: 400px;
+  width: 50%;
+  height: 100%;
+}

@@ -1,0 +1,33 @@
+/**
+ * Mailer skin.
+ *
+ * This code takes a few pieces of Twitter Bootstrap v2.3.2 especially for the
+ * navbar a few typography related hints.
+ *
+ * This skin also includes the glyphicons set from Bootstrap as well. Why would
+ * we not bother takign them while they have a very good looking?
+ */
+
+#nav, #folders {
+    background-color: #1B1B1B;
+    background-image: linear-gradient(to bottom, #222222, #111111);
+    background-repeat: repeat-x;
+    border-color: #252525;
+}
+
+#folders {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+#nav * {
+    color: #999999;
+}
+
+#nav .active, #nav a:hover, #nav a:focus {
+    color: #ffffff;
+}
+
+#viewpane {
+    border-left: 1px solid #ccc;
+}
