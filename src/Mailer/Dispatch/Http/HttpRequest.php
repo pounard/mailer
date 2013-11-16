@@ -58,6 +58,41 @@ class HttpRequest extends DefaultRequest
         return new self($_GET['resource'], $content, $_GET, $method);
     }
 
+    static public function parseAcceptHeader($header)
+    {
+         // Regex from Symfony 2 HttpFoundation Request object
+         // All the credit goes to them for the following
+         // algorithm
+         $ret = preg_split('/\s*(?:,*("[^"]+"),*|,*(\'[^\']+\'),*|,+)\s*/', $header, 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+
+         if (!empty($ret)) {
+             $ret = array_map(function ($value) {
+                if (false !== strpos($value, ';')) {
+                    list($type, $q) = explode(';', $value, 2);
+                    $q = (float)str_replace('q=', '', $q);
+                } else {
+                    $type = $value;
+                    $q = 1.0;
+                }
+                return (object)array(
+                    'q' => $q,
+                    'type' => $type,
+                );
+             }, $ret);
+
+             // Now order it.
+             uasort($ret, function ($a, $b) {
+                return ($a->q == $b->q) ? 0 : ($a->q < $b->q ? 1 : -1);
+             });
+
+             return array_map(function ($value) {
+                return $value->type;
+             }, $ret);
+         }
+
+         return null;
+    }
+
     public function __construct($path, $content = null, array $options = array(), $method = Request::METHOD_GET)
     {
         parent::__construct($path, $content, $options, $method);
@@ -69,8 +104,11 @@ class HttpRequest extends DefaultRequest
         }
 
         if (isset($_SERVER['HTTP_ACCEPT'])) {
-          // FIXME
-            $this->setOutputContentTypes(array('text/html'));
+            if ($values = self::parseAcceptHeader($_SERVER['HTTP_ACCEPT'])) {
+                $this->setOutputContentTypes($values);
+            } else {
+                $this->setOutputContentTypes(array('text/html'));
+            }
         } else {
             $this->setOutputContentTypes(array('text/html'));
         }

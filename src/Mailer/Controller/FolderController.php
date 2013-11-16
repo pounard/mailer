@@ -42,7 +42,7 @@ class FolderController extends AbstractController
 
         if (!empty($args)) {
             $name = array_shift($args);
-            return $server->getFolder($name);
+            return $server->getThreadList($name);
         } else {
             return $server->getFolderMap();
         }

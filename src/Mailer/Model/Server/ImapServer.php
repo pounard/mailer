@@ -206,6 +206,12 @@ class ImapServer extends AbstractServer implements ImapServerInterface
             throw new NotFoundError(sprintf("Folder '%s' does not exist", $name));
         }
 
-        return $map;
+        return $map[$name];
+    }
+
+    public function getThreadList($name, $offset = 0, $limit = 100)
+    {
+        print_r(imap_thread($this->connect($name)));
+        die();
     }
 }

@@ -26,4 +26,13 @@ interface ImapServerInterface extends ServerInterface
      * @return Folder
      */
     public function getFolder($name, $refresh = false);
+
+    /**
+     * Get mail list from the given folder
+     *
+     * @param string $name
+     *   Folder name
+     * 
+     */
+    public function getThreadList($name, $offset = 0, $limit = 100);
 }

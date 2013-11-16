@@ -17,6 +17,16 @@ use Mailer\View\View;
 class Dispatcher extends AbstractContainerAware
 {
     /**
+     * Not ideal but working map of mime types and class to use
+     */
+    static $responseMap = array(
+        'text/html' => '\\Mailer\\View\\HtmlRenderer',
+        'application/xhtml+xml' => '\\Mailer\\View\\HtmlRenderer',
+        'application/json' => '\\Mailer\\View\\JsonRenderer',
+        'text/javascript' => '\\Mailer\\View\\JsonRenderer',
+    );
+
+    /**
      * @var RouterInterface
      */
     private $router;
@@ -99,9 +109,21 @@ class Dispatcher extends AbstractContainerAware
                 $response = new DefaultResponse();
             }
 
-            // @todo Find the appropriate renderer depending on accept
-            // and controller return
-            $renderer = new \Mailer\View\HtmlRenderer();
+            // Attempt to determine the renderer depending on the incomming
+            // request. I'm not proud of this algorithm but it works quite
+            // well: ideally I'll move it out
+            $renderer = null;
+            foreach ($request->getOutputContentTypes() as $type) {
+                if (isset(self::$responseMap[$type])) {
+                    $renderer = new self::$responseMap[$type]();
+                    continue;
+                }
+            }
+            if (null === $renderer) {
+                $renderer = new \Mailer\View\HtmlRenderer();
+            }/*
+            $renderer = new \Mailer\View\JsonRenderer();
+             */
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());
