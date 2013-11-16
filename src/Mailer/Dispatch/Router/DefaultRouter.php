@@ -3,6 +3,7 @@
 namespace Mailer\Dispatch\Router;
 
 use Mailer\Controller\ControllerInterface;
+use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\BadRequestError;
 
 /**
@@ -10,8 +11,9 @@ use Mailer\Error\BadRequestError;
  */
 class DefaultRouter implements RouterInterface
 {
-    public function findController($resource)
+    public function findController(RequestInterface $request)
     {
+        $resource = $request->getResource();
         $resource = trim($resource);
         $resource = trim($resource, '/\\');
 

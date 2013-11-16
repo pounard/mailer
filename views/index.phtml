@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Mailer : Server response</title>
-    </head>
-    <body>
-        <h1>Server response</h1>
-        <pre><?php echo print_r($return, true); ?></pre>
-    </body>
+<head>
+<title><?php echo $pagetitle; ?> | <?php echo $title; ?></title>
+</head>
+<body>
+<h1><?php echo $pagetitle; ?></h1>
+<?php echo $content; ?>
+</body>
 </html>

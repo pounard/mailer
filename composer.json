@@ -16,6 +16,7 @@
     },
     "require": {
         "php-config/php-config": "dev-master",
-        "pimple/pimple": "2.*@dev"
+        "pimple/pimple": "2.*@dev",
+        "doctrine/cache": "1.3.*"
     }
 }

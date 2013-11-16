@@ -2,6 +2,8 @@
 
 namespace Mailer\Dispatch\Router;
 
+use Mailer\Dispatch\RequestInterface;
+
 /**
  * Router interface
  */
@@ -14,5 +16,5 @@ interface RouterInterface
      *
      * @return (controller, args)
      */
-    public function findController($resource);
+    public function findController(RequestInterface $request);
 }

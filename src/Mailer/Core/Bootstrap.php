@@ -22,7 +22,9 @@ class Bootstrap
         $container = $component->getContainer();
 
         // Server wide configuration
-        $container['config'] = new MemoryBackend($config['config']);
+        $container['config'] = function () use ($config) {
+            return new MemoryBackend($config['config']);
+        };
 
         // Services
         $container['imap'] = function () use ($config) {

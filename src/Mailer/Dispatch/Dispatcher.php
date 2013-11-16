@@ -9,6 +9,7 @@ use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\LogicError;
 use Mailer\Model\ArrayConverter;
+use Mailer\View\View;
 
 /**
  * Front dispatcher (application runner)
@@ -48,19 +49,39 @@ class Dispatcher extends AbstractContainerAware
         return $this->router;
     }
 
-    protected function executeController(RequestInterface $request, $controller, $args)
+    /**
+     * Execute controller and fetch a view
+     *
+     * @param RequestInterface $request
+     * @param callable|ControllerInterface $controller
+     * @param array $args
+     *
+     * @return View
+     */
+    protected function executeController(
+        RequestInterface $request,
+        $controller,
+        array $args)
     {
+        $view = null;
+
         if ($controller instanceof ContainerAwareInterface) {
             $controller->setContainer($this->getContainer());
         }
 
         if ($controller instanceof ControllerInterface) {
-            return $controller->dispatch($request, $args);
+            $view = $controller->dispatch($request, $args);
         } else if (is_callable($controller)) {
-            return call_user_func($controller, $request, $args);
+            $view = call_user_func($controller, $request, $args);
         } else {
             throw new LogicError("Controller is broken");
         }
+
+        if (!$view instanceof View) {
+            $view = new View($view);
+        }
+
+        return $view;
     }
 
     /**
@@ -79,7 +100,8 @@ class Dispatcher extends AbstractContainerAware
             }
 
             // @todo Find the appropriate renderer depending on accept
-            $renderer = new \Mailer\Renderer\JsonRenderer();
+            // and controller return
+            $renderer = new \Mailer\View\HtmlRenderer();
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());
@@ -88,26 +110,25 @@ class Dispatcher extends AbstractContainerAware
                 $response->setContainer($this->getContainer());
             }
 
-            list($controller, $args) = $this
-                ->getRouter()
-                ->findController(
-                    $request
-                        ->getResource()
+            try {
+                list($controller, $args) = $this
+                    ->getRouter()
+                    ->findController($request);
+
+                // Because one liners are too mainstream
+                $response->send(
+                    $renderer->render(
+                        $this->executeController(
+                            $request,
+                            $controller,
+                            $args
+                        )
+                    )
                 );
 
-            try {
-                $result = $this->executeController($request, $controller, $args);
-
-                if ($renderer->needsSerialize()) {
-                    $converter = new ArrayConverter();
-                    $result = $converter->serialize($result);
-                }
-
-                $response->send($renderer->render($result));
-
+            // Within exception handling the dispatcher will act as a controller
             } catch (\Exception $e) {
-                $renderer = new \Mailer\Renderer\HtmlErrorRenderer();
-                $response->send($renderer->render($e));
+                $response->send($renderer->render(new View(array('e' => $e), 'error')));
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();

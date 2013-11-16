@@ -13,6 +13,7 @@ abstract class AbstractController extends AbstractContainerAware implements
     public function dispatch(RequestInterface $request, array $args)
     {
         $method = null;
+        $view = null;
 
         switch ($request->getMethod()) {
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Mailer\Renderer;
+namespace Mailer\View;
 
 interface RendererInterface
 {
@@ -9,7 +9,7 @@ interface RendererInterface
      *
      * @param mixed $return
      */
-    public function render($return);
+    public function render(View $view);
 
     /**
      * Get return content mime type
@@ -17,11 +17,4 @@ interface RendererInterface
      * @return string
      */
     public function getContentType();
-
-    /**
-     * Does this renderer needs structured data
-     *
-     * @return boolean
-     */
-    public function needsSerialize();
 }
