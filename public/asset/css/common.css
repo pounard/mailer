@@ -83,6 +83,7 @@ body {
     background-image: url(../img/loader-inverse.gif) !important;
 }
 
+/* Inbox layout */
 #main {
     position: absolute;
     top: 34px; /* For nav bar */
@@ -115,4 +116,9 @@ body {
     width: 50%;
     height: 100%;
     display: none; /* Hidden per default */
+}
+
+/* Per default hide sub children */
+#all-folders ul.children ul.children li.folder {
+  display: none;
 }

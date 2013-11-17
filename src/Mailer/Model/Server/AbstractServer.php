@@ -2,9 +2,11 @@
 
 namespace Mailer\Model\Server;
 
+use Mailer\Core\AbstractContainerAware;
 use Mailer\Error\LogicError;
 
-abstract class AbstractServer implements ServerInterface
+abstract class AbstractServer extends AbstractContainerAware implements
+    ServerInterface
 {
     private $host = 'localhost';
 

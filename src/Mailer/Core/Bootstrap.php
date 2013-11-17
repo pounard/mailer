@@ -2,7 +2,6 @@
 
 namespace Mailer\Core;
 
-use Mailer\Core\ContainerAwareInterface;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Model\Server\Native\PhpImapMailReader;
 use Mailer\Model\Server\Native\PhpSmtpServer;
@@ -46,7 +45,7 @@ class Bootstrap
         $container = $component->getContainer();
 
         // Set some global dynamic parameters
-        // FIXME
+        // FIXME -- I said dynamic...
         $container['basepath'] = '';
 
         // Server wide configuration
@@ -55,11 +54,19 @@ class Bootstrap
         };
 
         // Services
-        $container['imap'] = function () use ($config) {
-            return new PhpImapMailReader($config['servers']['imap']);
+        $container['imap'] = function () use ($container, $config) {
+            $service = new PhpImapMailReader($config['servers']['imap']);
+            if ($service instanceof ContainerAwareInterface) {
+                $service->setContainer($container);
+            }
+            return $service;
         };
-        $container['smtp'] = function () use ($config) {
-            return new PhpSmtpServer($config['servers']['stmp']);
+        $container['smtp'] = function () use ($container, $config) {
+            $service = new PhpSmtpServer($config['servers']['stmp']);
+            if ($service instanceof ContainerAwareInterface) {
+                $service->setContainer($container);
+            }
+            return $service;
         };
     }
 }

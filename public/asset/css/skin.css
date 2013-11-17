@@ -32,14 +32,29 @@
     border-left: 1px solid #ccc;
 }
 
+#folders {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
 #folders li, #folders ul {
   list-style: none;
   list-style-image: none;
   list-style-position: outside;
 }
 
-#folders li.folder {
-  padding-left: 24px;
-  line-height: 24px;
-  /* Background! */
+#folders li.special, #folders li.folder {
+  padding-left: 28px;
+  line-height: 28px;
+  background-image: url(../img/icons/folder-14.png);
+  background-position: 4px 7px;
+  background-repeat: no-repeat;
+}
+
+#folders li.special-search {
+  background-image: url(../img/icons/search-14.png);
+}
+
+#folders li.special-starred {
+  background-image: url(../img/icons/starred-on-14.png);
 }
