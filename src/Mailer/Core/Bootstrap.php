@@ -3,8 +3,8 @@
 namespace Mailer\Core;
 
 use Mailer\Dispatch\RequestInterface;
-use Mailer\Model\Server\Native\PhpImapMailReader;
-use Mailer\Model\Server\Native\PhpSmtpServer;
+use Mailer\Server\Native\PhpImapMailReader;
+use Mailer\Server\Native\PhpSmtpServer;
 
 use Config\Impl\Memory\MemoryBackend;
 

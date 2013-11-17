@@ -5,7 +5,7 @@ namespace Mailer\Controller;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
-use Mailer\Model\Server\MailReaderInterface;
+use Mailer\Server\MailReaderInterface;
 
 /**
  * Return parameters from the request

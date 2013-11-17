@@ -1,6 +1,6 @@
 <?php
 
-namespace Mailer\Model\Server\Native;
+namespace Mailer\Server\Native;
 
 use Mailer\Error\LogicError;
 use Mailer\Error\NotFoundError;
@@ -8,8 +8,8 @@ use Mailer\Error\NotImplementedError;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\Server\AbstractServer;
-use Mailer\Model\Server\MailReaderInterface;
+use Mailer\Server\AbstractServer;
+use Mailer\Server\MailReaderInterface;
 use Mailer\Model\Sort;
 use Mailer\Model\Thread;
 

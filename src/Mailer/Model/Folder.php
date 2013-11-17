@@ -3,7 +3,7 @@
 namespace Mailer\Model;
 
 use Mailer\Error\LogicError;
-use Mailer\Model\Server\MailReaderInterface;
+use Mailer\Server\MailReaderInterface;
 
 class Folder implements ExchangeInterface
 {

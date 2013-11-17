@@ -1,8 +1,8 @@
 <?php
 
-namespace Mailer\Model\Server\Native;
+namespace Mailer\Server\Native;
 
-use Mailer\Model\Server\AbstractServer;
+use Mailer\Server\AbstractServer;
 
 class PhpSmtpServer extends AbstractServer
 {

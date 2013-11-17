@@ -1,6 +1,6 @@
 <?php
 
-namespace Mailer\Model\Server;
+namespace Mailer\Server;
 
 use Mailer\Error\LogicError;
 
