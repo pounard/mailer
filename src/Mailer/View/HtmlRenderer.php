@@ -40,9 +40,11 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
 
         $container = $this->getContainer();
         $config = $container['config'];
+        $request = $container['request'];
 
         $ret['title'] = $config['/html/title'];
         $ret['basepath'] = $container['basepath'];
+        $ret['url'] = $container['basepath'] . $request->getResource();
         $ret['pagetitle'] = isset($values['pagetitle']) ? $values['pagetitle'] : null;
 
         return $ret;

@@ -25,6 +25,8 @@ class DefaultRouter implements RouterInterface
             if (in_array("text/html", $accept) || in_array("application/html", $accept)) {
                 return array(new IndexController(), array());
             }
+        } else if ($resource) {
+            // @todo
         }
 
         $path = explode('/', $resource);

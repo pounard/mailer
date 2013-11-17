@@ -22,16 +22,6 @@ abstract class AbstractServer extends AbstractContainerAware implements
 
     private $options = array();
 
-    /**
-     * Default constructor
-     *
-     * @param array $options
-     */
-    public function __construct(array $options)
-    {
-        $this->setOptions($options);
-    }
-
     public function getHost()
     {
         return $this->host;

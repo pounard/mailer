@@ -6,15 +6,15 @@ return array(
     'servers' => array(
         'smtp' => array(
             'host' => 'smtp.example.com',
-            'username' => 'someuser',
-            'password' => 'somepassword',
+            'username' => 'someuser',     // This makes the webmail mono user
+            'password' => 'somepassword', // This makes the webmail mono user
             'secure' => true,
             'secure_invalid' => false,
         ),
         'imap' => array(
             'host' => 'imap.example.com',
-            'username' => 'someuser',
-            'password' => 'somepassword',
+            'username' => 'someuser',     // This makes the webmail mono user
+            'password' => 'somepassword', // This makes the webmail mono user
             'secure' => true,
             'secure_invalid' => false,
         ),

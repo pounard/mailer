@@ -87,8 +87,14 @@ class Dispatcher extends AbstractContainerAware
             throw new LogicError("Controller is broken");
         }
 
-        if (!$view instanceof View) {
+        // Allows controller to return the response directly
+        // and bypass the native rendering pipeline
+        if ($view instanceof ResponseInterface && !$view instanceof View) {
             $view = new View($view);
+        }
+
+        if ($view instanceof ContainerAwareInterface) {
+            $view->setContainer($this->getContainer());
         }
 
         return $view;
@@ -136,16 +142,14 @@ class Dispatcher extends AbstractContainerAware
                     ->getRouter()
                     ->findController($request);
 
-                // Because one liners are too mainstream
-                $response->send(
-                    $renderer->render(
-                        $this->executeController(
-                            $request,
-                            $controller,
-                            $args
-                        )
-                    )
-                );
+                $view = $this->executeController($request, $controller, $args);
+
+                if ($view instanceof ResponseInterface) {
+                    $view->send(null);
+                } else {
+                    // Because one liners are too mainstream
+                    $response->send($renderer->render($view));
+                }
 
             // Within exception handling the dispatcher will act as a controller
             } catch (\Exception $e) {

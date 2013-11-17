@@ -46,6 +46,7 @@ class DefaultRequest implements RequestInterface
         $this->path    = $path;
         $this->content = $content;
         $this->options = $options;
+        $this->method  = $method;
     }
 
     public function getResource()

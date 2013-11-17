@@ -55,6 +55,8 @@ class HttpRequest extends DefaultRequest
             $_GET['resource'] = null;
         }
 
+        // @todo Content should be parsed depending on request content type 
+
         return new self($_GET['resource'], $content, $_GET, $method);
     }
 
