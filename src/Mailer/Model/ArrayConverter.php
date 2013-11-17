@@ -12,11 +12,15 @@ class ArrayConverter
         $ret = array();
 
         if ($data instanceof ExchangeInterface) {
-            $ret = $data->toArray();
-        } else if ($data instanceof \Traversable || is_array($data)) {
+            $data = $data->toArray();
+        }
+
+        if ($data instanceof \Traversable || is_array($data)) {
             foreach ($data as $key => $item) {
                 $ret[$key] = $this->recursiveSerialize($item);
             }
+        } else if ($data instanceof \DateTime) {
+            $ret = $data->format(\DateTime::ISO8601);
         } else {
             $ret = $data;
         }

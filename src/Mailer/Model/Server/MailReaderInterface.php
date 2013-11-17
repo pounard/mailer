@@ -59,6 +59,6 @@ interface MailReaderInterface extends ServerInterface
         $name,
         $offset   = 0,
         $limit    = 100,
-        $sort     = Sort::SORT_DATE,
+        $sort     = Sort::SORT_SEQ,
         $order    = Sort::ORDER_DESC);
 }

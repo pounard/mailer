@@ -6,9 +6,12 @@ use Mailer\Error\LogicError;
 use Mailer\Error\NotFoundError;
 use Mailer\Error\NotImplementedError;
 use Mailer\Model\Folder;
+use Mailer\Model\Mail;
+use Mailer\Model\Person;
 use Mailer\Model\Server\AbstractServer;
 use Mailer\Model\Server\MailReaderInterface;
 use Mailer\Model\Sort;
+use Mailer\Model\Thread;
 
 /**
  * Mail reader implementation using the PHP IMAP extension
@@ -228,15 +231,26 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             }
             $timezone = new \DateTimeZone($timezone);
         } else {
-            $dateString = $data['date'];
             $timezone = null;
         }
 
-        $date = \DateTime::createFromFormat(\DateTime::RFC2822, $dateString, $timezone);
+        if (null === $timezone) {
+            $date = \DateTime::createFromFormat(\DateTime::RFC2822, $dateString);
+        } else {
+            $date = \DateTime::createFromFormat(\DateTime::RFC2822, $dateString, $timezone);
+        }
 
         if ($date) {
           return $date;
         }
+    }
+
+    /**
+     * Decode string
+     */
+    protected function decodeMime($string)
+    {
+        return mb_decode_mimeheader($string);
     }
 
     /**
@@ -250,9 +264,39 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Encode string
      */
+    protected function encodeMime($string)
+    {
+        return mb_encode_mimeheader($string, $this->encoding, 'Q');
+    }
+
+    /**
+     * Encode string
+     */
     protected function encodeUtf7($string)
     {
         return mb_convert_encoding($string, $this->encoding, "UTF7-IMAP");
+    }
+
+    /**
+     * Decode mail
+     */
+    protected function decodeMail($mailString)
+    {
+        $matches = array();
+        $mailString = $this->decodeMime($mailString);
+        if (preg_match('/^(|")([^\<]*)(|")(|\<([^\>]*)\>)$/', trim($mailString), $matches)) {
+            return array($matches[5], $matches[2]);
+        } else {
+            return array($mailString, null);
+        }
+    }
+
+    /**
+     * Encode mail
+     */
+    protected function encodeMail($mail, $name = null)
+    {
+        return $this->encodeMime($name . " <" . $mail . ">");
     }
 
     public function getFolderMap(
@@ -348,11 +392,106 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         return $this->createFolderInstance($name, (array)$data);
     }
 
+    /**
+     * Fetches mail
+     *
+     * @param array $uidList
+     * @param string $name
+     *
+     * @return \Mailer\Model\Mail[]
+     */
+    protected function getMails(array $uidList, $name = null)
+    {
+        $data = imap_fetch_overview(
+            $this->connect($name, OP_READONLY),
+            implode(",", array_unique($uidList)),
+            FT_UID
+        );
+
+        array_walk($data, function (&$value) {
+            $value = (array)$value;
+
+            if (isset($value['subject'])) {
+                $value['subject'] = $this->decodeMime($value['subject']);
+            }
+            if (isset($value['from'])) {
+                list($mail, $pname) = $this->decodeMail($value['from']);
+                $value['from'] = new Person($mail, $pname);
+            }
+            if (isset($value['to'])) {
+                list($mail, $pname) = $this->decodeMail($value['to']);
+                $value['to'] = array(new Person($value['to']));
+            }
+            if (isset($value['date'])) {
+                $value['date'] = $this->parseDate($value['date']);
+            }
+            if (isset($value['msgno'])) {
+                $value['num'] = (int)$value['msgno'];
+            }
+            if (isset($value['in_reply_to'])) {
+                $value['repliesTo'] = (int)$value['in_reply_to'];
+            }
+
+            $mail = new Mail();
+            $mail->fromArray($value);
+            $value = $mail;
+        });
+
+        return $data;
+    }
+
+    /**
+     * Set sort on given resource
+     *
+     * @param resource $resource
+     * @param int $sort
+     */
+    protected function setSort($resource, $sort, $order = Sort::ORDER_DESC)
+    {
+        switch ($sort) {
+
+            case Sort::SORT_DATE:
+                $sort = SORTDATE;
+                break;
+
+            case Sort::SORT_ARRIVAL:
+                $sort = SORTARRIVAL; 
+                break;
+
+            case Sort::SORT_FROM:
+                $sort = SORTFROM;
+                break;
+
+            case Sort::SORT_SUBJECT:
+                $sort = SORTSUBJECT;
+                break;
+
+            case Sort::SORT_TO:
+                $sort = SORTTO;
+                break;
+
+            case Sort::SORT_CC:
+                $sort = SORTCC;
+                break;
+
+            case Sort::SORT_SIZE:
+                $sort = SORTSIZE;
+                break;
+
+            default:
+            case Sort::SORT_SEQ:
+                $sort = 0;
+                break;
+        }
+
+        imap_sort($resource, $sort, Sort::ORDER_DESC === $order);
+    }
+
     public function getThreadSummary(
         $name,
         $offset   = 0,
         $limit    = 100,
-        $sort     = Sort::SORT_DATE,
+        $sort     = Sort::SORT_SEQ,
         $order    = Sort::ORDER_DESC)
     {
         // This implementation will trust the IMAP server thread list instead
@@ -362,9 +501,12 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         $ret = array();
         $map = array();
 
+        $resource = $this->connect($name);
+        //$this->setSort($resource, $sort);
+
         // This will fetch the full thread information of the folder
         // @todo I'm afraid that on huge folders this will be quite slow
-        $data = imap_thread($this->connect($name), SE_UID);
+        $data = imap_thread($resource, SE_UID);
 
         foreach ($data as $key => $value) {
             list($id, $type) = explode('.', $key);
@@ -373,6 +515,70 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $map[$id][$type] = $value;
         }
 
-        print_r($map);die();
+        // Rebuild correct tree
+        foreach ($map as $info) {
+            $ret[$info['branch']]['messages'][] = $info['num'];
+        }
+
+        // The goal is to get thread summary, start by fetching mails
+        array_walk($ret, function (&$value, $id) use ($name) {
+
+            $recentCount = 0;
+            $unseenCount = 0;
+            $startedDate = null;
+            $lastUpdate  = null;
+            $title       = null;
+            $persons     = array();
+
+            // Fetch mail information and go
+            $mails = $this->getMails($value['messages'], $name);
+            foreach ($mails as $mail) {
+
+                if (null === $title) {
+                    $title = $mail->getSubject();
+                }
+
+                $participants = $mail->getTo();
+                $participants[] = $mail->getFrom();
+                foreach ($participants as $person) {
+                    $id = $person->getMail();
+                    if (!isset($persons[$id])) {
+                        $persons[$id] = $person;
+                    }
+                }
+
+                $date = $mail->getDate();
+                if (null !== $date) {
+                    if (null === $lastUpdate || $lastUpdate < $date) {
+                        $lastUpdate = $date;
+                    }
+                    if (null === $startedDate || $date < $startedDate) {
+                        $startedDate = $date;
+                    }
+                }
+
+                if ($mail->isRecent()) {
+                    ++$recentCount;
+                }
+                if (!$mail->isSeen()) {
+                    ++$unseenCount;
+                }
+            }
+
+            $value = new Thread();
+            $value->fromArray(array(
+                'id'           => $id,
+                'title'        => $title,
+                'summary'      => null, // @todo
+                'persons'      => array_values($persons),
+                'startedDate'  => $startedDate,
+                'lastUpdate'   => $lastUpdate,
+                'messageCount' => count($mails),
+                'recentCount'  => $recentCount,
+                'unseenCount'  => $unseenCount,
+            ));
+        });
+
+        return $ret;
     }
 }

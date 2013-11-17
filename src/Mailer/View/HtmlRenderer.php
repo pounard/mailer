@@ -61,7 +61,6 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         }
 
         ob_start();
-
         extract($values);
 
         if (!(bool)include $file) {

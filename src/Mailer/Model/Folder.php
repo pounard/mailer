@@ -148,7 +148,7 @@ class Folder implements ExchangeInterface
         return array(
             'name'         => $this->name,
             'path'         => $this->path,
-            'lastUpdate'   => isset($this->lastUpdate) ? $this->lastUpdate->format(\DateTime::ISO8601) : null,
+            'lastUpdate'   => $this->lastUpdate,
             'messageCount' => $this->messageCount,
             'recentCount'  => $this->recentCount,
             'parent'       => $this->parent,
