@@ -4,24 +4,6 @@ namespace Mailer\Model;
 
 /**
  * Represents a single mail.
- *
-            [subject] => charges locataire/proprio
-            [from] => Cath <g.cath@free.fr>
-            [to] => pounard@processus.org
-            [date] => Wed, 30 Jun 2010 07:10:32 +0200
-            [message_id] => <201006300710.32339.g.cath@free.fr>
-        references : la référence sur l'id de ce message
-        in_reply_to : la réponse à cet identifiant de message
-            [size] => 82871
-            [uid] => 50
-            [msgno] => 1
-            [recent] => 0
-            [flagged] => 0
-            [answered] => 1
-            [deleted] => 0
-            [seen] => 1
-            [draft] => 0
-        [udate] => 1277874904
  */
 class Mail implements ExchangeInterface
 {
