@@ -8,6 +8,10 @@
  * we not bother takign them while they have a very good looking?
  */
 
+a:hover {
+    text-decoration: none;
+}
+
 #nav, #folders {
     background-color: #1B1B1B;
     background-image: linear-gradient(to bottom, #222222, #111111);
@@ -16,8 +20,11 @@
 }
 
 #folders {
-    color: #ffffff;
+    color: #ddd;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+#folders a:hover {
+    color: white;
 }
 
 #nav * {
@@ -25,36 +32,71 @@
 }
 
 #nav .active, #nav a:hover, #nav a:focus {
-    color: #ffffff;
+    color: #fff;
 }
 
 #viewpane {
-    border-left: 1px solid #ccc;
+    border-left: 1px solid #ddd;
 }
 
-#folders {
-  padding-left: 10px;
-  padding-top: 10px;
+#nav {
+    border-bottom: 1px solid #333;
+}
+
+#folders .content {
+    padding-left: 10px;
+      padding-top: 10px;
 }
 
 #folders li, #folders ul {
-  list-style: none;
-  list-style-image: none;
-  list-style-position: outside;
+    list-style: none;
+    list-style-image: none;
+    list-style-position: outside;
 }
 
 #folders li.special, #folders li.folder {
-  padding-left: 28px;
-  line-height: 28px;
-  background-image: url(../img/icons/folder-14.png);
-  background-position: 4px 7px;
-  background-repeat: no-repeat;
+    padding-left: 28px;
+    line-height: 28px;
+    background-image: url(../img/icons/folder-14.png);
+    background-position: 4px 7px;
+    background-repeat: no-repeat;
 }
 
 #folders li.special-search {
-  background-image: url(../img/icons/search-14.png);
+    background-image: url(../img/icons/search-14.png);
 }
 
 #folders li.special-starred {
-  background-image: url(../img/icons/starred-on-14.png);
+    background-image: url(../img/icons/starred-on-14.png);
+}
+
+#special-folders {
+    margin-bottom: 0.5em;
+}
+
+.thread {
+    border-bottom: 1px solid #ddd;
+    padding: 0.5em 1em;
+}
+.thread .subject {
+    font-weight: bold;
+}
+.thread:hover {
+    background-color: #ffffed;
+}
+.thread .summary {
+    color: #808080;
+}
+
+.unseen {
+    background-color: #555;
+    color: white;
+    font-weight: bold;
+    float: right;
+    padding: 0px 2px;
+    border-radius: 6px;
+    font-size: 0.9em;
+}
+.inverse .unseen {
+    
 }

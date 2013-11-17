@@ -534,8 +534,8 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $mails = $this->getMails($value['messages'], $name);
             foreach ($mails as $mail) {
 
-                if (null === $title) {
-                    $title = $mail->getSubject();
+                if (null === $subject) {
+                    $subject = $mail->getSubject();
                 }
 
                 $participants = $mail->getTo();
@@ -568,7 +568,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $value = new Thread();
             $value->fromArray(array(
                 'id'           => $id,
-                'title'        => $title,
+                'subject'      => $subject,
                 'summary'      => null, // @todo
                 'persons'      => array_values($persons),
                 'startedDate'  => $startedDate,

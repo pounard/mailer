@@ -18,7 +18,7 @@ class Thread implements ExchangeInterface
     /**
      * @var string
      */
-    private $title;
+    private $subject;
 
     /**
      * @var string
@@ -70,9 +70,9 @@ class Thread implements ExchangeInterface
      *
      * @return string
      */
-    public function getTitle()
+    public function getSubject()
     {
-        return $this->title;
+        return $this->subject;
     }
 
     /**
@@ -149,7 +149,7 @@ class Thread implements ExchangeInterface
     {
         return array(
             'id'           => $this->id,
-            'title'        => $this->title,
+            'subject'      => $this->subject,
             'summary'      => $this->summary,
             'persons'      => $this->persons,
             'startedDate'  => $this->startedDate,
@@ -164,7 +164,7 @@ class Thread implements ExchangeInterface
     {
         $array += array(
             'id'           => -1,
-            'title'        => '',
+            'subject'      => '',
             'summary'      => null,
             'persons'      => array(),
             'startedDate'  => null,
@@ -175,7 +175,7 @@ class Thread implements ExchangeInterface
         );
 
         $this->id           = (int)$array['id'];
-        $this->title        = $array['title'];
+        $this->subject      = $array['subject'];
         $this->summary      = $array['summary'];
         $this->persons      = $array['persons'];
         $this->startedDate  = $array['startedDate'];

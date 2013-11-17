@@ -1,23 +1,27 @@
 <!-- Main inbox template: this where things gets complicated. -->
 <div id="folders" class="inverse loading">
-  <ul id="special-folders">
-    <li class="special special-starred">
-      Starred
-    </li>
-    <li class="special special-search">
-      Search
-    </li>
-  </ul>
-  <ul id="all-folders">
-    <li class="folder">Folders<ul class="children"></ul></li>
-  </ul>
+  <div class="content">
+    <ul id="special-folders">
+      <li class="special special-starred">
+        Starred
+      </li>
+      <li class="special special-search">
+        Search
+      </li>
+    </ul>
+    <ul id="all-folders">
+      <li class="folder">Folders<ul class="children"></ul></li>
+    </ul>
+  </div>
 </div>
 <div id="views">
   <div id="viewpane">
     <!-- Single mail/thread view! -->
   </div>
   <div id="inbox" class="loading">
-    <!-- Current folder thread list! -->
+    <div class="content">
+      <!-- Current folder thread list! -->
+    </div>
   </div>
   <div class="clear"></div>
 </div>

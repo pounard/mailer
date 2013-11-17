@@ -8,6 +8,11 @@
  * we not bother takign them while they have a very good looking?
  */
 
+/* Few resets */
+* {
+    position: relative;
+}
+
 html, body {
   height: 100%;
 }
@@ -15,7 +20,7 @@ html, body {
 body {
     color: #333333;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.42857;
     position: relative;
 }
@@ -83,14 +88,19 @@ body {
     background-image: url(../img/loader-inverse.gif) !important;
 }
 
+.content {
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+
 /* Inbox layout */
 #main {
     position: absolute;
     top: 34px; /* For nav bar */
     left: 0;
     bottom: 0;
-    right: 0
-    z-index: -1;
+    right: 0;
 }
 #folders {
     position: absolute;
@@ -102,10 +112,12 @@ body {
 }
 #inbox {
     height: 100%;
+    width: auto;
 }
 #views {
     position: absolute;
     left: 200px; /* Width of #folders */
+    width: auto;
     top: 0;
     bottom: 0;
     right: 0;

@@ -13,19 +13,48 @@ var Inbox = {}, Templates = {}, instance;
     return Mustache.render(Templates[template], data);
   };
 
-  Templates.folder = '<li class="{{classes}}">{{name}}<span class="unread">{{unread}}</span><ul class="children"></ul></li>';
+  Templates.folder =
+         '<li class="{{classes}}">'
+       + '{{name}}'
+       + '<span class="unread">{{{unread}}}</span>'
+       + '<ul class="children">'
+       + '</ul>'
+       + '</li>';
+
+  Templates.thread =
+        '<div class="{{classes}}">'
+      + '{{#unseen}}'
+      + '<div class="unseen">{{{unseen}}}</div>'
+      + '{{/unseen}}'
+      + '<div class="people">{{{persons}}}</div>'
+      + '<div class="subject">{{subject}}</div>'
+      + '<div class="date">{{{date}}}</div>'
+      + '<p class="summary">{{{summary}}}</p>'
+      + '</div>';
+
+  Templates.person =
+        '<span class="{{classes}}">'
+      + '<img src="{{image}}" title="{{name}}"/>'
+      + '</span>';
 
   /**
    * Constructor
    */
   Inbox = function () {
-    // HTML elements we will manipulate the most
     this.jInbox          = $("#inbox");
     this.jFolders        = $("#folders");
     this.jSpecialFolders = $("#special-folders");
     this.jAllFolders     = $("#all-folders > li > ul");
     this.jView           = $("#viewpane");
     this.folders         = {};
+    this.threads         = {};
+  };
+
+  /**
+   * Tell if the object is an array
+   */
+  Inbox.isArray = function (value) {
+      return '[object Array]' === Object.prototype.toString.call(value);
   };
 
   /**
@@ -70,6 +99,24 @@ var Inbox = {}, Templates = {}, instance;
   };
 
   /**
+   * Render array of persons
+   */
+  Inbox.prototype.renderPersons = function (persons) {
+    var out = [];
+    if (!Inbox.isArray(persons)) {
+      persons = [persons];
+    }
+    $.each(persons, function (key, person) {
+      out.push(Templates.render("person", {
+        classes: "person",
+        image: "/public/asset/img/icons/person-32.png",
+        name: person.name || person.mail
+      }));
+    });
+    return out.join("");
+  };
+
+  /**
    * Refresh folder display
    */
   Inbox.prototype.addFolder = function (folder) {
@@ -99,7 +146,7 @@ var Inbox = {}, Templates = {}, instance;
     }
 
     jElement = $(Templates.render("folder", {
-      name :   folder.name,
+      name:    folder.name,
       unread:  folder.unreadCount,
       classes: folder.classes.join(" ")
     }));
@@ -112,12 +159,38 @@ var Inbox = {}, Templates = {}, instance;
   };
 
   /**
+   * Refresh thread display
+   */
+  Inbox.prototype.addThread = function (thread, folder) {
+    var jElement;
+
+    if (!thread.classes) {
+      thread.classes = [];
+    }
+    thread.classes.push("thread");
+
+    if (thread.element) {
+      $(thread.element).remove();
+    }
+
+    jElement = $(Templates.render("thread", {
+      persons: this.renderPersons(thread.persons),
+      subject: thread.subject,
+      date:    thread.lastUpdate,
+      unseen:  thread.unseenCount,
+      classes: thread.classes.join(" ")
+    }));
+    thread.element = jElement.get(0);
+
+    this.jInbox.find(".content").append(jElement);
+    this.threads[thread.id] = thread;
+  };
+
+  /**
    * Force refresh of folder list
    */
   Inbox.prototype.refreshFolders = function () {
     var self = this;
-
-    // We don't need this to flicker for displaying the same thing
     Inbox.fetchJson(this.jFolders, {
       'url': '/folder',
       'success': function (data) {
@@ -132,13 +205,14 @@ var Inbox = {}, Templates = {}, instance;
    * Load folder content and display it
    */
   Inbox.prototype.loadFolder = function (folder) {
-
-    var jInbox = $("#inbox");
-
-    jInbox.html(""); // Start by emptying content
-
-    Inbox.load(jInbox, {
-      //
+    var self = this;
+    Inbox.fetchJson(this.jInbox, {
+      'url': '/folder/' + folder.name + '/list',
+      'success': function (data) {
+        $.each(data, function (key, thread) {
+          self.addThread(thread, folder);
+        });
+      }
     });
   };
 
