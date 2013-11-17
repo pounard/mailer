@@ -1,19 +1,31 @@
 /** Integration for INBOX logic. */
 /*jslint browser: true, devel: true, indent: 2 */
 
-var Inbox = {}, instance;
+var Inbox = {}, Templates = {}, instance;
 
 (function ($) {
   "use strict";
+
+  Templates.render = function (template, data) {
+    if (!Templates[template]) {
+      throw "Template " + template + " does not exist";
+    }
+    return Mustache.render(Templates[template], data);
+  };
+
+  Templates.folder = '<li class="{{classes}}">{{name}}<span class="unread">{{unread}}</span><ul class="children"></ul></li>';
 
   /**
    * Constructor
    */
   Inbox = function () {
     // HTML elements we will manipulate the most
-    this.jInbox   = $("#inbox");
-    this.jFolders = $("#folders");
-    this.jView    = $("#viewpane");
+    this.jInbox          = $("#inbox");
+    this.jFolders        = $("#folders");
+    this.jSpecialFolders = $("#special-folders");
+    this.jAllFolders     = $("#all-folders > li > ul");
+    this.jView           = $("#viewpane");
+    this.folders         = {};
   };
 
   /**
@@ -58,16 +70,59 @@ var Inbox = {}, instance;
   };
 
   /**
+   * Refresh folder display
+   */
+  Inbox.prototype.addFolder = function (folder) {
+    var jParent, jElement, parent;
+
+    if (!folder.classes) {
+      folder.classes = [];
+    }
+    folder.classes.push("folder");
+
+    if (folder.parent && this.folders[folder.parent]) {
+      parent = this.folders[folder.parent];
+      parent.classes.push("parent");
+      folder.classes.push("child");
+      jParent = $(parent.children);
+    } else {
+      if (folder.special) {
+        jParent = this.jSpecialFolders;
+      } else {
+        jParent = this.jAllFolders;
+      }
+    }
+
+    if (folder.element) {
+      // FIXME This will remove children as well => BAD
+      $(folder.element).remove();
+    }
+
+    jElement = $(Templates.render("folder", {
+      name :   folder.name,
+      unread:  folder.unreadCount,
+      classes: folder.classes.join(" ")
+    }));
+    folder.element  = jElement.get(0);
+    folder.children = jElement.find('ul.children').get(0);
+
+    jParent.append(jElement);
+
+    this.folders[folder.path] = folder;
+  };
+
+  /**
    * Force refresh of folder list
    */
   Inbox.prototype.refreshFolders = function () {
     var self = this;
+
     // We don't need this to flicker for displaying the same thing
     Inbox.fetchJson(this.jFolders, {
       'url': '/folder',
       'success': function (data) {
         $.each(data, function (path, folder) {
-          self.jFolders.append(path + "<br/>");
+          self.addFolder(folder);
         });
       }
     });

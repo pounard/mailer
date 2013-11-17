@@ -6,6 +6,7 @@ vendor/*
 # Project specifics
 etc/config.php
 etc/nginx/nginx.conf
+public/asset/img/icons/backup
 
 # Eclipse IDE files
 .buildpath

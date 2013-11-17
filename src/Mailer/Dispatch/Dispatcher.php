@@ -121,9 +121,8 @@ class Dispatcher extends AbstractContainerAware
             }
             if (null === $renderer) {
                 $renderer = new \Mailer\View\HtmlRenderer();
-            }/*
-            $renderer = new \Mailer\View\JsonRenderer();
-             */
+            }
+            //$renderer = new \Mailer\View\JsonRenderer();
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());

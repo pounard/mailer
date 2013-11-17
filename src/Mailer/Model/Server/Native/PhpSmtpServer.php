@@ -1,8 +1,10 @@
 <?php
 
-namespace Mailer\Model\Server;
+namespace Mailer\Model\Server\Native;
 
-class SmtpServer extends AbstractServer
+use Mailer\Model\Server\AbstractServer;
+
+class PhpSmtpServer extends AbstractServer
 {
     const PORT = 25;
 

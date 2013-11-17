@@ -31,3 +31,15 @@
 #viewpane {
     border-left: 1px solid #ccc;
 }
+
+#folders li, #folders ul {
+  list-style: none;
+  list-style-image: none;
+  list-style-position: outside;
+}
+
+#folders li.folder {
+  padding-left: 24px;
+  line-height: 24px;
+  /* Background! */
+}
