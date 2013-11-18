@@ -4,19 +4,28 @@ namespace Mailer\Dispatch\Router;
 
 use Mailer\Controller\ControllerInterface;
 use Mailer\Controller\IndexController;
+use Mailer\Core\AbstractContainerAware;
+use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\NotFoundError;
 
 /**
  * Router interface
  */
-class DefaultRouter implements RouterInterface
+class DefaultRouter extends AbstractContainerAware implements RouterInterface
 {
     public function findController(RequestInterface $request)
     {
         $resource = $request->getResource();
         $resource = trim($resource);
         $resource = trim($resource, '/\\');
+
+        // Other special case: security, if no session is set and resource
+        // is not login, redirect
+        $container = $this->getContainer();
+        if (!$container['session']->isAuthenticated() && $resource !== 'login' && 'login/' !== substr($resource, 0, 7)) {
+            return array(new RedirectResponse('login'), array());
+        }
 
         // Special case: when requested is HTML and no path is given
         // provide the index controller
@@ -25,8 +34,6 @@ class DefaultRouter implements RouterInterface
             if (in_array("text/html", $accept) || in_array("application/html", $accept)) {
                 return array(new IndexController(), array());
             }
-        } else if ($resource) {
-            // @todo
         }
 
         $path = explode('/', $resource);
