@@ -161,9 +161,9 @@ class Dispatcher extends AbstractContainerAware
                     // login controller whenever the user is not authenticated
                     $container = $this->getContainer();
                     if ($container['session']->isAuthenticated()) {
-                        $response->send($renderer->render(new view(array('e' => $e), 'security/unauth')));
+                        $response->send($renderer->render(new view(array('e' => $e), 'app/unauth')));
                     } else {
-                        $response = new RedirectResponse('login');
+                        $response = new RedirectResponse('app/login');
                         $response->send(null);
                     }
                 } else {
