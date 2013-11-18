@@ -11,7 +11,7 @@ class LoginController extends AbstractController
 {
     public function getAction(RequestInterface $request, array $args)
     {
-        return new View(array(), 'login');
+        return new View(array(), 'security/login');
     }
 
     public function postAction(RequestInterface $request, array $args)
