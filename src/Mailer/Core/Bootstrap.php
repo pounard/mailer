@@ -51,6 +51,9 @@ class Bootstrap
         $container['basepath'] = '';
         $container['request'] = $request;
 
+        $container['session'] = new Session();
+        $container['session']->start();
+
         // Server wide configuration
         $container['config'] = function () use ($config) {
             return new MemoryBackend($config['config']);
