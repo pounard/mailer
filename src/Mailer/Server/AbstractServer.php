@@ -99,12 +99,22 @@ abstract class AbstractServer extends AbstractContainerAware implements
         }
 
         $this->initFromOptions($options);
-
-        $this->options = $options;
     }
 
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function setContainer(\Pimple $container)
+    {
+        parent::setContainer($container);
+
+        if ($account = $container['session']->getAccount()) {
+            $this->setCredentials(
+                $account->getUsername(),
+                $account->getPassword()
+            );
+        }
     }
 }

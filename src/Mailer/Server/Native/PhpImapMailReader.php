@@ -124,7 +124,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      *
      * @return string
      */
-    protected function getMailboxName($name = null)
+    public function getMailboxName($name = null)
     {
         $mailbox = "{" . $this->getHost() . ":" . $this->getPort() . "/imap";
         if ($this->isSecure()) {
@@ -166,7 +166,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      *
      * @return resource
      */
-    protected function getResource($name = null, $flags = 0)
+    public function getResource($name = null, $flags = 0)
     {
         $realFlags = $flags;
 
@@ -232,7 +232,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      *   DateTime instance with the timezone optionnaly set or null if date
      *   could not be parsed
      */
-    protected function parseDate($dateString)
+    public function parseDate($dateString)
     {
         if (strpos($dateString, " (")) {
             list($dateString, $timezone) = explode(" (", $dateString);
@@ -258,7 +258,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Decode string
      */
-    protected function decodeMime($string)
+    public function decodeMime($string)
     {
         return mb_decode_mimeheader($string);
     }
@@ -266,7 +266,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Decode string
      */
-    protected function decodeUtf7($string)
+    public function decodeUtf7($string)
     {
         return mb_convert_encoding($string, "UTF7-IMAP", $this->encoding);
     }
@@ -274,7 +274,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Encode string
      */
-    protected function encodeMime($string)
+    public function encodeMime($string)
     {
         return mb_encode_mimeheader($string, $this->encoding, 'Q');
     }
@@ -282,7 +282,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Encode string
      */
-    protected function encodeUtf7($string)
+    public function encodeUtf7($string)
     {
         return mb_convert_encoding($string, $this->encoding, "UTF7-IMAP");
     }
@@ -290,7 +290,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Decode mail
      */
-    protected function decodeMail($mailString)
+    public function decodeMail($mailString)
     {
         $matches = array();
         $mailString = $this->decodeMime($mailString);
@@ -304,7 +304,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Encode mail
      */
-    protected function encodeMail($mail, $name = null)
+    public function encodeMail($mail, $name = null)
     {
         return $this->encodeMime($name . " <" . $mail . ">");
     }
@@ -362,7 +362,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Create folder instance from IMAP server data
      */
-    protected function createFolderInstance($path, array $data = array())
+    public function createFolderInstance($path, array $data = array())
     {
         if (false !== ($pos = strrpos($path, $this->delimiter))) {
             $parent = substr($path, 0, $pos);
@@ -410,30 +410,32 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      *
      * @return \Mailer\Model\Mail[]
      */
-    protected function getMails(array $uidList, $name = null)
+    public function getMails(array $uidList, $name = null)
     {
+        $self = $this;
+
         $data = imap_fetch_overview(
             $this->getResource($name, OP_READONLY),
             implode(",", array_unique($uidList)),
             FT_UID
         );
 
-        array_walk($data, function (&$value) {
+        array_walk($data, function (&$value) use ($self) {
             $value = (array)$value;
 
             if (isset($value['subject'])) {
-                $value['subject'] = $this->decodeMime($value['subject']);
+                $value['subject'] = $self->decodeMime($value['subject']);
             }
             if (isset($value['from'])) {
-                list($mail, $pname) = $this->decodeMail($value['from']);
+                list($mail, $pname) = $self->decodeMail($value['from']);
                 $value['from'] = new Person($mail, $pname);
             }
             if (isset($value['to'])) {
-                list($mail, $pname) = $this->decodeMail($value['to']);
+                list($mail, $pname) = $self->decodeMail($value['to']);
                 $value['to'] = array(new Person($value['to']));
             }
             if (isset($value['date'])) {
-                $value['date'] = $this->parseDate($value['date']);
+                $value['date'] = $self->parseDate($value['date']);
             }
             if (isset($value['msgno'])) {
                 $value['num'] = (int)$value['msgno'];
@@ -510,6 +512,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
 
         $ret = array();
         $map = array();
+        $self = $this;
 
         $resource = $this->getResource($name);
         //$this->setSort($resource, $sort);
@@ -531,7 +534,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         }
 
         // The goal is to get thread summary, start by fetching mails
-        array_walk($ret, function (&$value, $id) use ($name) {
+        array_walk($ret, function (&$value, $id) use ($name, $self) {
 
             $recentCount = 0;
             $unseenCount = 0;
@@ -541,7 +544,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $persons     = array();
 
             // Fetch mail information and go
-            $mails = $this->getMails($value['messages'], $name);
+            $mails = $self->getMails($value['messages'], $name);
             foreach ($mails as $mail) {
 
                 if (null === $subject) {

@@ -3,7 +3,7 @@
 
 var Inbox = {}, Templates = {}, instance;
 
-(function ($) {
+(function ($, document) {
   "use strict";
 
   Templates.render = function (template, data) {
@@ -216,9 +216,9 @@ var Inbox = {}, Templates = {}, instance;
     });
   };
 
-  $("body").on('load', function () {
+  $(document).ready(function () {
     instance = new Inbox();
     instance.refreshFolders();
   });
 
-}(jQuery));
+}(jQuery, document));
