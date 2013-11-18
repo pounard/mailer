@@ -14,7 +14,7 @@ abstract class AbstractController extends AbstractContainerAware implements
     public function dispatch(RequestInterface $request, array $args)
     {
         if (!$this->isAuthorized($request, $args)) {
-            //throw new UnauthorizedError();
+            throw new UnauthorizedError();
         }
 
         switch ($request->getMethod()) {
