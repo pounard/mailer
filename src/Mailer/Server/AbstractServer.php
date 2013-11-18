@@ -90,10 +90,6 @@ abstract class AbstractServer extends AbstractContainerAware implements
         if (!isset($options['port'])) {
             $this->port = $this->getDefaultPort($this->secure);
         }
-
-        if (empty($this->username)) {
-            throw new LogicError("Cannot use a server without a username");
-        }
     }
 
     public function setOptions(array $options)

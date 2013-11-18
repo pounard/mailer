@@ -80,16 +80,16 @@ class Bootstrap
 
         // Services
         $container['imap'] = function () use ($container, $config) {
-            $service = new CachedMailReader(
-                new PhpImapMailReader($config['servers']['imap'])
-            );
+            $service = new CachedMailReader(new PhpImapMailReader());
+            $service->setOptions($config['servers']['imap']);
             if ($service instanceof ContainerAwareInterface) {
                 $service->setContainer($container);
             }
             return $service;
         };
         $container['smtp'] = function () use ($container, $config) {
-            $service = new PhpSmtpServer($config['servers']['stmp']);
+            $service = new PhpSmtpServer();
+            $service->setOptions($config['servers']['stmp']);
             if ($service instanceof ContainerAwareInterface) {
                 $service->setContainer($container);
             }

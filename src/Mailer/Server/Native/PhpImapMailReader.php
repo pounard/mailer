@@ -95,10 +95,8 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      */
     private $encoding;
 
-    public function __construct(array $options)
+    public function __construct()
     {
-        parent::__construct($options);
-
         if (isset($options['encoding'])) {
             $this->encoding = $options['encoding'];
         } else {

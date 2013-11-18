@@ -5,14 +5,14 @@ namespace Mailer\Dispatch;
 use Mailer\Controller\ControllerInterface;
 use Mailer\Core\AbstractContainerAware;
 use Mailer\Core\ContainerAwareInterface;
+use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\LogicError;
+use Mailer\Error\UnauthorizedError;
 use Mailer\Model\ArrayConverter;
 use Mailer\View\View;
-use Mailer\Error\UnauthorizedError;
 use Mailer\View\HtmlRenderer;
-use Mailer\Dispatch\Http\RedirectResponse;
 
 /**
  * Front dispatcher (application runner)
@@ -92,7 +92,7 @@ class Dispatcher extends AbstractContainerAware
 
         // Allows controller to return the response directly
         // and bypass the native rendering pipeline
-        if ($view instanceof ResponseInterface && !$view instanceof View) {
+        if (!$view instanceof ResponseInterface && !$view instanceof View) {
             $view = new View($view);
         }
         if ($view instanceof ContainerAwareInterface) {
