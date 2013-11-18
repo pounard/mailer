@@ -32,7 +32,12 @@ interface ServerInterface
      *
      * @return string
      */
-    public function getPassword(); 
+    public function getPassword();
+
+    /**
+     * Reset this object credentials
+     */
+    public function setCredentials($username, $password, $reconnect = false);
 
     /**
      * Is connection secure

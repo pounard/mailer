@@ -15,7 +15,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
     public function findTemplate($template = null)
     {
         if (empty($template)) {
-            $template = 'debug';
+            $template = 'app/debug';
         }
 
         return 'views/' . $template . '.phtml';
@@ -89,7 +89,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
             $this->prepareVariables(
                 array('content' => $partial)
             ),
-            'layout'
+            'app/layout'
         );
     }
 

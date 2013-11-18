@@ -1,11 +1,12 @@
 <?php
 
-namespace Mailer\Controller;
+namespace Mailer\Controller\App;
 
+use Mailer\Controller\AbstractController;
+use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Security\Account;
 use Mailer\View\View;
-use Mailer\Dispatch\Http\RedirectResponse;
 
 class LoginController extends AbstractController
 {
@@ -18,7 +19,7 @@ class LoginController extends AbstractController
 
     public function getAction(RequestInterface $request, array $args)
     {
-        return new View(array(), 'security/login');
+        return new View(array(), 'app/login');
     }
 
     public function postAction(RequestInterface $request, array $args)

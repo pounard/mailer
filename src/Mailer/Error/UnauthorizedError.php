@@ -5,7 +5,7 @@ namespace Mailer\Error;
 /**
  * 403
  */
-class UnauthorizedError extends \RuntimeException
+class UnauthorizedError extends \RuntimeException implements Error
 {
     public function __construct($message = null, $code = null, $previous = null)
     {

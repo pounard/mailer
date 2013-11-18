@@ -42,6 +42,20 @@ abstract class AbstractServer extends AbstractContainerAware implements
         return $this->password;
     }
 
+    public function setCredentials($username, $password, $reconnect = false)
+    {
+        if (!$reconnect && $this->isConnected()) {
+            throw new LogicError(sprintf("Cannot change credential while connected"));
+        }
+
+        $options = array(
+            'username' => $username,
+            'password' => $password,
+        );
+
+        $this->initFromOptions($options);
+    }
+
     public function isSecure()
     {
         return $this->secure;

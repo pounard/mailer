@@ -2,8 +2,8 @@
 
 namespace Mailer\Dispatch\Router;
 
+use Mailer\Controller\App\IndexController;
 use Mailer\Controller\ControllerInterface;
-use Mailer\Controller\IndexController;
 use Mailer\Core\AbstractContainerAware;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;

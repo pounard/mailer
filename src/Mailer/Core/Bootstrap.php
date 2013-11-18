@@ -3,6 +3,7 @@
 namespace Mailer\Core;
 
 use Mailer\Dispatch\RequestInterface;
+use Mailer\Error\ConfigError;
 use Mailer\Server\Cache\CachedMailReader;
 use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
@@ -51,7 +52,25 @@ class Bootstrap
         $container['basepath'] = '';
         $container['request'] = $request;
 
-        $container['session'] = new Session();
+        // Set some various services
+        foreach ($config['services'] as $key => $value) {
+            if (is_callable($value)) {
+                $container[$key] = function () use ($container, $value) {
+                    call_user_func($value, $container);
+                };
+            } else if (class_exists($value)) {
+                $container[$key] = function () use ($container, $value) {
+                    $service = new $value();
+                    if ($service instanceof ContainerAwareInterface) {
+                        $service->setContainer($container);
+                    }
+                    return $service;
+                };
+            } else {
+                throw new ConfigError(sprintf("Invalid service definition '%s'", $key));
+            }
+        }
+
         $container['session']->start();
 
         // Server wide configuration

@@ -47,6 +47,11 @@ abstract class AbstractServerProxy extends AbstractContainerAware implements
         return $this->nested->getPassword();
     }
 
+    public function setCredentials($username, $password, $reconnect = false)
+    {
+        $this->nested->setCredentials($username, $password, $reconnect);
+    }
+
     public function isSecure()
     {
         return $this->nested->isSecure();

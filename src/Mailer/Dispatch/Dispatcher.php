@@ -169,10 +169,10 @@ class Dispatcher extends AbstractContainerAware
                 } else {
                     // Unauthorized error will end up releasing a 403 error in
                     // the client demanded protocol
-                    $response->send($renderer->render(new View(array('e' => $e), 'error')));
+                    $response->send($renderer->render(new View(array('e' => $e), 'app/error')));
                 }
             } catch (\Exception $e) {
-                $response->send($renderer->render(new View(array('e' => $e), 'error')));
+                $response->send($renderer->render(new View(array('e' => $e), 'app/error')));
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();
