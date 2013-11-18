@@ -75,6 +75,11 @@ class Dispatcher extends AbstractContainerAware
     {
         $view = null;
 
+        // Controller can be a response if router told us so
+        if ($controller instanceof ResponseInterface) {
+            return $controller;
+        }
+
         if ($controller instanceof ContainerAwareInterface) {
             $controller->setContainer($this->getContainer());
         }
@@ -92,7 +97,6 @@ class Dispatcher extends AbstractContainerAware
         if ($view instanceof ResponseInterface && !$view instanceof View) {
             $view = new View($view);
         }
-
         if ($view instanceof ContainerAwareInterface) {
             $view->setContainer($this->getContainer());
         }
