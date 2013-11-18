@@ -28,6 +28,8 @@ class RedirectResponse extends AbstractContainerAware implements
      */
     public function __construct($url, $code = 302)
     {
+        $this->url = $url;
+        $this->code = $code;
     }
 
     public function send($output)
