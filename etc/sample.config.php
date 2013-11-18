@@ -2,6 +2,17 @@
 return array(
     'config' => array(
         'debug' => false,
+        'html' => array(
+            'title' => "My webmail",
+        ),
+    ),
+    'services' => array(
+        'auth' => '\Mailer\Security\Auth\ImapAuthProvider',
+        'session' => '\Mailer\Core\Session',
+    ),
+    'redis' => array(
+        'host' => 'localhost',
+        'port' => null,
     ),
     'servers' => array(
         'smtp' => array(

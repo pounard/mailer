@@ -2,6 +2,7 @@
 
 namespace Mailer\Server;
 
+use Mailer\Model\Folder;
 use Mailer\Model\Sort;
 
 /**
@@ -60,5 +61,6 @@ interface MailReaderInterface extends ServerInterface
         $offset   = 0,
         $limit    = 100,
         $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_DESC);
+        $order    = Sort::ORDER_DESC,
+        $refresh = false);
 }

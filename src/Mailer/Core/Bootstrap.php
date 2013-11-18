@@ -9,6 +9,7 @@ use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
 
 use Config\Impl\Memory\MemoryBackend;
+use Doctrine\Common\Cache\RedisCache;
 
 /**
  * OK this is far from ideal nevertheless it works
@@ -80,7 +81,18 @@ class Bootstrap
 
         // Services
         $container['imap'] = function () use ($container, $config) {
-            $service = new CachedMailReader(new PhpImapMailReader());
+            if ($config['redis']) {
+                $redis = new \Redis();
+                $redis->connect($config['redis']['host']);
+                $cache = new RedisCache();
+                $cache->setRedis($redis);
+            }
+            if ($cache) {
+                $service = new CachedMailReader(new PhpImapMailReader(), $cache);
+            } else {
+                $service = new PhpImapMailReader();
+            }
+
             $service->setOptions($config['servers']['imap']);
             if ($service instanceof ContainerAwareInterface) {
                 $service->setContainer($container);

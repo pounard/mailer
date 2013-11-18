@@ -8,7 +8,7 @@ use Mailer\Server\MailReaderInterface;
 /**
  * Imap server connection using the PHP IMAP extension
  */
-class CachedMailReader extends AbstractServerProxy implements
+class CachedMailReader extends AbstractCachedServerProxy implements
     MailReaderInterface
 {
     public function getFolderMap(
@@ -16,31 +16,56 @@ class CachedMailReader extends AbstractServerProxy implements
         $onlySubscribed = true,
         $refresh        = false)
     {
-        return $this->nested->getFolderMap(
+        $id = 'map';
+
+        if ($map = $this->fetch($id)) {
+            return $map;
+        }
+
+        $map = $this->nested->getFolderMap(
             $parent,
             $onlySubscribed,
             $refresh
         );
+
+        $this->save($id, $map);
+
+        return $map;
     }
 
     public function getFolder($name, $refresh = false)
     {
-        return $this->nested->getFolder($name, $refresh);
+        $id = 'f:' . $name;
+
+        if (!$refresh && ($ret = $this->fetch($id))) {
+            return $ret;
+        }
+
+        $ret = $this->nested->getFolder($name, $refresh);
+
+        $this->save($id, $ret);
+
+        return $ret;
     }
 
     public function getThreadSummary(
         $name,
-        $offset   = 0,
-        $limit    = 100,
-        $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_DESC)
+        $offset  = 0,
+        $limit   = 100,
+        $sort    = Sort::SORT_SEQ,
+        $order   = Sort::ORDER_DESC,
+        $refresh = false)
     {
-        return $this->nested->getThreadSummary(
-            $name,
-            $offset,
-            $limit,
-            $sort,
-            $order
-        );
+        $id = 't:' . $name . ':' . $offset . ':' . $limit;
+
+        if (!$refresh && ($ret = $this->fetch($id))) {
+            return $ret;
+        }
+
+        $ret = $this->nested->getThreadSummary($name, $offset, $limit, $sort, $order);
+
+        $this->save($id, $ret);
+
+        return $ret;
     }
 }
