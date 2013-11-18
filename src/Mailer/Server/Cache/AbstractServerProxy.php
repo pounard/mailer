@@ -67,6 +67,11 @@ abstract class AbstractServerProxy extends AbstractContainerAware implements
         return $this->nested->getDefaultPort($isSecure);
     }
 
+    public function connect()
+    {
+        return $this->nested->connect();
+    }
+
     public function isConnected()
     {
         return $this->nested->isConnected();
