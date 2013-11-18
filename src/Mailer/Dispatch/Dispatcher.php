@@ -10,6 +10,9 @@ use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\LogicError;
 use Mailer\Model\ArrayConverter;
 use Mailer\View\View;
+use Mailer\Error\UnauthorizedError;
+use Mailer\View\HtmlRenderer;
+use Mailer\Dispatch\Http\RedirectResponse;
 
 /**
  * Front dispatcher (application runner)
@@ -74,11 +77,6 @@ class Dispatcher extends AbstractContainerAware
         array $args)
     {
         $view = null;
-
-        // Controller can be a response if router told us so
-        if ($controller instanceof ResponseInterface) {
-            return $controller;
-        }
 
         if ($controller instanceof ContainerAwareInterface) {
             $controller->setContainer($this->getContainer());
@@ -156,6 +154,23 @@ class Dispatcher extends AbstractContainerAware
                 }
 
             // Within exception handling the dispatcher will act as a controller
+            } catch (UnauthorizedError $e) {
+                // FIXME: This code should not live here
+                if ($renderer instanceof HtmlRenderer) {
+                    // If HTML is the demanded protocol then redirect to the
+                    // login controller whenever the user is not authenticated
+                    $container = $this->getContainer();
+                    if ($container['session']->isAuthenticated()) {
+                        $response->send($renderer->render(new view(array('e' => $e), 'security/unauth')));
+                    } else {
+                        $response = new RedirectResponse('login');
+                        $response->send(null);
+                    }
+                } else {
+                    // Unauthorized error will end up releasing a 403 error in
+                    // the client demanded protocol
+                    $response->send($renderer->render(new View(array('e' => $e), 'error')));
+                }
             } catch (\Exception $e) {
                 $response->send($renderer->render(new View(array('e' => $e), 'error')));
             }

@@ -56,6 +56,13 @@ interface ServerInterface
     public function getDefaultPort($isSecure);
 
     /**
+     * Force connection to open
+     *
+     * @return boolean
+     */
+    public function connect();
+
+    /**
      * Is this server currently connected
      *
      * @return boolean

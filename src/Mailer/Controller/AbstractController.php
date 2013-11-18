@@ -6,14 +6,16 @@ use Mailer\Core\AbstractContainerAware;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\MethodNotAllowedError;
+use Mailer\Error\UnauthorizedError;
 
 abstract class AbstractController extends AbstractContainerAware implements
     ControllerInterface
 {
     public function dispatch(RequestInterface $request, array $args)
     {
-        $method = null;
-        $view = null;
+        if (!$this->isAuthorized($request, $args)) {
+            throw new UnauthorizedError();
+        }
 
         switch ($request->getMethod()) {
 
@@ -32,6 +34,13 @@ abstract class AbstractController extends AbstractContainerAware implements
             default:
                 throw new MethodNotAllowedError();
         }
+    }
+
+    public function isAuthorized(RequestInterface $request, array $args)
+    {
+        $container = $this->getContainer();
+
+        return $container['session']->isAuthenticated();
     }
 
     public function deleteAction(RequestInterface $request, array $args)

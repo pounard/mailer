@@ -9,6 +9,13 @@ use Mailer\Dispatch\Http\RedirectResponse;
 
 class LoginController extends AbstractController
 {
+    public function isAuthorized(RequestInterface $request, array $args)
+    {
+        $container = $this->getContainer();
+
+        return !$container['session']->isAuthenticated();
+    }
+
     public function getAction(RequestInterface $request, array $args)
     {
         return new View(array(), 'security/login');

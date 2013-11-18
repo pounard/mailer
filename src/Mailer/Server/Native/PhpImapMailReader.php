@@ -143,6 +143,18 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         return $mailbox;
     }
 
+    public function connect()
+    {
+        if (!$this->isConnected()) {
+            try {
+                $this->getResource();
+            } catch (\Exception $e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Connect or reconnect to given mailbox, or open an half connection
      *
@@ -156,7 +168,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
      *
      * @return resource
      */
-    protected function connect($name = null, $flags = 0)
+    protected function getResource($name = null, $flags = 0)
     {
         $realFlags = $flags;
 
@@ -311,7 +323,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         $map = array();
         $folder = null;
 
-        $folders = imap_getmailboxes($this->connect($parent), $this->getMailboxName($parent), "*");
+        $folders = imap_getmailboxes($this->getResource($parent), $this->getMailboxName($parent), "*");
 
         // Sorting ensures that direct parents will always be processed
         // before their child, and thus allow us having a fail-safe
@@ -385,7 +397,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
 
     public function getFolder($name, $refresh = false)
     {
-        if (!$data = imap_check($this->connect($name, OP_READONLY))) {
+        if (!$data = imap_check($this->getResource($name, OP_READONLY))) {
             throw new NotFoundError("Folder does not exist");
         }
 
@@ -403,7 +415,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     protected function getMails(array $uidList, $name = null)
     {
         $data = imap_fetch_overview(
-            $this->connect($name, OP_READONLY),
+            $this->getResource($name, OP_READONLY),
             implode(",", array_unique($uidList)),
             FT_UID
         );
@@ -501,7 +513,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         $ret = array();
         $map = array();
 
-        $resource = $this->connect($name);
+        $resource = $this->getResource($name);
         //$this->setSort($resource, $sort);
 
         // This will fetch the full thread information of the folder

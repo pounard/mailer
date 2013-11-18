@@ -14,10 +14,16 @@ class LogicError extends \RuntimeException implements Error
 
     public function __construct($message = null, $code = null, $previous = null)
     {
-        parent::__construct(
-            sprintf("(%d) %s", $this->getStatusCode(), $message),
-            $code,
-            $previous
-        );
+        if (null === $code) {
+            $code = $this->getStatusCode();
+        }
+
+        if ($message !== null) {
+            sprintf("(%d) %s", $code, $message);
+        } else {
+            sprintf("(%d) Error", $code);
+        }
+
+        parent::__construct($message, $code, $previous);
     }
 }

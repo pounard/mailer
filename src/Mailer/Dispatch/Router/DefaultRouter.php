@@ -20,13 +20,6 @@ class DefaultRouter extends AbstractContainerAware implements RouterInterface
         $resource = trim($resource);
         $resource = trim($resource, '/\\');
 
-        // Other special case: security, if no session is set and resource
-        // is not login, redirect
-        $container = $this->getContainer();
-        if (!$container['session']->isAuthenticated() && $resource !== 'login' && 'login/' !== substr($resource, 0, 7)) {
-            return array(new RedirectResponse('login'), array());
-        }
-
         // Special case: when requested is HTML and no path is given
         // provide the index controller
         if (empty($resource)) {
