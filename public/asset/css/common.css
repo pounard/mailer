@@ -30,6 +30,10 @@ body {
     padding: 0;
 }
 
+a, a:hover {
+    text-decoration: none;
+}
+
 #nav {
     top: 0;
     left: 0;
@@ -49,6 +53,16 @@ body {
     font-size: 13px;
 }
 
+#nav .brand a {
+    line-height: 20px;
+    font-size: 1.1em;
+    padding: 7px;
+}
+
+.nav-left {
+    float: left;
+}
+
 #nav ul {
     padding: 0;
     margin: 0;
@@ -61,10 +75,8 @@ body {
 
 #nav a {
     float: none;
-    padding: 7px 15px;
-    text-decoration: none;
+    padding: 7px 11px;
     display: block;
-    text-decoration: none;
 }
 
 #nav .active, #nav a:hover, #nav a:focus {
@@ -89,9 +101,9 @@ body {
 }
 
 .content {
-  position: relative;
-  width: 100%;
-  margin: 0;
+    position: relative;
+    width: 100%;
+    margin: 0;
 }
 
 /* Inbox layout */

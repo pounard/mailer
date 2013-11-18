@@ -15,8 +15,10 @@ var Inbox = {}, Templates = {}, instance;
 
   Templates.folder =
          '<li class="{{classes}}">'
+       + '<a href="#">'
        + '{{name}}'
        + '<span class="unread">{{{unread}}}</span>'
+       + '</a>'
        + '<ul class="children">'
        + '</ul>'
        + '</li>';
@@ -27,9 +29,11 @@ var Inbox = {}, Templates = {}, instance;
       + '<div class="unseen">{{{unseen}}}</div>'
       + '{{/unseen}}'
       + '<div class="people">{{{persons}}}</div>'
+      + '<a href="#">'
       + '<div class="subject">{{subject}}</div>'
       + '<div class="date">{{{date}}}</div>'
       + '<p class="summary">{{{summary}}}</p>'
+      + '</a>'
       + '</div>';
 
   Templates.person =

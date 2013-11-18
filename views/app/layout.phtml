@@ -12,13 +12,15 @@
 </head>
 <body>
 <nav id="nav" role="navigation">
+  <span class="brand nav-left">
+    <a><?php echo $title; ?></a>
+  </span>
   <ul class="nav-right">
     <?php if ($isAuthenticated): ?>
     <li><a href="/app/logout">Logout</a></li>
-    <?php endif; ?>
     <li><a href="/app/settings">Preferences</a></li>
     <li><a href="/app/inbox">Inbox</a></li>
-    <li><a href="/">Home</a></li>
+    <?php endif; ?>
   </ul>
 </nav>
 <div id="main">
