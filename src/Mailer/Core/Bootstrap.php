@@ -49,7 +49,7 @@ class Bootstrap
 
         // Set some global dynamic parameters
         // FIXME -- I said dynamic...
-        $container['basepath'] = '';
+        $container['basepath'] = '/';
         $container['request'] = $request;
 
         // Set some various services

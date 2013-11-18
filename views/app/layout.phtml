@@ -3,16 +3,19 @@
 <head>
 <title><?php if ($pagetitle): echo $pagetitle . ' | '; endif; ?><?php echo $title; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="<?php echo $basepath; ?>/asset/css/normalize.css" rel="stylesheet" type="text/css"/>
-<link href="<?php echo $basepath; ?>/asset/css/common.css" rel="stylesheet" type="text/css"/>
-<link href="<?php echo $basepath; ?>/asset/css/skin.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="<?php echo $basepath; ?>/asset/js/jquery-2.0.3.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>/asset/js/mustache-0.7.3.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>/asset/js/inbox.js"></script>
+<link href="<?php echo $basepath; ?>asset/css/normalize.css" rel="stylesheet" type="text/css"/>
+<link href="<?php echo $basepath; ?>asset/css/common.css" rel="stylesheet" type="text/css"/>
+<link href="<?php echo $basepath; ?>asset/css/skin.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/mustache-0.7.3.min.js"></script>
+<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox.js"></script>
 </head>
 <body>
 <nav id="nav" role="navigation">
   <ul class="nav-right">
+    <?php if ($isAuthenticated): ?>
+    <li><a href="/app/logout">Logout</a></li>
+    <?php endif; ?>
     <li><a href="/app/settings">Preferences</a></li>
     <li><a href="/app/inbox">Inbox</a></li>
     <li><a href="/">Home</a></li>

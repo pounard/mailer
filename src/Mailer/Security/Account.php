@@ -31,7 +31,7 @@ class Account
      */
     public function __construct($id, $username, $password)
     {
-        $this->id;
+        $this->id = $id;
         $this->username = $username;
         $this->password = $password;
     }

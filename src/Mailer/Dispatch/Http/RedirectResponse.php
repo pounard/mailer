@@ -34,10 +34,16 @@ class RedirectResponse extends AbstractContainerAware implements
 
     public function send($output)
     {
+        $container = $this->getContainer();
+
         $url = $this->url;
         if (false === strpos($url, '://')) {
             // Got a resource
-            // @todo Prefix with scheme, host and basepath
+            // @todo Prefix with scheme and host
+            $url = sprintf("%s%s", $container['basepath'], $url);
+            if (empty($url)) {
+                $url = '/';
+            }
         } // Else this is a full URL
 
         header(sprintf('HTTP/1.0 %s %s', $this->code, "Moved"), true, $this->code);
