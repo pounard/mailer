@@ -352,11 +352,17 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             // If parent does not exists create a pseudo folder instance that
             // does not belong to IMAP server but will help the client
             // materialize the non existing yet folder
-            $parent = $folder->getParentKey();
-            do {
-                $map[$parent] = $this->createFolderFromData($parent);
-                $parent = $map[$parent]->getParentKey();
-            } while (!isset($map[$parent]));
+            if ($parent = $folder->getParentKey()) {
+                while (!isset($map[$parent])) {
+                    $map[$parent] = $this->createFolderFromData(array(
+                        'path' => $parent,
+                        'unseenCount'  => 0,
+                        'recentCount'  => 0,
+                        'messageCount' => 0,
+                    ));
+                    $parent = $map[$parent]->getParentKey();
+                }
+            }
         }
 
         return $map;
@@ -365,16 +371,19 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Create folder instance from IMAP server data
      */
-    protected function createFolderFromData($path, $data = array())
+    protected function createFolderFromData($data = array())
     {
         $data = (array)$data;
 
-        if (false !== ($pos = strrpos($path, $this->delimiter))) {
-            $parent = substr($path, 0, $pos);
-            $name   = substr($path, $pos + 1);
+        // @todo Path compute in there
+        $data['delimiter'] = $this->delimiter;
+
+        if (false !== ($pos = strrpos($data['path'], $this->delimiter))) {
+            $data['parent'] = substr($data['path'], 0, $pos);
+            $data['name']   = substr($data['path'], $pos + 1);
         } else {
-            $parent = null;
-            $name   = $path;
+            $data['parent'] = null;
+            $data['name']   = $data['path'];
         }
 
         $data += array(
@@ -382,20 +391,18 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             'Nmsgs'  => -1,
             'Recent' => 0,
         );
+        $data['messageCount'] = $data['Nmsgs'];
+        $data['recentCount'] = $data['Recent'];
         if (isset($data['Date'])) {
-            $date = $this->parseDate($data['Date']);
+            $data['lastUpdate'] = $this->parseDate($data['Date']);
         } else {
-            $date = null;
+            $data['lastUpdate'] = null;
         }
 
-        return new Folder(
-            $name,
-            $path,
-            $date,
-            $data['Nmsgs'],
-            $data['Recent'],
-            $parent
-        );
+        $folder = new Folder();
+        $folder->fromArray($data);
+
+        return $folder;
     }
 
     public function getFolder($name, $refresh = false)
@@ -407,9 +414,15 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         }
 
         // Now we need to populate the unread message count
-        $data->unreadCount = count(imap_search($resource, 'UNREAD'));
+        if (false !== ($found = imap_search($resource, 'UNSEEN'))) {
+            $data->unseenCount = count($found);
+        } else {
+            $data->unseenCount = 0; 
+        }
 
-        return $this->createFolderFromData($name, $data);
+        $data->path = $name;
+
+        return $this->createFolderFromData($data);
     }
 
     /**
@@ -454,15 +467,15 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     }
 
     /**
-     * Really not proud of this one
+     * Really not proud of this one (TM).
      *
      * @param Envelope $node
      * @param \stdClass $context
      */
-    protected function flattenTree($node, $context)
+    protected function flattenTree(Envelope $node, $context)
     {
-        if ($node->isUnread()) {
-            ++$context->unread;
+        if (!$node->isSeen()) {
+            ++$context->unseen;
         }
         if ($node->isRecent()) {
             ++$context->recent;
@@ -529,7 +542,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $max = $limit;
         }
 
-        // Fetch tree.
+        // Fetch and buil envelopes tree.
         $list = imap_fetch_overview($resource, $min . ':' . $max);
         foreach ($list as $data) {
 
@@ -576,7 +589,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         foreach ($tree as $node) {
 
             $context = new \stdClass();
-            $context->unread  = 0;
+            $context->unseen  = 0;
             $context->recent  = 0;
             $context->map     = array();
             $context->date    = null;
@@ -594,7 +607,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
                 'lastUpdate'   => $context->date,
                 'messageCount' => count($context->map),
                 'recentCount'  => $context->recent,
-                'unreadCount'  => $context->unread,
+                'unseenCount'  => $context->unseen,
                 'uidMap'       => $context->map,
             ));
 

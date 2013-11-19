@@ -45,33 +45,9 @@ class Folder implements ExchangeInterface
     private $recentCount;
 
     /**
-     * Default constructor
-     *
-     * @param string $name
-     * @param string $path
-     * @param \DateTime $lastUpdate
-     * @param int $messageCount
-     * @param int $recentCount
-     * @param string $parent
-     * @param string $delimiter
+     * @var int
      */
-    public function __construct(
-        $name,
-        $path,
-        \DateTime $lastUpdate = null,
-        $messageCount         = 0,
-        $recentCount          = 0,
-        $parent               = null,
-        $delimiter            = MailReaderInterface::DEFAULT_DELIMITER)
-    {
-        $this->name = $name;
-        $this->path = $path;
-        $this->lastUpdate = $lastUpdate;
-        $this->messageCount = $messageCount;
-        $this->recentCount = $recentCount;
-        $this->parent = $parent;
-        $this->delimiter = $delimiter;
-    }
+    private $unseenCount;
 
     /**
      * Get folder name
@@ -148,16 +124,35 @@ class Folder implements ExchangeInterface
         return array(
             'name'         => $this->name,
             'path'         => $this->path,
+            'delimiter'    => $this->delimiter,
+            'parent'       => $this->parent,
             'lastUpdate'   => $this->lastUpdate,
             'messageCount' => $this->messageCount,
             'recentCount'  => $this->recentCount,
-            'parent'       => $this->parent,
-            'delimiter'    => $this->delimiter,
+            'unseenCount'  => $this->unseenCount,
         );
     }
 
     public function fromArray(array $array)
     {
-        // Sorry this is a readonly object
+        $array += array(
+            'name'         => null,
+            'path'         => null,
+            'delimiter'    => null,
+            'parent'       => null,
+            'lastUpdate'   => null,
+            'messageCount' => 0,
+            'recentCount'  => 0,
+            'unseenCount'  => 0,
+        );
+
+        $this->name         = $array['name'];
+        $this->path         = $array['path'];
+        $this->delimiter    = $array['delimiter'];
+        $this->parent       = $array['parent'];
+        $this->lastUpdate   = $array['lastUpdate'];
+        $this->messageCount = (int)$array['messageCount'];
+        $this->recentCount  = (int)$array['recentCount'];
+        $this->unseenCount  = (int)$array['unseenCount'];
     }
 }

@@ -13,12 +13,11 @@ var Folder;
     this.lastUpdate = new Date(data.lastUpdate);
     this.messageCount = data.messageCount || 0;
     this.recentCount = data.recentCount || 0;
-    this.unreadCount = data.unreadCount || 0;
+    this.unseenCount = data.unseenCount || 0;
     this.delimiter = data.delimiter || ".";
     this.path = data.path || this.name;
     this.inbox = inbox || inboxInstance;
     this.special = data.special || false;
-    this.threads = {};
     this.element = undefined;
     this.classes = ["folder"];
     this.touch = undefined;
@@ -42,7 +41,7 @@ var Folder;
 
     $element = $(Template.render("folder", {
       name:    this.name,
-      unread:  this.unreadCount,
+      unseen:  this.unseenCount,
       total:   this.messageCount,
       classes: this.classes.join(" ")
     }));

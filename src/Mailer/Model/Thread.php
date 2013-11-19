@@ -53,7 +53,7 @@ class Thread implements ExchangeInterface
     /**
      * @var int
      */
-    private $unreadCount;
+    private $unseenCount;
 
     /**
      * @var array
@@ -147,7 +147,7 @@ class Thread implements ExchangeInterface
      */
     public function getUnseenCount()
     {
-        return $this->unreadCount;
+        return $this->unseenCount;
     }
 
     /**
@@ -176,7 +176,7 @@ class Thread implements ExchangeInterface
             'lastUpdate'   => $this->lastUpdate,
             'messageCount' => $this->messageCount,
             'recentCount'  => $this->recentCount,
-            'unreadCount'  => $this->unreadCount,
+            'unseenCount'  => $this->unseenCount,
             'uidMap'       => $this->uidMap,
         );
     }
@@ -204,7 +204,7 @@ class Thread implements ExchangeInterface
         $this->lastUpdate   = $array['lastUpdate'];
         $this->messageCount = (int)$array['messageCount'];
         $this->recentCount  = (int)$array['recentCount'];
-        $this->unreadCount  = (int)$array['unreadCount'];
+        $this->unseenCount  = (int)$array['unseenCount'];
         $this->uidMap       = (array)$array['uidMap'];
     }
 }

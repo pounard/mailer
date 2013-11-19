@@ -81,13 +81,13 @@ class Bootstrap
 
         // Services
         $container['imap'] = function () use ($container, $config) {
-            if ($config['redis']) {
+            if (isset($config['redis'])) {
                 $redis = new \Redis();
                 $redis->connect($config['redis']['host']);
                 $cache = new RedisCache();
                 $cache->setRedis($redis);
             }
-            if ($cache) {
+            if (isset($cache)) {
                 $service = new CachedMailReader(new PhpImapMailReader(), $cache);
             } else {
                 $service = new PhpImapMailReader();

@@ -71,7 +71,7 @@ var Inbox, inboxInstance;
       persons: this.renderPersons(thread.persons),
       subject: thread.subject,
       date:    date,
-      unread:  thread.unreadCount,
+      unseen:  thread.unseenCount,
       classes: thread.classes.join(" ")
     }));
     thread.element = $element.get(0);

@@ -92,11 +92,6 @@ class Envelope implements ExchangeInterface
     /**
      * @var boolean
      */
-    private $unread;
-
-    /**
-     * @var boolean
-     */
     private $seen;
 
     /**
@@ -245,16 +240,6 @@ class Envelope implements ExchangeInterface
     }
 
     /**
-     * Is message unread
-     *
-     * @return boolean
-     */
-    public function isUnread()
-    {
-        return $this->unread;
-    }
-
-    /**
      * Is message seen
      *
      * @return bool
@@ -290,9 +275,8 @@ class Envelope implements ExchangeInterface
             'flagged'    => $this->flagged,
             'answered'   => $this->answered,
             'deleted'    => $this->deleted,
-            'read'       => $this->read,
+            'seen'       => $this->seen,
             'draft'      => $this->draft,
-            'unread'     => $this->unread,
         );
     }
 
@@ -314,7 +298,6 @@ class Envelope implements ExchangeInterface
             'answered'   => false,
             'deleted'    => false,
             'seen'       => true,
-            'unread'     => false,
             'draft'      => false,
         );
 
@@ -333,7 +316,6 @@ class Envelope implements ExchangeInterface
         $this->answered   = (bool)$array['answered'];
         $this->deleted    = (bool)$array['deleted'];
         $this->seen       = (bool)$array['seen'];
-        $this->unread     = (bool)$array['unread'];
         $this->draft      = (bool)$array['draft'];
     }
 }
