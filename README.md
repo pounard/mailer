@@ -37,6 +37,14 @@ Initial integration will be:
 
     * Index: SolR
 
+## Credits and licencing
+
+This code is licenced under the GPLv3. Please see the LICENCE file.
+
+Files under the lib/roundcube folder come from the Roundcube mail client. This
+code is licenced under the GPLv3 - All credits goes to their original authors.
+For more information about roundcube see http://roundcube.net/
+
 ## REST API specification
 
 REST API will work as we can expect it to work, using the four widely used

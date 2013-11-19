@@ -154,5 +154,15 @@ class Folder implements ExchangeInterface
         $this->messageCount = (int)$array['messageCount'];
         $this->recentCount  = (int)$array['recentCount'];
         $this->unseenCount  = (int)$array['unseenCount'];
+
+        if ((null === $this->name || null === $this->parent)) {
+            if ((null !== $this->delimiter) && (false !== ($pos = strrpos($this->path, $this->delimiter)))) {
+                $this->parent = substr($this->path, 0, $pos);
+                $this->name = substr($this->path, $pos + 1);
+            } else {
+                $this->parent = null;
+                $this->name = $this->path;
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ use Mailer\Error\ConfigError;
 use Mailer\Server\Cache\CachedMailReader;
 use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
+use Mailer\Server\Rcube\RcubeImapMailReader;
 
 use Config\Impl\Memory\MemoryBackend;
 use Doctrine\Common\Cache\RedisCache;
@@ -88,9 +89,9 @@ class Bootstrap
                 $cache->setRedis($redis);
             }
             if (isset($cache)) {
-                $service = new CachedMailReader(new PhpImapMailReader(), $cache);
+                $service = new CachedMailReader(new RcubeImapMailReader(), $cache);
             } else {
-                $service = new PhpImapMailReader();
+                $service = new RcubeImapMailReader();
             }
 
             $service->setOptions($config['servers']['imap']);
