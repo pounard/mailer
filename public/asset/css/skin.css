@@ -66,6 +66,20 @@
     background-image: url(../img/icons/starred-on-14.png);
 }
 
+#folders .unread {
+    float: right;
+    margin-top: 7px;
+    margin-right: 10px;
+    color: #fff;
+}
+#folders .total {
+    color: #fff;
+    font-weight: bold;
+    float: right;
+    padding: 0px 2px;
+    font-size: 0.9em;
+}
+
 #special-folders {
     margin-bottom: 0.5em;
 }
@@ -74,17 +88,27 @@
     border-bottom: 1px solid #ddd;
     padding: 0.5em 1em;
 }
-.thread .subject {
+.thread .people {
+    float: left;
+}
+.thread .date {
+    float: right;
+    color: #0077CC;
     font-weight: bold;
 }
+.thread .subject {
+    font-weight: bold;
+    line-height: 32px;
+}
 .thread:hover {
-    background-color: #ffffed;
+    /* background-color: #ffffed; */
+    background-color: #ffffcc;
 }
 .thread .summary {
     color: #808080;
 }
 
-.unseen {
+.unread {
     background-color: #555;
     color: white;
     font-weight: bold;
@@ -93,6 +117,8 @@
     border-radius: 6px;
     font-size: 0.9em;
 }
-.inverse .unseen {
-    
+.inverse .unread {
+  background-color: #B31B1B;
+  line-height: 1.2;
+  color: #fff;
 }

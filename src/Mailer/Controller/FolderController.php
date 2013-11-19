@@ -10,33 +10,8 @@ use Mailer\Server\MailReaderInterface;
 /**
  * Return parameters from the request
  */
-class FolderController extends AbstractController
+class FolderController extends AbstractMailController
 {
-    /**
-     * Get server
-     *
-     * Don't dream about the right software design this just gives my IDE
-     * the opportunity to a better autocompletion; If PHP wouldn't be a so
-     * wrong language I would have written:
-     *
-     *    $server = (ImapMailReader)$this->getContainer()['imap'];
-     *
-     * But sadly PHP is really a very wrong language.
-     *
-     * @return ImapMailReader
-     */
-    public function getServer()
-    {
-        $container = $this->getContainer();
-        $server = $container['imap'];
-
-        if (!$server instanceof MailReaderInterface) {
-            throw new LogicError("Oups");
-        }
-
-        return $server;
-    }
-
     public function getAction(RequestInterface $request, array $args)
     {
         $server = $this->getServer();
@@ -53,11 +28,35 @@ class FolderController extends AbstractController
                 switch ($args[1]) {
 
                     case 'list':
-                        return $server->getThreadSummary($args[0]);
+                        return $server->getThreads($args[0]);
+
+                    case 'refresh':
+                        // Force refresh to have at least the last update time
+                        // and the new unread count
+                        $folder = $server->getFolder($args[0], true);
+
+                        if ($since = $request->getOption('since', null)) {
+                            if (is_numeric($since)) {
+                                $since = new \DateTime('@' . $since);
+                            } else {
+                                // Per convention we only access ISO86
+                                if (!$since = \DateTime::createFromFormat(\DateTime::ISO8601, $since)) {
+                                    throw new \LogicError("Invalid date format, not a UNIX timestamps or an ISO8601 valid string");
+                                }
+                            }
+                        }
+
+                        if ($since < $folder->getLastUpdate()) {
+                            $list = $server->getThreadsSince($args[0], $since);
+                        } else {
+                            $list = array();
+                        }
+
+                        return array('folder' => $folder, 'list' => $list);
 
                     default:
                         throw new LogicError(sprintf("Invalid option '%s'", $args[1]));
-                }
+              }
 
             default:
                 throw new LogicError("Too many arguments");

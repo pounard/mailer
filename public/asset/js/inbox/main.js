@@ -19,6 +19,7 @@ var Inbox, inboxInstance;
     this.$allFolders     = $("#all-folders > li > ul");
     this.$View           = $("#viewpane");
     this.folders         = {};
+    this.threads         = {};
   };
 
   /**
@@ -39,7 +40,7 @@ var Inbox, inboxInstance;
     $.each(persons, function (key, person) {
       out.push(Template.render("person", {
         classes: "person",
-        image: "/public/asset/img/icons/person-32.png",
+        image: "/asset/img/icons/person-32.png",
         name: person.name || person.mail
       }));
     });
@@ -50,28 +51,42 @@ var Inbox, inboxInstance;
    * Refresh thread display
    */
   Inbox.prototype.addThread = function (thread, folder) {
-    var jElement;
+    var $element, date = thread.lastUpdate || thread.startDate;
 
     if (!thread.classes) {
       thread.classes = [];
     }
     thread.classes.push("thread");
 
+    if ("string" === typeof date) {
+      date = new Date(date);
+      date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/")
+    }
+
     if (thread.element) {
       $(thread.element).remove();
     }
 
-    jElement = $(Template.render("thread", {
+    $element = $(Template.render("thread", {
       persons: this.renderPersons(thread.persons),
       subject: thread.subject,
-      date:    thread.lastUpdate,
-      unseen:  thread.unseenCount,
+      date:    date,
+      unread:  thread.unreadCount,
       classes: thread.classes.join(" ")
     }));
-    thread.element = jElement.get(0);
+    thread.element = $element.get(0);
 
-    this.jInbox.find(".content").append(jElement);
+    this.$inbox.find(".content").append($element);
     this.threads[thread.id] = thread;
+  };
+
+  Inbox.prototype.resetThreads = function () {
+    $.each(this.threads, function (key, thread) {
+      if (thread.element) {
+        $(thread.element).remove();
+      }
+    });
+    $(this.$inbox).find('.content').html("");
   };
 
   /**

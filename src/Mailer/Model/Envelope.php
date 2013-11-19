@@ -5,7 +5,7 @@ namespace Mailer\Model;
 /**
  * Represents a single mail.
  */
-class Mail implements ExchangeInterface
+class Envelope implements ExchangeInterface
 {
     /**
      * @var string
@@ -92,6 +92,11 @@ class Mail implements ExchangeInterface
     /**
      * @var boolean
      */
+    private $unread;
+
+    /**
+     * @var boolean
+     */
     private $seen;
 
     /**
@@ -164,9 +169,9 @@ class Mail implements ExchangeInterface
      *
      * @return string
      */
-    public function repliesTo()
+    public function getRepliesToId()
     {
-        return $this->replyTo;
+        return $this->repliesTo;
     }
 
     /**
@@ -240,7 +245,17 @@ class Mail implements ExchangeInterface
     }
 
     /**
-     * Is message read
+     * Is message unread
+     *
+     * @return boolean
+     */
+    public function isUnread()
+    {
+        return $this->unread;
+    }
+
+    /**
+     * Is message seen
      *
      * @return bool
      */
@@ -277,6 +292,7 @@ class Mail implements ExchangeInterface
             'deleted'    => $this->deleted,
             'read'       => $this->read,
             'draft'      => $this->draft,
+            'unread'     => $this->unread,
         );
     }
 
@@ -298,6 +314,7 @@ class Mail implements ExchangeInterface
             'answered'   => false,
             'deleted'    => false,
             'seen'       => true,
+            'unread'     => false,
             'draft'      => false,
         );
 
@@ -316,6 +333,7 @@ class Mail implements ExchangeInterface
         $this->answered   = (bool)$array['answered'];
         $this->deleted    = (bool)$array['deleted'];
         $this->seen       = (bool)$array['seen'];
+        $this->unread     = (bool)$array['unread'];
         $this->draft      = (bool)$array['draft'];
     }
 }

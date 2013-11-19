@@ -9,5 +9,5 @@ interface ResponseInterface
      *
      * @param string $output
      */
-    public function send($output);
+    public function send($output, $contentType = null);
 }

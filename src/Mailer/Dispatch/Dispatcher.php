@@ -124,13 +124,12 @@ class Dispatcher extends AbstractContainerAware
             foreach ($request->getOutputContentTypes() as $type) {
                 if (isset(self::$responseMap[$type])) {
                     $renderer = new self::$responseMap[$type]();
-                    continue;
+                    break;
                 }
             }
             if (null === $renderer) {
                 $renderer = new \Mailer\View\HtmlRenderer();
             }
-            //$renderer = new \Mailer\View\JsonRenderer();
 
             if ($renderer instanceof ContainerAwareInterface) {
                 $renderer->setContainer($this->getContainer());
@@ -145,12 +144,13 @@ class Dispatcher extends AbstractContainerAware
                     ->findController($request);
 
                 $view = $this->executeController($request, $controller, $args);
+                $contentType = $renderer->getContentType();
 
                 if ($view instanceof ResponseInterface) {
                     $view->send(null);
                 } else {
                     // Because one liners are too mainstream
-                    $response->send($renderer->render($view));
+                    $response->send($renderer->render($view), $contentType);
                 }
 
             // Within exception handling the dispatcher will act as a controller

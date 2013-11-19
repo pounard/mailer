@@ -40,6 +40,20 @@ interface MailReaderInterface extends ServerInterface
     public function getFolder($name, $refresh = false);
 
     /**
+     * Check for folder modification
+     *
+     * @param string $name
+     * @param \DateTime $since
+     *   Null means from the begining of time, non null means
+     *   update threads since
+     *
+     * @return array
+     *   'folder': Folder instance
+     *   'threads': New threads since
+     */
+    //public function getThreads($name, \DateTime $since = null);
+
+    /**
      * Get mail list from the given folder
      *
      * @param string $name
@@ -56,7 +70,7 @@ interface MailReaderInterface extends ServerInterface
      * @return Thread[]
      *   Ordered thread list
      */
-    public function getThreadSummary(
+    public function getThreads(
         $name,
         $offset   = 0,
         $limit    = 100,

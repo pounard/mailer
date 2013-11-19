@@ -12,6 +12,11 @@ use Doctrine\Common\Cache\Cache;
 abstract class AbstractCachedServerProxy extends AbstractServerProxy
 {
     /**
+     * Default lifetime in seconds
+     */
+    const DEFAULT_LIFETIME = 43200; // 12 hours
+
+    /**
      * @var Cache
      */
     private $cache;
@@ -27,12 +32,17 @@ abstract class AbstractCachedServerProxy extends AbstractServerProxy
     private $type;
 
     /**
+     * @var int
+     */
+    private $defaultLifetime = self::DEFAULT_LIFETIME;
+
+    /**
      * Default constructor
      *
      * @param ServerInterface $nested
      * @param string $prefix
      */
-    public function __construct(ServerInterface $nested, Cache $cache, $prefix = null)
+    public function __construct(ServerInterface $nested, Cache $cache, $prefix = null, $defaultLifetime = null)
     {
         parent::__construct($nested);
 
@@ -40,6 +50,9 @@ abstract class AbstractCachedServerProxy extends AbstractServerProxy
         $this->prefix = $prefix;
         // Why MD5? Why not? It will shorten it in most cases
         $this->type = md5(get_class($nested));
+        if (null !== $defaultLifetime) {
+            $this->defaultLifetime = (int)$defaultLifetime;
+        }
     }
 
     /**
@@ -83,7 +96,7 @@ abstract class AbstractCachedServerProxy extends AbstractServerProxy
 
     public function save($id, $data, $lifeTime = 0)
     {
-        return $this->cache->save($this->getKey($id), $data, $lifeTime);
+        return $this->cache->save($this->getKey($id), $data, ($lifeTime ? $lifeTime : $this->defaultLifetime));
     }
 
     public function delete($id)

@@ -5,8 +5,8 @@ namespace Mailer\Server\Native;
 use Mailer\Error\LogicError;
 use Mailer\Error\NotFoundError;
 use Mailer\Error\NotImplementedError;
+use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
-use Mailer\Model\Mail;
 use Mailer\Model\Person;
 use Mailer\Server\AbstractServer;
 use Mailer\Server\MailReaderInterface;
@@ -295,7 +295,11 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         $matches = array();
         $mailString = $this->decodeMime($mailString);
         if (preg_match('/^(|")([^\<]*)(|")(|\<([^\>]*)\>)$/', trim($mailString), $matches)) {
-            return array($matches[5], $matches[2]);
+            if (!empty($matches[5])) { // There is something weird there...
+                return array($matches[5], $matches[2]);
+            } else {
+                return array($matches[0], null);
+            }
         } else {
             return array($mailString, null);
         }
@@ -304,7 +308,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Encode mail
      */
-    public function encodeMail($mail, $name = null)
+    protected function encodeMail($mail, $name = null)
     {
         return $this->encodeMime($name . " <" . $mail . ">");
     }
@@ -350,7 +354,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             // materialize the non existing yet folder
             $parent = $folder->getParentKey();
             do {
-                $map[$parent] = $this->createFolderInstance($parent);
+                $map[$parent] = $this->createFolderFromData($parent);
                 $parent = $map[$parent]->getParentKey();
             } while (!isset($map[$parent]));
         }
@@ -361,8 +365,10 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     /**
      * Create folder instance from IMAP server data
      */
-    public function createFolderInstance($path, array $data = array())
+    protected function createFolderFromData($path, $data = array())
     {
+        $data = (array)$data;
+
         if (false !== ($pos = strrpos($path, $this->delimiter))) {
             $parent = substr($path, 0, $pos);
             $name   = substr($path, $pos + 1);
@@ -394,115 +400,94 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
 
     public function getFolder($name, $refresh = false)
     {
-        if (!$data = imap_check($this->getResource($name, OP_READONLY))) {
+        $resource = $this->getResource($name, OP_READONLY);
+
+        if (!$data = imap_check($resource)) {
             throw new NotFoundError("Folder does not exist");
         }
 
-        return $this->createFolderInstance($name, (array)$data);
+        // Now we need to populate the unread message count
+        $data->unreadCount = count(imap_search($resource, 'UNREAD'));
+
+        return $this->createFolderFromData($name, $data);
     }
 
     /**
-     * Fetches mail
+     * Create envelope instance from IMAP server data
      *
-     * @param array $uidList
-     * @param string $name
+     * @param \stdClass $data
      *
-     * @return \Mailer\Model\Mail[]
+     * @return Envelope
      */
-    public function getMails(array $uidList, $name = null)
+    protected function createEnvelopeFromData($data)
     {
-        $data = imap_fetch_overview(
-            $this->getResource($name, OP_READONLY),
-            implode(",", array_unique($uidList)),
-            FT_UID
-        );
+        $value = (array)$data;
 
-        foreach ($data as $key => $value) {
-            $value = (array)$value;
-
-            if (isset($value['subject'])) {
-                $value['subject'] = $this->decodeMime($value['subject']);
-            }
-            if (isset($value['from'])) {
-                list($mail, $pname) = $this->decodeMail($value['from']);
-                $value['from'] = new Person($mail, $pname);
-            }
-            if (isset($value['to'])) {
-                list($mail, $pname) = $this->decodeMail($value['to']);
-                $value['to'] = array(new Person($value['to']));
-            }
-            if (isset($value['date'])) {
-                $value['date'] = $this->parseDate($value['date']);
-            }
-            if (isset($value['msgno'])) {
-                $value['num'] = (int)$value['msgno'];
-            }
-            if (isset($value['in_reply_to'])) {
-                $value['repliesTo'] = (int)$value['in_reply_to'];
-            }
-
-            $mail = new Mail();
-            $mail->fromArray($value);
-
-            $data[$key] = $mail;
-        };
-
-        return $data;
-    }
-
-    /**
-     * Set sort on given resource
-     *
-     * @param resource $resource
-     * @param int $sort
-     */
-    protected function setSort($resource, $sort, $order = Sort::ORDER_DESC)
-    {
-        switch ($sort) {
-
-            case Sort::SORT_DATE:
-                $sort = SORTDATE;
-                break;
-
-            case Sort::SORT_ARRIVAL:
-                $sort = SORTARRIVAL; 
-                break;
-
-            case Sort::SORT_FROM:
-                $sort = SORTFROM;
-                break;
-
-            case Sort::SORT_SUBJECT:
-                $sort = SORTSUBJECT;
-                break;
-
-            case Sort::SORT_TO:
-                $sort = SORTTO;
-                break;
-
-            case Sort::SORT_CC:
-                $sort = SORTCC;
-                break;
-
-            case Sort::SORT_SIZE:
-                $sort = SORTSIZE;
-                break;
-
-            default:
-            case Sort::SORT_SEQ:
-                $sort = 0;
-                break;
+        if (isset($value['message_id'])) {
+            $value['id'] = $this->decodeMime($value['message_id']);
+        }
+        if (isset($value['subject'])) {
+            $value['subject'] = $this->decodeMime($value['subject']);
+        }
+        if (isset($value['from'])) {
+            list($mail, $pname) = $this->decodeMail($value['from']);
+            $value['from'] = new Person($mail, $pname);
+        }
+        if (isset($value['to'])) {
+            list($mail, $pname) = $this->decodeMail($value['to']);
+            $value['to'] = array(new Person($value['to']));
+        }
+        if (isset($value['date'])) {
+            $value['date'] = $this->parseDate($value['date']);
+        }
+        if (isset($value['msgno'])) {
+            $value['num'] = (int)$value['msgno'];
+        }
+        if (isset($value['in_reply_to'])) {
+            $value['repliesTo'] = $value['in_reply_to'];
         }
 
-        imap_sort($resource, $sort, Sort::ORDER_DESC === $order);
+        $ret = new Envelope();
+        $ret->fromArray($value);
+
+        return $ret;
     }
 
-    public function getThreadSummary(
+    /**
+     * Really not proud of this one
+     *
+     * @param Envelope $node
+     * @param \stdClass $context
+     */
+    protected function flattenTree($node, $context)
+    {
+        if ($node->isUnread()) {
+            ++$context->unread;
+        }
+        if ($node->isRecent()) {
+            ++$context->recent;
+        }
+        $context->map[$node->getUid()] = isset($node->parentUid) ? $node->parentUid : null;
+        if (!isset($context->date) || $context->date < $node->getDate()) {
+            $context->date = $node->getDate();
+        }
+        $from = $node->getFrom();
+        $mail = $from->getMail();
+        if (!isset($context->persons[$mail])) {
+            $context->persons[$mail] = $from;
+        }
+
+        foreach ($node->children as $child) {
+            $this->flattenTree($child, $context);
+        }
+    }
+
+    public function getThreads(
         $name,
-        $offset  = 0,
-        $limit   = 100,
-        $sort    = Sort::SORT_SEQ,
-        $order   = Sort::ORDER_DESC,
+        $offset   = 0,
+        $limit    = 100,
+        $sort     = Sort::SORT_SEQ,
+        $order    = Sort::ORDER_DESC,
         $refresh = false)
     {
         // This implementation will trust the IMAP server thread list instead
@@ -513,84 +498,108 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         $map = array();
 
         $resource = $this->getResource($name);
-        //$this->setSort($resource, $sort);
 
-        // This will fetch the full thread information of the folder
-        // @todo I'm afraid that on huge folders this will be quite slow
-        $data = imap_thread($resource, SE_UID);
-
-        foreach ($data as $key => $value) {
-            list($id, $type) = explode('.', $key);
-
-            // Build a flattened list of thread values
-            $map[$id][$type] = $value;
+        if ($sort !== SORT::SORT_SEQ) {
+            throw new NotImplementedError("Only sorting with sequence number is supported yet");
         }
 
-        // Rebuild correct tree
-        foreach ($map as $info) {
-            $ret[$info['branch']]['messages'][] = $info['num'];
+        $folder = $this->getFolder($name, $refresh);
+        $total = $folder->getMessageCount();
+
+        $tree = array();
+        $map = array();
+        $orphans = array();
+
+        if ($total < $offset) {
+            // Desc or asc this goes out of range
+            return array();
+        }
+        if ($total < $offset + $limit) {
+            // It serves no purpose trying to fetch something
+            // that don't exists and I don't want IMAP to raise
+            // errors on us
+            $limit = $total - $offset;
         }
 
-        // The goal is to get thread summary, start by fetching mails
-        foreach ($ret as $id => $value) {
+        if ($order === Sort::ORDER_DESC) {
+            $max = $total - $offset;
+            $min = $max - $limit;
+        } else {
+            $min = 1;
+            $max = $limit;
+        }
 
-            $recentCount = 0;
-            $unseenCount = 0;
-            $startedDate = null;
-            $lastUpdate  = null;
-            $title       = null;
-            $persons     = array();
+        // Fetch tree.
+        $list = imap_fetch_overview($resource, $min . ':' . $max);
+        foreach ($list as $data) {
 
-            // Fetch mail information and go
-            $mails = $this->getMails($value['messages'], $name);
-            foreach ($mails as $mail) {
+            $node = $this->createEnvelopeFromData($data);
+            $node->children = array();
+            $map[$node->getId()] = $node;
 
-                if (null === $subject) {
-                    $subject = $mail->getSubject();
+            if ($id = $node->getRepliesToId()) {
+                if (isset($map[$id])) {
+                    $parent = $map[$id];
+                    $parent->children[] = $node;
+                    $node->parentUid = $parent->getUid(); // Sorry...
+                } else {
+                    $orphans[] = $node;
                 }
-
-                $participants = $mail->getTo();
-                $participants[] = $mail->getFrom();
-                foreach ($participants as $person) {
-                    $id = $person->getMail();
-                    if (!isset($persons[$id])) {
-                        $persons[$id] = $person;
-                    }
-                }
-
-                $date = $mail->getDate();
-                if (null !== $date) {
-                    if (null === $lastUpdate || $lastUpdate < $date) {
-                        $lastUpdate = $date;
-                    }
-                    if (null === $startedDate || $date < $startedDate) {
-                        $startedDate = $date;
-                    }
-                }
-
-                if ($mail->isRecent()) {
-                    ++$recentCount;
-                }
-                if (!$mail->isSeen()) {
-                    ++$unseenCount;
-                }
+            } else {
+                $tree[$node->getUid()] = $node;
             }
+        }
 
-            $value = new Thread();
-            $value->fromArray(array(
-                'id'           => $id,
-                'subject'      => $subject,
+        // Make the orphans being in the tree
+        // FIXME: This will cause imprecisions if the parent are
+        // on another page, we will loose the parenting
+        if (!empty($orphans)) {
+            foreach ($orphans as $node) {
+                $tree[$node->getUid()] = $node;
+            }
+        }
+        // Free some memory we don't need those anymore
+        unset($orphans, $map);
+
+        // FIXME: Items should already be sorted except that we
+        // appended orphans, causing some kind of trouble because
+        // we can only sort using sequence (hoping that uid will
+        // be in sync with sequence): we can remove this sort once
+        // the orphan problem is solved
+        if (Sort::ORDER_DESC === $sort) {
+            krsort($tree);
+        } else {
+            ksort($tree);
+        }
+
+        // Now we can create each thread instances
+        foreach ($tree as $node) {
+
+            $context = new \stdClass();
+            $context->unread  = 0;
+            $context->recent  = 0;
+            $context->map     = array();
+            $context->date    = null;
+            $context->persons = array();
+
+            $this->flattenTree($node, $context);
+
+            $thread = new Thread();
+            $thread->fromArray(array(
+                'id'           => $node->getUid(),
+                'subject'      => $node->getSubject(),
                 'summary'      => null, // @todo
-                'persons'      => array_values($persons),
-                'startedDate'  => $startedDate,
-                'lastUpdate'   => $lastUpdate,
-                'messageCount' => count($mails),
-                'recentCount'  => $recentCount,
-                'unseenCount'  => $unseenCount,
+                'persons'      => $context->persons,
+                'startedDate'  => $node->getDate(),
+                'lastUpdate'   => $context->date,
+                'messageCount' => count($context->map),
+                'recentCount'  => $context->recent,
+                'unreadCount'  => $context->unread,
+                'uidMap'       => $context->map,
             ));
 
-            $ret[$id] = $value;
-        };
+            $ret[] = $thread;
+        }
 
         return $ret;
     }

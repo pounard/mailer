@@ -48,7 +48,28 @@ class CachedMailReader extends AbstractCachedServerProxy implements
         return $ret;
     }
 
-    public function getThreadSummary(
+    /*
+    public function getThreadsSince($name, \DateTime $since = null)
+    {
+        /*
+        $id = 't:s:' . $name;
+
+        if (null !== $since && ($ret = $this->fetch($id)) && $since->getTimestamp() < $ret['s']) {
+            return $ret['d'];
+        }
+
+        if (null !== $since) {
+            $this->save($id, array('s' => $since->getTimestamp(), 'd' => $ret));
+        }
+
+        return $ret;
+         * /
+
+        return $this->nested->getThreadsSince($name, $since);
+    }
+     */
+
+    public function getThreads(
         $name,
         $offset  = 0,
         $limit   = 100,
@@ -56,16 +77,7 @@ class CachedMailReader extends AbstractCachedServerProxy implements
         $order   = Sort::ORDER_DESC,
         $refresh = false)
     {
-        $id = 't:' . $name . ':' . $offset . ':' . $limit;
-
-        if (!$refresh && ($ret = $this->fetch($id))) {
-            return $ret;
-        }
-
-        $ret = $this->nested->getThreadSummary($name, $offset, $limit, $sort, $order);
-
-        $this->save($id, $ret);
-
-        return $ret;
+        // @todo? Seriously?
+        return $this->nested->getThreads($name, $offset, $limit, $sort, $order);
     }
 }

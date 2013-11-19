@@ -26,12 +26,20 @@ class HttpResponse implements ResponseInterface
         }
     }
 
-    public function sendHeaders()
+    public function sendHeaders($contentType = null)
     {
+        if (null === $contentType) {
+            $this->headers["Content-Type"] = "text/html";
+        } else {
+            $this->headers["Content-Type"] = $contentType;
+        }
+
         // @todo
-        $this->headers += array(
-            "Content-Type" => "text/html",
-        );
+        // Something better than this...
+
+        foreach ($this->headers as $name => $value) {
+            header($name . ':' . $value);
+        }
     }
 
     public function sendContent($output)
@@ -68,9 +76,9 @@ class HttpResponse implements ResponseInterface
         }
     }
 
-    public function send($output)
+    public function send($output, $contentType = null)
     {
-        $this->sendHeaders();
+        $this->sendHeaders($contentType);
         $this->sendContent($output);
         $this->closeResponse();
     }

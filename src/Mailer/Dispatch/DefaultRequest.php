@@ -69,7 +69,7 @@ class DefaultRequest implements RequestInterface
         return $this->options;
     }
 
-    public function hasOptions($name)
+    public function hasOption($name)
     {
         return array_key_exists($name, $this->options);
     }

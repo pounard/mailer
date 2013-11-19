@@ -59,7 +59,7 @@ class Folder implements ExchangeInterface
         $name,
         $path,
         \DateTime $lastUpdate = null,
-        $messageCount         = -1,
+        $messageCount         = 0,
         $recentCount          = 0,
         $parent               = null,
         $delimiter            = MailReaderInterface::DEFAULT_DELIMITER)

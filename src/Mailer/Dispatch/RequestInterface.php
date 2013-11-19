@@ -57,7 +57,7 @@ interface RequestInterface
      *
      * @return boolean
      */
-    public function hasOptions($name);
+    public function hasOption($name);
 
     /**
      * Get options value

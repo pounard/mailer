@@ -53,7 +53,12 @@ class Thread implements ExchangeInterface
     /**
      * @var int
      */
-    private $unseenCount;
+    private $unreadCount;
+
+    /**
+     * @var array
+     */
+    private $uidMap = array();
 
     /**
      * Get thread id
@@ -142,7 +147,22 @@ class Thread implements ExchangeInterface
      */
     public function getUnseenCount()
     {
-        return $this->unseenCount;
+        return $this->unreadCount;
+    }
+
+    /**
+     * Get uid map
+     *
+     * @return array
+     *   Values are single envelope uid while values are direct node parent
+     *   uid, some nodes might be orphan but yet in thread case in which
+     *   parent is null
+     *   The root node is included too, root node will always have the same
+     *   uid as the thread id
+     */
+    public function getUidMap()
+    {
+        return $this->uidMap;
     }
 
     public function toArray()
@@ -156,7 +176,8 @@ class Thread implements ExchangeInterface
             'lastUpdate'   => $this->lastUpdate,
             'messageCount' => $this->messageCount,
             'recentCount'  => $this->recentCount,
-            'unseenCount'  => $this->unseenCount,
+            'unreadCount'  => $this->unreadCount,
+            'uidMap'       => $this->uidMap,
         );
     }
 
@@ -172,6 +193,7 @@ class Thread implements ExchangeInterface
             'messageCount' => 0,
             'recentCount'  => 0,
             'unseenCount'  => 0,
+            'uidMap'       => array(),
         );
 
         $this->id           = (int)$array['id'];
@@ -182,6 +204,7 @@ class Thread implements ExchangeInterface
         $this->lastUpdate   = $array['lastUpdate'];
         $this->messageCount = (int)$array['messageCount'];
         $this->recentCount  = (int)$array['recentCount'];
-        $this->unseenCount  = (int)$array['unseenCount'];
+        $this->unreadCount  = (int)$array['unreadCount'];
+        $this->uidMap       = (array)$array['uidMap'];
     }
 }

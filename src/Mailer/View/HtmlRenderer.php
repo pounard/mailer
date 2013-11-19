@@ -98,6 +98,6 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
 
     public function getContentType()
     {
-        return "application/html";
+        return "text/html";
     }
 }
