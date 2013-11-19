@@ -32,7 +32,7 @@ class RedirectResponse extends AbstractContainerAware implements
         $this->code = $code;
     }
 
-    public function send($output)
+    public function send($output, $contentType = null)
     {
         $container = $this->getContainer();
 
