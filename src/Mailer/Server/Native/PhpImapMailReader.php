@@ -313,6 +313,84 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         return $this->encodeMime($name . " <" . $mail . ">");
     }
 
+    /**
+     * Create folder instance from IMAP server data
+     */
+    protected function createFolderFromData($data = array())
+    {
+        $data = (array)$data;
+
+        // @todo Path compute in there
+        $data['delimiter'] = $this->delimiter;
+
+        if (false !== ($pos = strrpos($data['path'], $this->delimiter))) {
+            $data['parent'] = substr($data['path'], 0, $pos);
+            $data['name']   = substr($data['path'], $pos + 1);
+        } else {
+            $data['parent'] = null;
+            $data['name']   = $data['path'];
+        }
+
+        $data += array(
+            'Date'   => null,
+            'Nmsgs'  => -1,
+            'Recent' => 0,
+        );
+        $data['messageCount'] = $data['Nmsgs'];
+        $data['recentCount'] = $data['Recent'];
+        if (isset($data['Date'])) {
+            $data['lastUpdate'] = $this->parseDate($data['Date']);
+        } else {
+            $data['lastUpdate'] = null;
+        }
+
+        $folder = new Folder();
+        $folder->fromArray($data);
+
+        return $folder;
+    }
+
+    /**
+     * Create envelope instance from IMAP server data
+     *
+     * @param \stdClass $data
+     *
+     * @return Envelope
+     */
+    protected function createEnvelopeFromData($data)
+    {
+        $value = (array)$data;
+
+        if (isset($value['message_id'])) {
+            $value['id'] = $this->decodeMime($value['message_id']);
+        }
+        if (isset($value['subject'])) {
+            $value['subject'] = $this->decodeMime($value['subject']);
+        }
+        if (isset($value['from'])) {
+            list($mail, $pname) = $this->decodeMail($value['from']);
+            $value['from'] = new Person($mail, $pname);
+        }
+        if (isset($value['to'])) {
+            list($mail, $pname) = $this->decodeMail($value['to']);
+            $value['to'] = array(new Person($value['to']));
+        }
+        if (isset($value['date'])) {
+            $value['date'] = $this->parseDate($value['date']);
+        }
+        if (isset($value['msgno'])) {
+            $value['num'] = (int)$value['msgno'];
+        }
+        if (isset($value['in_reply_to'])) {
+            $value['repliesTo'] = $value['in_reply_to'];
+        }
+
+        $ret = new Envelope();
+        $ret->fromArray($value);
+
+        return $ret;
+    }
+
     public function getFolderMap(
         $parent         = null,
         $onlySubscribed = true,
@@ -368,43 +446,6 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         return $map;
     }
 
-    /**
-     * Create folder instance from IMAP server data
-     */
-    protected function createFolderFromData($data = array())
-    {
-        $data = (array)$data;
-
-        // @todo Path compute in there
-        $data['delimiter'] = $this->delimiter;
-
-        if (false !== ($pos = strrpos($data['path'], $this->delimiter))) {
-            $data['parent'] = substr($data['path'], 0, $pos);
-            $data['name']   = substr($data['path'], $pos + 1);
-        } else {
-            $data['parent'] = null;
-            $data['name']   = $data['path'];
-        }
-
-        $data += array(
-            'Date'   => null,
-            'Nmsgs'  => -1,
-            'Recent' => 0,
-        );
-        $data['messageCount'] = $data['Nmsgs'];
-        $data['recentCount'] = $data['Recent'];
-        if (isset($data['Date'])) {
-            $data['lastUpdate'] = $this->parseDate($data['Date']);
-        } else {
-            $data['lastUpdate'] = null;
-        }
-
-        $folder = new Folder();
-        $folder->fromArray($data);
-
-        return $folder;
-    }
-
     public function getFolder($name, $refresh = false)
     {
         $resource = $this->getResource($name, OP_READONLY);
@@ -425,45 +466,40 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
         return $this->createFolderFromData($data);
     }
 
-    /**
-     * Create envelope instance from IMAP server data
-     *
-     * @param \stdClass $data
-     *
-     * @return Envelope
-     */
-    protected function createEnvelopeFromData($data)
+    public function getMail($id)
     {
-        $value = (array)$data;
+        throw new NotImplementedError();
+    }
 
-        if (isset($value['message_id'])) {
-            $value['id'] = $this->decodeMime($value['message_id']);
-        }
-        if (isset($value['subject'])) {
-            $value['subject'] = $this->decodeMime($value['subject']);
-        }
-        if (isset($value['from'])) {
-            list($mail, $pname) = $this->decodeMail($value['from']);
-            $value['from'] = new Person($mail, $pname);
-        }
-        if (isset($value['to'])) {
-            list($mail, $pname) = $this->decodeMail($value['to']);
-            $value['to'] = array(new Person($value['to']));
-        }
-        if (isset($value['date'])) {
-            $value['date'] = $this->parseDate($value['date']);
-        }
-        if (isset($value['msgno'])) {
-            $value['num'] = (int)$value['msgno'];
-        }
-        if (isset($value['in_reply_to'])) {
-            $value['repliesTo'] = $value['in_reply_to'];
-        }
+    public function getMails(array $idList)
+    {
+        throw new NotImplementedError();
+    }
 
-        $ret = new Envelope();
-        $ret->fromArray($value);
+    /**
+     * Get thread starting with the given mail unique identifier
+     *
+     * @param int $id
+     * @param boolean $refresh
+     *
+     * @return Thread
+     */
+    public function getThread($id, $refresh = false)
+    {
+        throw new NotImplementedError();
+    }
 
-        return $ret;
+    /**
+     * Get thread mails with the given mail unique identifier
+     *
+     * @param int $id
+     * @param boolean $refresh
+     *
+     * @return Mail[]
+     */
+    public function getThreadMails($id, $refresh = false)
+    {
+        throw new NotImplementedError();
     }
 
     /**

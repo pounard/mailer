@@ -19,16 +19,19 @@ class FolderController extends AbstractMailController
         switch (count($args)) {
 
             case 0:
-                return $server->getFolderMap();
+                return $server->getFolderMap(
+                    $request->getOption('parent', null),
+                    (bool)$request->getOption('all'),
+                    (bool)$request->getOption('refresh'));
 
             case 1:
-                return $server->getFolder($args[0]);
+                return $server->getFolder($args[0], (bool)$request->getOption('refresh'));
 
             case 2:
                 switch ($args[1]) {
 
                     case 'list':
-                        return $server->getThreads($args[0]);
+                        return $server->getThreads($args[0], (bool)$request->getOption('refresh'));
 
                     case 'refresh':
                         // Force refresh to have at least the last update time
@@ -55,7 +58,7 @@ class FolderController extends AbstractMailController
                         return array('folder' => $folder, 'list' => $list);
 
                     default:
-                        throw new LogicError(sprintf("Invalid option '%s'", $args[1]));
+                        throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
               }
 
             default:

@@ -2,8 +2,11 @@
 
 namespace Mailer\Server;
 
+use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
+use Mailer\Model\Mail;
 use Mailer\Model\Sort;
+use Mailer\Model\Thread;
 
 /**
  * Imap server connection using the PHP IMAP extension
@@ -40,18 +43,44 @@ interface MailReaderInterface extends ServerInterface
     public function getFolder($name, $refresh = false);
 
     /**
-     * Check for folder modification
+     * Get single mail
      *
-     * @param string $name
-     * @param \DateTime $since
-     *   Null means from the begining of time, non null means
-     *   update threads since
+     * @param int $id
+     *   Mail unique identifiers
      *
-     * @return array
-     *   'folder': Folder instance
-     *   'threads': New threads since
+     * @return Mail
      */
-    //public function getThreads($name, \DateTime $since = null);
+    public function getMail($id);
+
+    /**
+     * Get mails
+     *
+     * @param int[] $id
+     *   List of mail unique identifiers
+     *
+     * @return Mail[]
+     */
+    public function getMails(array $idList);
+
+    /**
+     * Get thread starting with the given mail unique identifier
+     *
+     * @param int $id
+     * @param boolean $refresh
+     *
+     * @return Thread
+     */
+    public function getThread($id, $refresh = false);
+
+    /**
+     * Get thread mails with the given mail unique identifier
+     *
+     * @param int $id
+     * @param boolean $refresh
+     *
+     * @return Mail[]
+     */
+    public function getThreadMails($id, $refresh = false);
 
     /**
      * Get mail list from the given folder
