@@ -75,7 +75,7 @@ class CachedMailReader extends AbstractCachedServerProxy implements
     public function getThread($name, $id, $complete = false, $refresh = false)
     {
         // @todo
-        return $this->nested->getThread($name, $id, $complete = false, $refresh);
+        return $this->nested->getThread($name, $id, $complete, $refresh);
     }
 
     public function getThreads(

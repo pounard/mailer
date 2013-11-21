@@ -204,13 +204,13 @@ class RcubeImapMailReader extends AbstractServer implements
             'from'       => Person::fromMailAddress(@$header->get('from')), // @todo
             'to'         => Person::fromMailAddress(@$header->get('to')), // @todo
             'date'       => DateHelper::fromRfc2822(@$header->get('date')), // @todo
-            'id'         => @$header->get('messageID'),
+            'id'         => @$header->messageID,
             'references' => @$header->get('references'),
             'replyTo'    => @$header->get('replyto'),
             'inReplyTo'  => @$header->get('in_reply_to'),
             'size'       => @$header->get('size'),
-            'uid'        => @$header->get('uid'),
-            'num'        => @$header->get('id'),
+            'uid'        => @$header->uid,
+            'num'        => @$header->id,
             'recent'     => isset($flags['RECENT']),
             'flagged'    => isset($flags['FLAGGED']),
             'answered'   => isset($flags['ANSWERED']),
@@ -281,16 +281,107 @@ class RcubeImapMailReader extends AbstractServer implements
         throw new NotFoundError("Mail not found");
     }
 
+    /**
+     * Get charset name from message structure (first part)
+     *
+     * Copy/pasted from Roundcube.
+     *
+     * @param array $structure Message structure
+     *
+     * @return string Charset name
+     */
+    private function getStructureCharset($structure)
+    {
+        while (is_array($structure)) {
+            if (is_array($structure[2]) && $structure[2][0] == 'charset') {
+                return $structure[2][1];
+            }
+            $structure = $structure[0];
+        }
+    }
+
     public function getMails($name, array $idList)
     {
-        $ret = @$this->getClient()->fetchHeaders($name, $idList, true);
+        $client = $this->getClient();
+        $ret = @$client->fetchHeaders($name, $idList, true);
 
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
         }
 
-        foreach ($ret as $index => $header) {
-            if ($header instanceof \rcube_message_header) {
+        foreach ($ret as $index => $headers) {
+            if ($headers instanceof \rcube_message_header) {
+
+                $array = $this->buildEnvelopeArray($headers, $name);
+                $uid = $array['uid'];
+
+                // Bunch of code from Rouncube mail client
+                // All credit goes to them
+                if (empty($headers->bodystructure)) {
+                    $headers->bodystructure = @$client->getStructure($name, $uid, true);
+                }
+                $structure = $headers->bodystructure;
+                if (empty($structure)) {
+                    return $headers;
+                }
+                // Set message charset from message headers
+                if ($headers->charset) {
+                    $structCharset = $headers->charset;
+                } else {
+                    $structCharset = $this->getStructureCharset($structure);
+                }
+                $headers->ctype = strtolower($headers->ctype);
+                // Here we can recognize malformed BODYSTRUCTURE and
+                // 1. [@TODO] parse the message in other way to create our own message structure
+                // 2. or just show the raw message body.
+                // Example of structure for malformed MIME message:
+                // ("text" "plain" NIL NIL NIL "7bit" 2154 70 NIL NIL NIL)
+                if ($headers->ctype && !is_array($structure[0]) && $headers->ctype != 'text/plain'
+                    && strtolower($structure[0].'/'.$structure[1]) == 'text/plain')
+                {
+                    // A special known case "Content-type: text" (#1488968)
+                    if ($headers->ctype == 'text') {
+                        $structure[1]   = 'plain';
+                        $headers->ctype = 'text/plain';
+                    }
+                    // We can handle single-part messages, by simple fix in structure (#1486898)
+                    else if (preg_match('/^(text|application)\/(.*)/', $headers->ctype, $m)) {
+                        $structure[0] = $m[1];
+                        $structure[1] = $m[2];
+                    } else {
+                        // Try to parse the message using Mail_mimeDecode package
+                        // We need a better solution, Mail_mimeDecode parses message
+                        // in memory, which wouldn't work for very big messages,
+                        // (it uses up to 10x more memory than the message size)
+                        // it's also buggy and not actively developed
+                        if ($headers->size /* && rcube_utils::mem_check($headers->size * 10)*/) {
+                            $raw_msg = $this->get_raw_body($uid);
+                            $struct = rcube_mime::parse_message($raw_msg);
+                        } else {
+                            return $headers;
+                        }
+                    }
+                }
+                if (empty($struct)) {
+                    $struct = $this->structure_part($structure, 0, '', $headers);
+                }
+                // some workarounds on simple messages...
+                if (empty($struct->parts)) {
+                  // ...don't trust given content-type
+                  if (!empty($headers->ctype)) {
+                      $struct->mime_id  = '1';
+                      $struct->mimetype = strtolower($headers->ctype);
+                      list($struct->ctype_primary, $struct->ctype_secondary) = explode('/', $struct->mimetype);
+                  }
+                  // ...and charset (there's a case described in #1488968 where invalid content-type
+                  // results in invalid charset in BODYSTRUCTURE)
+                  if (!empty($headers->charset) && $headers->charset != $struct->ctype_parameters['charset']) {
+                      $struct->charset                     = $headers->charset;
+                      $struct->ctype_parameters['charset'] = $headers->charset;
+                  }
+                }
+                $headers->structure = $struct;
+
                 $mail = new Mail();
                 $mail->fromArray($this->buildMailArray($header, $name));
                 $ret[$index] = $mail;
