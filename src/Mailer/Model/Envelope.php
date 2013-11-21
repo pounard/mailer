@@ -10,6 +10,11 @@ class Envelope implements ExchangeInterface
     /**
      * @var string
      */
+    private $mailbox;
+
+    /**
+     * @var string
+     */
     private $subject;
 
     /**
@@ -42,11 +47,18 @@ class Envelope implements ExchangeInterface
     private $references;
 
     /**
+     * Reply to header
+     *
+     * @var string
+     */
+    private $replyTo;
+
+    /**
      * Server identifier of message this message replies to
      *
      * @var string
      */
-    private $repliesTo;
+    private $inReplyTo;
 
     /**
      * Size in bytes
@@ -98,6 +110,16 @@ class Envelope implements ExchangeInterface
      * @var boolean
      */
     private $draft;
+
+    /**
+     * Get mailbox name
+     *
+     * @return string
+     */
+    public function getMailbox($string)
+    {
+        return $this->mailbox;
+    }
 
     /**
      * Get subject
@@ -160,13 +182,23 @@ class Envelope implements ExchangeInterface
     }
 
     /**
+     * Get reply to header value
+     *
+     * @return string
+     */
+    public function getReplyTo()
+    {
+        return $this->replyTo;
+    }
+
+    /**
      * Return server identifier this message replies to
      *
      * @return string
      */
-    public function getRepliesToId()
+    public function getInReplyto()
     {
-        return $this->repliesTo;
+        return $this->inReplyTo;
     }
 
     /**
@@ -259,15 +291,40 @@ class Envelope implements ExchangeInterface
         return $this->draft;
     }
 
+    /**
+     * Does this envelope has been sent or arrived before the other one
+     *
+     * @param Envelope $envelope
+     * @param string $useArrival
+     *
+     * @return boolean
+     */
+    public function isBefore(Envelope $envelope, $useArrival = false)
+    {
+        if (null === $this->date) {
+            return $this->uid < $envelope->getUid();
+        }
+
+        $date = $envelope->getDate();
+
+        if (null === $date) {
+            return $this->uid < $envelope->getUid();
+        }
+
+        return $this->date < $date;
+    }
+
     public function toArray()
     {
         return array(
+            'mailbox'    => $this->mailbox,
             'subject'    => $this->subject,
             'from'       => $this->from,
             'to'         => $this->date,
             'id'         => $this->id,
             'references' => $this->references,
-            'repliesTo'  => $this->repliesTo,
+            'replyTo'    => $this->replyTo,
+            'inReplyTo'  => $this->inReplyTo,
             'size'       => $this->size,
             'uid'        => $this->uid,
             'num'        => $this->num,
@@ -283,13 +340,15 @@ class Envelope implements ExchangeInterface
     public function fromArray(array $array)
     {
         $array += array(
+            'mailbox'    => '',
             'subject'    => '',
             'from'       => '',
             'to'         => array(),
             'date'       => null,
             'id'         => -1,
             'references' => null,
-            'repliesTo'  => null,
+            'replyTo'    => null,
+            'inReplyTo'  => null,
             'size'       => -1,
             'uid'        => -1,
             'num'        => -1,
@@ -301,13 +360,15 @@ class Envelope implements ExchangeInterface
             'draft'      => false,
         );
 
+        $this->mailbox    = $array['mailbox'];
         $this->subject    = $array['subject'];
         $this->from       = $array['from'];
         $this->to         = $array['to'];
         $this->date       = $array['date'];
         $this->id         = $array['id'];
         $this->references = $array['references'];
-        $this->repliesTo  = $array['repliesTo'];
+        $this->replyTo    = $array['replyTo'];
+        $this->inReplyTo  = $array['inReplyTo'];
         $this->size       = (int)$array['size'];
         $this->uid        = (int)$array['uid'];
         $this->num        = (int)$array['num'];

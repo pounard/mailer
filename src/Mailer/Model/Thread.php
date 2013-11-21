@@ -154,7 +154,7 @@ class Thread implements ExchangeInterface
      * Get uid map
      *
      * @return array
-     *   Values are single envelope uid while values are direct node parent
+     *   Keys are single envelope uid while values are direct node parent
      *   uid, some nodes might be orphan but yet in thread case in which
      *   parent is null
      *   The root node is included too, root node will always have the same

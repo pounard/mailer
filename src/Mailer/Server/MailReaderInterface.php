@@ -36,6 +36,7 @@ interface MailReaderInterface extends ServerInterface
      * Get a single folder
      *
      * @param string $name
+     *   Mailbox name
      * @param boolean $refresh
      *
      * @return Folder
@@ -43,44 +44,78 @@ interface MailReaderInterface extends ServerInterface
     public function getFolder($name, $refresh = false);
 
     /**
+     * Get single mail envelope
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int $id
+     *   Mail unique identifiers
+     *
+     * @return Envelope
+     */
+    public function getEnvelope($name, $id);
+
+    /**
+     * Get mails envelopes
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int[] $id
+     *   List of mail unique identifiers
+     *
+     * @return Envelope[]
+     */
+    public function getEnvelopes($name, array $idList);
+
+    /**
      * Get single mail
      *
+     * @param string $name
+     *   Mailbox name
      * @param int $id
      *   Mail unique identifiers
      *
      * @return Mail
      */
-    public function getMail($id);
+    public function getMail($name, $id);
 
     /**
      * Get mails
      *
+     * @param string $name
+     *   Mailbox name
      * @param int[] $id
      *   List of mail unique identifiers
      *
      * @return Mail[]
      */
-    public function getMails(array $idList);
+    public function getMails($name, array $idList);
 
     /**
      * Get thread starting with the given mail unique identifier
      *
+     * @param string $name
+     *   Mailbox name
      * @param int $id
+     *   Root message uid
      * @param boolean $refresh
      *
      * @return Thread
      */
-    public function getThread($id, $refresh = false);
+    public function getThread($name, $id, $refresh = false);
 
     /**
      * Get thread mails with the given mail unique identifier
      *
+     * @param string $name
+     *   Mailbox name
      * @param int $id
+     *   Root message uid
      * @param boolean $refresh
      *
      * @return Mail[]
      */
-    public function getThreadMails($id, $refresh = false);
+    public function getThreadMails($name, $id, $refresh = false);
 
     /**
      * Get mail list from the given folder

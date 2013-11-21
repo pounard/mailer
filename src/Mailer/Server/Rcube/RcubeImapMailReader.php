@@ -3,15 +3,17 @@
 namespace Mailer\Server\Rcube;
 
 use Mailer\Error\NotImplementedError;
+use Mailer\Error\LogicError;
+use Mailer\Error\NotFoundError;
+use Mailer\Model\DateHelper;
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
+use Mailer\Model\Person;
 use Mailer\Model\Sort;
 use Mailer\Model\Thread;
 use Mailer\Server\AbstractServer;
 use Mailer\Server\MailReaderInterface;
-use Mailer\Error\LogicError;
-use Mailer\Error\NotFoundError;
 
 class RcubeImapMailReader extends AbstractServer implements
     MailReaderInterface
@@ -184,74 +186,228 @@ class RcubeImapMailReader extends AbstractServer implements
     }
 
     /**
-     * Get single mail
+     * Build envelope array from header
      *
-     * @param int $id
-     *   Mail unique identifiers
-     *
-     * @return Mail
-     */
-    public function getMail($id)
-    {
-        throw new NotImplementedError();
-    }
-
-    /**
-     * Get mails
-     *
-     * @param int[] $id
-     *   List of mail unique identifiers
-     *
-     * @return Mail[]
-     */
-    public function getMails(array $idList)
-    {
-        throw new NotImplementedError();
-    }
-
-    /**
-     * Get thread starting with the given mail unique identifier
-     *
-     * @param int $id
-     * @param boolean $refresh
-     *
-     * @return Thread
-     */
-    public function getThread($id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
-    /**
-     * Get thread mails with the given mail unique identifier
-     *
-     * @param int $id
-     * @param boolean $refresh
-     *
-     * @return Mail[]
-     */
-    public function getThreadMails($id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
-    /**
-     * Get mail list from the given folder
-     *
+     * @param \rcube_message_header $header
+     *   Header
      * @param string $name
-     *   Folder name
-     * @param int $offset
-     *   Where to start
-     * @param int $limti
-     *   Number of threads to fetch
-     * @param int $sort
-     *   Sort field
-     * @param int $order
-     *   Sort order
+     *   Mailbox name
      *
-     * @return Thread[]
-     *   Ordered thread list
+     * @return array
      */
+    private function buildEnvelopeArray(\rcube_message_header $header, $name = null)
+    {
+        $flags = @$header->get('flags');
+        return array(
+            'mailbox'    => $name,
+            'subject'    => @$header->get('subject'), // @todo
+            'from'       => Person::fromMailAddress(@$header->get('from')), // @todo
+            'to'         => Person::fromMailAddress(@$header->get('to')), // @todo
+            'date'       => DateHelper::fromRfc2822(@$header->get('date')), // @todo
+            'id'         => @$header->get('messageID'),
+            'references' => @$header->get('references'),
+            'replyTo'    => @$header->get('replyto'),
+            'inReplyTo'  => @$header->get('in_reply_to'),
+            'size'       => @$header->get('size'),
+            'uid'        => @$header->get('uid'),
+            'num'        => @$header->get('id'),
+            'recent'     => isset($flags['RECENT']),
+            'flagged'    => isset($flags['FLAGGED']),
+            'answered'   => isset($flags['ANSWERED']),
+            'deleted'    => isset($flags['DELETED']),
+            'seen'       => isset($flags['SEEN']),
+            'draft'      => isset($flags['DRAFT']),
+        );
+    }
+
+    /**
+     * Build envelope array from header
+     *
+     * @param \rcube_message_header $header
+     *   Header
+     * @param string $name
+     *   Mailbox name
+     *
+     * @return array
+     */
+    private function buildMailArray(\rcube_message_header $header, $name = null)
+    {
+        $ret = $this->buildEnvelopeArray($header, $name);
+
+        return $ret;
+    }
+
+    public function getEnvelope($name, $id)
+    {
+        $envelopes = $this->getEnvelopes($name, array($id));
+
+        if (!empty($envelopes)) {
+            return array_shift($envelopes);
+        }
+
+        throw new NotFoundError("Mail not found");
+    }
+
+    public function getEnvelopes($name, array $idList)
+    {
+        $ret = @$this->getClient()->fetchHeaders($name, $idList, true);
+
+        if (false === $ret) {
+            throw new NotFoundError("Mailbox or mail(s) have not been found");
+        }
+
+        foreach ($ret as $index => $header) {
+            if ($header instanceof \rcube_message_header) {
+                $envelope = new Envelope();
+                $envelope->fromArray($this->buildEnvelopeArray($header, $name));
+                $ret[$index] = $envelope;
+            } else {
+                // This should never happen only doing this for autocompletion
+                unset($ret[$index]);
+            }
+        }
+
+        return $ret;
+    }
+
+    public function getMail($name, $id)
+    {
+        $mails = $this->getMails($name, array($id));
+
+        if (!empty($mails)) {
+            return array_shift($mails);
+        }
+
+        throw new NotFoundError("Mail not found");
+    }
+
+    public function getMails($name, array $idList)
+    {
+        $ret = @$this->getClient()->fetchHeaders($name, $idList, true);
+
+        if (false === $ret) {
+            throw new NotFoundError("Mailbox or mail(s) have not been found");
+        }
+
+        foreach ($ret as $index => $header) {
+            if ($header instanceof \rcube_message_header) {
+                $mail = new Mail();
+                $mail->fromArray($this->buildMailArray($header, $name));
+                $ret[$index] = $mail;
+            } else {
+                // This should never happen only doing this for autocompletion
+                unset($ret[$index]);
+            }
+        }
+
+        return $ret;
+    }
+
+    public function getThread($name, $id, $refresh = false)
+    {
+        throw new NotImplementedError();
+    }
+
+    public function getThreadMails($name, $id, $refresh = false)
+    {
+        throw new NotImplementedError();
+    }
+
+    /**
+     * Flatten the given tree
+     *
+     * @param array $tree
+     *
+     * @return $map
+     */
+    private function flattenTree($tree)
+    {
+        $ret = array();
+
+        foreach ($tree as $key => $value) {
+            $ret[] = $key;
+            if (!empty($value)) {
+                $ret = array_merge($ret, $this->flattenTree($value));
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Build thread info from envelopes
+     *
+     * @param Envelope[] $envelopes
+     *
+     * @return array
+     */
+    private function buildThreadArray(array $envelopes)
+    {
+        $first       = null;
+        $last        = null;
+        $firstUnread = null;
+        $lastUnread  = null;
+        $personMap   = array();
+        $uidMap      = array();
+        $recent      = 0;
+        $unseen      = 0;
+        $total       = count($envelopes);
+
+        foreach ($envelopes as $envelope) {
+
+            // @todo Make comparaison (using date or arrival) configurable
+            if (null === $first || $envelope->isBefore($first)) {
+                $first = $envelope;
+            }
+            if (null === $last || $last->isBefore($envelope)) {
+                $last = $envelope;
+            }
+
+            $from = $envelope->getFrom();
+            $personMap[$from->getMail()] = $from; 
+            $to = $envelope->getTo();
+            $personMap[$to->getMail()] = $to;
+
+            if (!$envelope->isSeen()) {
+                ++$unseen;
+                if (null === $firstUnread || $envelope->isBefore($firstUnread)) {
+                    $firstUnread = $envelope;
+                }
+                if (null === $lastUnread || $lastUnread->isBefore($envelope)) {
+                    $lastUnread = $envelope;
+                }
+            }
+            if ($envelope->isRecent()) {
+                ++$recent;
+            }
+
+            // @todo Uid?
+            $uidMap[$envelope->getUid()] = $envelope->getInReplyto(); 
+        }
+
+        if (null === $firstUnread) {
+            $firstUnread = $first;
+        }
+        if (null === $lastUnread) {
+            $lastUnread = $last;
+        }
+
+        // @todo Make summary selection configurable
+        //$mail = $this->getMail($name, $id);
+
+        return array(
+            'subject'      => $first->getSubject(),
+            'summary'      => null, // @todo
+            'persons'      => $personMap,
+            'startedDate'  => $first->getDate(),
+            'lastUpdate'   => $last->getDate(),
+            'messageCount' => $total,
+            'recentCount'  => $recent,
+            'unseenCount'  => $unseen,
+            'uidMap'       => $uidMap,
+        ); 
+    }
+
     public function getThreads(
         $name,
         $offset   = 0,
@@ -268,20 +424,35 @@ class RcubeImapMailReader extends AbstractServer implements
             throw new NotImplementedError("Only sort by sequence is implemented yet");
         }
 
-        $threads = $client->thread($name, 'REFERENCES', '', true);
+        $threads = @$client->thread($name, 'REFERENCES', '', true);
 
         if (Sort::ORDER_DESC === $order) {
             $threads->revert();
         }
 
-        if ($offset !== 0 || $limit < $threads->count()) {
+        if ($offset !== 0 || ($limit && $limit < $threads->count())) {
             $threads->slice($offset, $limit);
         }
 
         $tree = $threads->get_tree();
 
-        foreach ($tree as $root) {
-            // 
+        foreach ($tree as $root => $values) {
+            $uidList = $this->flattenTree($values);
+            $uidList[] = $root;
+            $uidList = array_unique($uidList, SORT_NUMERIC);
+
+            $envelopes = array_filter($this->getEnvelopes($name, $uidList), function ($envelope) {
+                return !$envelope->isDeleted();
+            });
+
+            if (empty($envelopes)) { // Everything has been deleted
+                continue;
+            }
+
+            $thread = new Thread();
+            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($envelopes));
+
+            $map[] = $thread;
         }
 
         return $map;

@@ -382,7 +382,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $value['num'] = (int)$value['msgno'];
         }
         if (isset($value['in_reply_to'])) {
-            $value['repliesTo'] = $value['in_reply_to'];
+            $value['inReplyTo'] = $value['in_reply_to'];
         }
 
         $ret = new Envelope();
@@ -586,7 +586,7 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
             $node->children = array();
             $map[$node->getId()] = $node;
 
-            if ($id = $node->getRepliesToId()) {
+            if ($id = $node->getInReplyto()) {
                 if (isset($map[$id])) {
                     $parent = $map[$id];
                     $parent->children[] = $node;
