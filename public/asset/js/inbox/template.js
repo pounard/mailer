@@ -35,6 +35,15 @@ var Template;
        + '</ul>'
        + '</li>';
 
+  Template.mail =
+        '<div class="{{classes}}">'
+      + '<div class="date">{{{date}}}</div>'
+      + '<div class="people">{{{persons}}}</div>'
+      + '<div class="subject">{{subject}}</div>'
+      + '<div class="clear"></div>'
+      + '<p class="body">{{{body}}}</p>'
+      + '</div>';
+
   Template.thread =
         '<div class="{{classes}}">'
       + '{{#unseen}}'

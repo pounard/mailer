@@ -12,22 +12,56 @@ var View;
    */
   View = function (data, folder) {
     var k = undefined;
-
     for (k in data) {
       if (data.hasOwnProperty(k)) {
         this[k] = data[k];
       }
     }
-
     this.folder = folder;
     this.inbox = folder.inbox;
+
+    this.classes = ["mail"];
+    if (this.unseen) {
+      this.classes.push("mail-new");
+    }
+    if (this.recent) {
+        this.classes.push("mail-recent");
+    }
+    if (this.flagged) {
+        this.classes.push("mail-flagged");
+    }
+    if (this.answered) {
+        this.classes.push("mail-answered");
+    }
   };
 
   /**
    * Render the folder
    */
   View.prototype.render = function () {
-    this.inbox.refreshView(this);
+
+    var $element, date = undefined;
+
+    if ("string" === typeof this.date) {
+      date = new Date(date);
+      date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/");
+    }
+
+    if (this.element) {
+      $(this.element).remove();
+    }
+
+    $element = $(Template.render("mail", {
+      persons: this.inbox.renderPersons([this.from]),
+      subject: this.subject,
+      date:    date,
+      classes: this.classes.join(" ")
+    }));
+    this.element = $element.get(0);
+
+    this.init();
+
+    return $element;
   };
 
   /**

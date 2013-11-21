@@ -431,7 +431,7 @@ class RcubeImapMailReader extends AbstractServer implements
 
         foreach ($tree as $root => $uidList) {
 
-            if ($root !== $id) {
+            if ((int)$root !== (int)$id) {
                 continue;
             }
 
@@ -445,21 +445,14 @@ class RcubeImapMailReader extends AbstractServer implements
                 return !$envelope->isDeleted();
             });
 
-            if (empty($list)) { // Everything has been deleted
-                unset($tree[$root]);
-                continue;
-            }
-
-            $thread = new Thread();
-            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($list));
-            break; // Found the right thread
+            break;
         }
 
-        if (!isset($thread)) {
+        if (!isset($list)) {
             throw new NotFoundError("Could not find thread");
         }
 
-        return $thread;
+        return $list;
     }
 
     /**

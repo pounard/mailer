@@ -61,6 +61,21 @@ class FolderController extends AbstractMailController
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
               }
 
+            case 3:
+                switch ($args[1]) {
+
+                    case 'thread':
+                        return $server->getThread(
+                            $args[0],
+                            (int)$args[2],
+                            (bool)$request->getOption('complete', true),
+                            (bool)$request->getOption('refresh')
+                        );
+
+                    default:
+                        throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
+                }
+
             default:
                 throw new LogicError("Too many arguments");
         }

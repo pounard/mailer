@@ -9,33 +9,22 @@ var Thread;
 
   Thread = function (data, folder) {
     var k = undefined;
-
     for (k in data) {
       if (data.hasOwnProperty(k)) {
         this[k] = data[k];
       }
     }
-
     this.folder = folder;
     this.inbox = folder.inbox;
 
-    // Magic happens from there
-    this.render();
-    this.init();
+    this.classes = ["thread"];
   };
 
   /**
    * Render the folder
    */
   Thread.prototype.render = function () {
-    var $element, $container, date = this.lastUpdate || this.startDate;
-
-    $container = this.inbox.getInboxContainer();
-
-    if (!this.classes) {
-      this.classes = [];
-    }
-    this.classes.push("thread");
+    var $element, date = this.lastUpdate || this.startDate;
 
     if ("string" === typeof date) {
       date = new Date(date);
@@ -55,8 +44,9 @@ var Thread;
     }));
     this.element = $element.get(0);
 
-    $container.append($element);
-    this.inbox.threads[this.id] = this;
+    this.init();
+
+    return $element;
   };
 
   /**
@@ -87,10 +77,16 @@ var Thread;
    */
   Thread.prototype.load = function () {
     var self = this;
-    this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(true), {
-      url: 'thread/' + this.id,
+    this.inbox.openThreadView(true);
+    this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
+      url: 'folder/' + this.folder.path + '/thread/' + this.id,
+      data: {
+        complete: 1
+      },
       success: function (data) {
-        new View(data, self.folder);
+        $.each(data, function (id, view) {
+          self.inbox.addView(new View(view, self.folder));
+        });
       }
     });
   };

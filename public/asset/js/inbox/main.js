@@ -20,7 +20,7 @@ var Inbox, inboxInstance;
     this.$view           = $("#viewpane");
     this.folders         = {};
     this.threads         = {};
-    this.view            = {};
+    this.mails           = {};
   };
 
   /**
@@ -31,24 +31,13 @@ var Inbox, inboxInstance;
   };
 
   /**
-   * Refresh the view using the given View instance
+   * Get the right container for displaying the mail view
    *
-   * @param view
+   * @return
+   *   jQuery selector for parent container
    */
-  Inbox.prototype.refreshView = function (view) {
-      this.view = view;
-      this.$view.show();
-  };
-
-  /**
-   * Close view and destroy current registered instance
-   */
-  Inbox.prototype.closeView = function () {
-      this.$view.hide();
-      if (this.view) {
-          this.view.remove();
-          delete this.view;
-      }
+  Inbox.prototype.getViewContainer = function () {
+    return this.$view.find("#thread-view .content");
   };
 
   /**
@@ -74,11 +63,25 @@ var Inbox, inboxInstance;
    */
   Inbox.prototype.resetThreads = function () {
     $.each(this.threads, function (key, thread) {
+      thread.remove();
       if (thread.element) {
         $(thread.element).remove();
       }
     });
     $(this.$inbox).find('.content').html("");
+  };
+
+  /**
+   * Reset current mail view
+   */
+  Inbox.prototype.resetMails = function () {
+    $.each(this.mails, function (key, view) {
+      view.remove();
+      if (view.element) {
+        $(view.element).remove();
+      }
+    });
+    $(this.$view).find('#thread-view .content').html("");
   };
 
   /**
@@ -117,29 +120,54 @@ var Inbox, inboxInstance;
   };
 
   /**
-   * Get the right container for displaying the mail view
-   *
-   * @return
-   *   jQuery selector for parent container
+   * Close view and destroy current registered instance
    */
-  Inbox.prototype.getViewContainer = function (refresh) {
-    if (refresh) {
-      this.$view.show();
+  Inbox.prototype.closePane = function () {
+    this.$view.hide();
+    this.$view.find("#thread-view").hide();
+    this.$view.find("#compose").hide();
+    this.resetMails();
+  };
+
+  /**
+   * Open pane
+   */
+  Inbox.prototype.openThreadView = function (empty) {
+    if (empty) {
+      this.resetMails();
     }
-    return this.$view.find(".content");
+    this.$view.find("#thread-view").show();
+    this.$view.show();
+  };
+
+  Inbox.prototype.addFolder = function (folder) {
+    this.folders[folder.path] = folder;
+    this.getFolderContainer(folder).append(folder.render());
+  };
+
+  Inbox.prototype.addThread = function (thread) {
+    this.threads[thread.id] = thread;
+    this.getInboxContainer().append(thread.render());
+  };
+
+  Inbox.prototype.addView = function (view) {
+    this.openThreadView();
+    if (view) {
+      this.view = view;
+      this.$view.find("#thread-view .content").append(view.render());
+    }
   };
 
   /**
    * Force refresh of folder list
    */
-  Inbox.prototype.refreshFolders = function () {
+  Inbox.prototype.refreshFolderList = function () {
     var self = this;
     this.dispatcher.fetchJson(this.$folders, {
       'url': 'folder',
       'success': function (data) {
         $.each(data, function (path, data) {
-          var folder = new Folder(data, self);
-          self.folders[folder.path] = folder;
+          self.addFolder(new Folder(data, self));
         });
       }
     });
@@ -148,7 +176,7 @@ var Inbox, inboxInstance;
   // Run all the things!
   $(document).ready(function () {
     inboxInstance = new Inbox();
-    inboxInstance.refreshFolders();
+    inboxInstance.refreshFolderList();
   });
 
 }(jQuery, document));

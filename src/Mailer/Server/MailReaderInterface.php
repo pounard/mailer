@@ -103,7 +103,7 @@ interface MailReaderInterface extends ServerInterface
      *   Envelope instances in the thread
      * @param boolean $refresh
      *
-     * @return Thread
+     * @return Mail[]
      */
     public function getThread($name, $id, $complete = false, $refresh = false);
 
