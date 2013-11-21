@@ -5,6 +5,43 @@ namespace Mailer\Model;
 class Person implements ExchangeInterface
 {
     /**
+     * Build value array from formatted mail address
+     *
+     * @param string $mailString
+     *
+     * @return array
+     *   Array with 'mail' and 'name' values
+     */
+    static public function mailToArray($mailString)
+    {
+        $matches = array();
+        if (preg_match('/^(|")([^\<]*)(|")(|\<([^\>]*)\>)$/', trim($mailString), $matches)) {
+            if (!empty($matches[5])) { // There is something weird there...
+                return array('mail' => $matches[5], 'name' => $matches[2]);
+            } else {
+                return array('mail' => $matches[0], 'name' => null);
+            }
+        } else {
+            return array('mail' => $mailString, 'name' => null);
+        }
+    }
+
+    /**
+     * Build instance from formatted mail address
+     *
+     * @param string $mailString
+     *
+     * @return Person
+     */
+    static public function fromMailAddress($mailString)
+    {
+        $instance = new self();
+        $instance->fromArray(self::mailToArray($mailString));
+
+        return $instance;
+    }
+
+    /**
      * @var string
      */
     private $mail;
@@ -23,22 +60,6 @@ class Person implements ExchangeInterface
      * @var int
      */
     private $id;
-
-    /**
-     * Default constructor
-     *
-     * @param string $mail
-     * @param string $name
-     * @param int $id
-     * @param string $image
-     */
-    public function __construct($mail, $name = null, $image = null, $id = null)
-    {
-        $this->mail = $mail;
-        $this->name = $name;
-        $this->image = $image;
-        $this->id = $id;
-    }
 
     /**
      * Mail address is the unique identifier of the person
@@ -84,17 +105,25 @@ class Person implements ExchangeInterface
     public function toArray()
     {
         return array(
-            'mail' => $this->mail,
-            'name' => $this->name,
+            'mail'  => $this->mail,
+            'name'  => $this->name,
             'image' => $this->image,
-            'id' => $this->id,
+            'id'    => $this->id,
         );
     }
 
     public function fromArray(array $array)
     {
-        if (isset($array['name'])) {
-            $this->name = 'name';
-        }
+        $array += array(
+            'mail'  => null,
+            'name'  => null,
+            'image' => null,
+            'id'    => null,
+        );
+
+        $this->mail  = $array['mail'];
+        $this->name  = $array['name'];
+        $this->image = $array['image'];
+        $this->id    = $array['id'];
     }
 }
