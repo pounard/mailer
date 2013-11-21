@@ -16,7 +16,31 @@
 </div>
 <div id="views">
   <div id="viewpane">
-    <!-- Single mail/thread view! -->
+    <div id="compose">
+      <form id="compose-form">
+        <label for="to">To</label>
+        <input name="to" type="text"/>
+        <br/>
+        <label for="cc">CC</label>
+        <input name="cc" type="text"/>
+        <br/>
+        <label for="bcc">BCC</label>
+        <input name="bcc" type="text"/>
+        <br/>
+        <textarea name="body"></textarea>
+        <br/>
+        <input type="submit" value="Send"/>
+      </form>
+    </div>
+    <div id="thread-view">
+      <div class="content"></div>
+      <hr/>
+      <form id="reply-form">
+        <textarea name="body"></textarea>
+        <br/>
+        <input type="submit" value="Send"/>
+      </form>
+    </div>
   </div>
   <div id="inbox" class="loading">
     <div class="content">

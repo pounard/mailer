@@ -17,9 +17,10 @@ var Inbox, inboxInstance;
     this.$folders        = $("#folders");
     this.$specialFolders = $("#special-folders");
     this.$allFolders     = $("#all-folders > li > ul");
-    this.$View           = $("#viewpane");
+    this.$view           = $("#viewpane");
     this.folders         = {};
     this.threads         = {};
+    this.view            = {};
   };
 
   /**
@@ -27,6 +28,27 @@ var Inbox, inboxInstance;
    */
   Inbox.isArray = function (value) {
     return '[object Array]' === Object.prototype.toString.call(value);
+  };
+
+  /**
+   * Refresh the view using the given View instance
+   *
+   * @param view
+   */
+  Inbox.prototype.refreshView = function (view) {
+      this.view = view;
+      this.$view.show();
+  };
+
+  /**
+   * Close view and destroy current registered instance
+   */
+  Inbox.prototype.closeView = function () {
+      this.$view.hide();
+      if (this.view) {
+          this.view.remove();
+          delete this.view;
+      }
   };
 
   /**
@@ -48,38 +70,8 @@ var Inbox, inboxInstance;
   };
 
   /**
-   * Refresh thread display
+   * Reset current threads
    */
-  Inbox.prototype.addThread = function (thread, folder) {
-    var $element, date = thread.lastUpdate || thread.startDate;
-
-    if (!thread.classes) {
-      thread.classes = [];
-    }
-    thread.classes.push("thread");
-
-    if ("string" === typeof date) {
-      date = new Date(date);
-      date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/")
-    }
-
-    if (thread.element) {
-      $(thread.element).remove();
-    }
-
-    $element = $(Template.render("thread", {
-      persons: this.renderPersons(thread.persons),
-      subject: thread.subject,
-      date:    date,
-      unseen:  thread.unseenCount,
-      classes: thread.classes.join(" ")
-    }));
-    thread.element = $element.get(0);
-
-    this.$inbox.find(".content").append($element);
-    this.threads[thread.id] = thread;
-  };
-
   Inbox.prototype.resetThreads = function () {
     $.each(this.threads, function (key, thread) {
       if (thread.element) {
@@ -112,6 +104,29 @@ var Inbox, inboxInstance;
       }
     }
     return $container.eq(0);
+  };
+
+  /**
+   * Get the right container for displaying the mail view
+   *
+   * @return
+   *   jQuery selector for parent container
+   */
+  Inbox.prototype.getInboxContainer = function () {
+    return this.$inbox.find(".content");
+  };
+
+  /**
+   * Get the right container for displaying the mail view
+   *
+   * @return
+   *   jQuery selector for parent container
+   */
+  Inbox.prototype.getViewContainer = function (refresh) {
+    if (refresh) {
+      this.$view.show();
+    }
+    return this.$view.find(".content");
   };
 
   /**

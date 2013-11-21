@@ -145,6 +145,9 @@ a, a:hover {
     height: 100%;
     display: none; /* Hidden per default */
 }
+#compose, #thread-view {
+    display: none; /* Hidden per default */
+}
 
 /* Per default hide sub children */
 #all-folders ul.children ul.children li.folder {

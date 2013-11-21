@@ -40,6 +40,7 @@ var Dispatcher;
    */
   Dispatcher.prototype.fetch = function (element, options) {
     var $element = $(element), complete;
+    $element.show();
     $.extend(options, this.ajaxOptions);
     // We need at list an URL
     if (!options || !options.url) {

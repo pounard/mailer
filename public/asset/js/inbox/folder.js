@@ -85,7 +85,7 @@ var Folder;
       url: 'folder/' + this.path + '/list',
       success: function (data) {
         $.each(data, function (id, thread) {
-          self.inbox.addThread(thread, self);
+          thread = new Thread(thread, self);
         });
       }
     });
@@ -110,7 +110,7 @@ var Folder;
       success: function (data) {
         if (data.threads) {
           $.each(data.threads, function (id, thread) {
-            self.inbox.addThread(thread, self);
+            thread = new Thread(thread, self);
           });
         }
       }
