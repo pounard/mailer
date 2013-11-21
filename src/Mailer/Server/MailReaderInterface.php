@@ -98,11 +98,14 @@ interface MailReaderInterface extends ServerInterface
      *   Mailbox name
      * @param int $id
      *   Root message uid
+     * @param boolean $complete
+     *   If set to true will return complete Mail instances instead of
+     *   Envelope instances in the thread
      * @param boolean $refresh
      *
      * @return Thread
      */
-    public function getThread($name, $id, $refresh = false);
+    public function getThread($name, $id, $complete = false, $refresh = false);
 
     /**
      * Get thread mails with the given mail unique identifier

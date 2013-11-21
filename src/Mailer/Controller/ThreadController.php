@@ -17,13 +17,20 @@ class ThreadController extends AbstractMailController
                 throw new LogicError("Too few arguments");
 
             case 1:
-                return $server->getThread($args[0], (bool)$request->getOption('refresh'));
+                return $server->getThread(
+                    $args[0],
+                    (bool)$request->getOption('complete', true),
+                    (bool)$request->getOption('refresh')
+                );
 
             case 2:
                 switch ($args[1]) {
 
                     case 'list':
-                        return $server->getThreadMails($id, (bool)$request->getOption('refresh'));
+                        return $server->getThreadMails(
+                            $id,
+                            (bool)$request->getOption('refresh')
+                        );
 
                     default:
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));

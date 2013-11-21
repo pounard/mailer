@@ -303,39 +303,54 @@ class RcubeImapMailReader extends AbstractServer implements
         return $ret;
     }
 
-    public function getThread($name, $id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
-    public function getThreadMails($name, $id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
     /**
-     * Flatten the given tree
+     * Alias of getThreads() that don't load envelopes
      *
-     * @param array $tree
-     *
-     * @return $map
+     * @return array
      */
-    private function flattenTree($tree)
+    private function getPartialThreads(
+        $name,
+        $offset   = 0,
+        $limit    = 50,
+        $sort     = Sort::SORT_SEQ,
+        $order    = Sort::ORDER_ASC,
+        $refresh = false)
     {
-        $ret = array();
+        $map = array();
 
-        foreach ($tree as $key => $value) {
-            $ret[] = $key;
-            if (!empty($value)) {
-                $ret = array_merge($ret, $this->flattenTree($value));
-            }
+        $client = $this->getClient();
+
+        if (Sort::SORT_SEQ !== $sort) {
+            throw new NotImplementedError("Only sort by sequence is implemented yet");
         }
 
-        return $ret;
+        $threads = @$client->thread($name, 'REFERENCES', '', true);
+
+        if (Sort::ORDER_DESC === $order) {
+            $threads->revert();
+        }
+
+        if ($offset !== 0 || ($limit && $limit < $threads->count())) {
+            $threads->slice($offset, $limit);
+        }
+
+        $tree = $threads->get_tree();
+
+        foreach ($tree as $root => $values) {
+            $uidList = $this->flattenTree($values);
+            $uidList[] = $root;
+            $uidList = array_unique($uidList, SORT_NUMERIC);
+
+            $map[$root] = $uidList;
+        }
+
+        return $map;
     }
 
     /**
      * Build thread info from envelopes
+     *
+     * This is the heart of this module's UI
      *
      * @param Envelope[] $envelopes
      *
@@ -364,7 +379,7 @@ class RcubeImapMailReader extends AbstractServer implements
             }
 
             $from = $envelope->getFrom();
-            $personMap[$from->getMail()] = $from; 
+            $personMap[$from->getMail()] = $from;
             $to = $envelope->getTo();
             $personMap[$to->getMail()] = $to;
 
@@ -408,6 +423,71 @@ class RcubeImapMailReader extends AbstractServer implements
         ); 
     }
 
+    public function getThread($name, $id, $complete = false, $refresh = false)
+    {
+        // Ordering by ASC will avoid calling the reverse() operation on
+        // roundcube thread returned instance
+        $tree = $this->getPartialThreads($name, 0, null, Sort::SORT_SEQ, Sort::ORDER_ASC, $refresh);
+
+        foreach ($tree as $root => $uidList) {
+
+            if ($root !== $id) {
+                continue;
+            }
+
+            if ($complete) {
+                $list = $this->getMails($name, $uidList);
+            } else {
+                $list = $this->getEnvelopes($name, $uidList);
+            }
+
+            $list = array_filter($list, function ($envelope) {
+                return !$envelope->isDeleted();
+            });
+
+            if (empty($list)) { // Everything has been deleted
+                unset($tree[$root]);
+                continue;
+            }
+
+            $thread = new Thread();
+            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($list));
+            break; // Found the right thread
+        }
+
+        if (!isset($thread)) {
+            throw new NotFoundError("Could not find thread");
+        }
+
+        return $thread;
+    }
+
+    public function getThreadMails($name, $id, $refresh = false)
+    {
+        throw new NotImplementedError();
+    }
+
+    /**
+     * Flatten the given tree
+     *
+     * @param array $tree
+     *
+     * @return $map
+     */
+    private function flattenTree($tree)
+    {
+        $ret = array();
+
+        foreach ($tree as $key => $value) {
+            $ret[] = $key;
+            if (!empty($value)) {
+                $ret = array_merge($ret, $this->flattenTree($value));
+            }
+        }
+
+        return $ret;
+    }
+
     public function getThreads(
         $name,
         $offset   = 0,
@@ -416,45 +496,25 @@ class RcubeImapMailReader extends AbstractServer implements
         $order    = Sort::ORDER_DESC,
         $refresh = false)
     {
-        $map = array();
+        $tree = $this->getPartialThreads($name, $offset, $limit, $sort, $order, $refresh);
 
-        $client = $this->getClient();
-
-        if (Sort::SORT_SEQ !== $sort) {
-            throw new NotImplementedError("Only sort by sequence is implemented yet");
-        }
-
-        $threads = @$client->thread($name, 'REFERENCES', '', true);
-
-        if (Sort::ORDER_DESC === $order) {
-            $threads->revert();
-        }
-
-        if ($offset !== 0 || ($limit && $limit < $threads->count())) {
-            $threads->slice($offset, $limit);
-        }
-
-        $tree = $threads->get_tree();
-
-        foreach ($tree as $root => $values) {
-            $uidList = $this->flattenTree($values);
-            $uidList[] = $root;
-            $uidList = array_unique($uidList, SORT_NUMERIC);
+        foreach ($tree as $root => $uidList) {
 
             $envelopes = array_filter($this->getEnvelopes($name, $uidList), function ($envelope) {
                 return !$envelope->isDeleted();
             });
 
             if (empty($envelopes)) { // Everything has been deleted
+                unset($tree[$root]);
                 continue;
             }
 
             $thread = new Thread();
             $thread->fromArray(array('id' => $root) + $this->buildThreadArray($envelopes));
 
-            $map[] = $thread;
+            $tree[$root] = $thread;
         }
 
-        return $map;
+        return $tree;
     }
 }
