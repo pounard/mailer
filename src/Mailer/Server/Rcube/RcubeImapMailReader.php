@@ -462,11 +462,6 @@ class RcubeImapMailReader extends AbstractServer implements
         return $thread;
     }
 
-    public function getThreadMails($name, $id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
     /**
      * Flatten the given tree
      *

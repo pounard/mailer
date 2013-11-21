@@ -108,19 +108,6 @@ interface MailReaderInterface extends ServerInterface
     public function getThread($name, $id, $complete = false, $refresh = false);
 
     /**
-     * Get thread mails with the given mail unique identifier
-     *
-     * @param string $name
-     *   Mailbox name
-     * @param int $id
-     *   Root message uid
-     * @param boolean $refresh
-     *
-     * @return Mail[]
-     */
-    public function getThreadMails($name, $id, $refresh = false);
-
-    /**
      * Get mail list from the given folder
      *
      * @param string $name

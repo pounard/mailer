@@ -23,19 +23,6 @@ class ThreadController extends AbstractMailController
                     (bool)$request->getOption('refresh')
                 );
 
-            case 2:
-                switch ($args[1]) {
-
-                    case 'list':
-                        return $server->getThreadMails(
-                            $id,
-                            (bool)$request->getOption('refresh')
-                        );
-
-                    default:
-                        throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
-              }
-
             default:
                 throw new LogicError("Too many arguments");
         }

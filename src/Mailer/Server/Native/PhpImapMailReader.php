@@ -490,19 +490,6 @@ class PhpImapMailReader extends AbstractServer implements MailReaderInterface
     }
 
     /**
-     * Get thread mails with the given mail unique identifier
-     *
-     * @param int $id
-     * @param boolean $refresh
-     *
-     * @return Mail[]
-     */
-    public function getThreadMails($id, $refresh = false)
-    {
-        throw new NotImplementedError();
-    }
-
-    /**
      * Really not proud of this one (TM).
      *
      * @param Envelope $node
