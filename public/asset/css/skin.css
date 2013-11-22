@@ -8,6 +8,71 @@
  * we not bother takign them while they have a very good looking?
  */
 
+input[type=text], input[type=password], textarea {
+    background-color: #FFFFFF;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    color: #555;
+    display: block;
+    height: 34px;
+    line-height: 1.42857;
+    padding: 0px 12px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+    vertical-align: middle;
+    width: 100%;
+}
+
+input[type=text]:focus, input[type=password]:focus, textarea:focus {
+    border-color: #66afe9;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+    outline: 0 none;
+}
+
+input[type=submit], button {
+    background-image: none;
+    border: 1px solid rgba(0, 0, 0, 0);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857;
+    margin-bottom: 0;
+    padding: 6px 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Default color */
+input[type=submit], button {
+    background-color: #428BCA;
+    border-color: #357EBD;
+    color: #fff;
+}
+
+input[type=submit]:hover, button:hover {
+    background-color: #3276b1;
+    border-color: #285e8e;
+}
+
+form .actions {
+    margin-top: 1.5em;
+    width: 100%;
+}
+
+form .actions > * {
+    /* float: right; */
+}
+
+#login {
+    width: 400px;
+    margin: 0 auto;
+    margin-top: 5em;
+}
+
 #nav, #folders {
     background-color: #1B1B1B;
     background-image: linear-gradient(to bottom, #222222, #111111);
