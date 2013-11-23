@@ -27,7 +27,7 @@ var Thread;
     var $element, date = this.lastUpdate || this.startDate;
 
     if ("string" === typeof date) {
-      date = new Date(date);
+      date = new Date(Date.parse(date));
       date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/");
     }
 
@@ -36,7 +36,7 @@ var Thread;
     }
 
     $element = $(Template.render("thread", {
-      persons: this.inbox.renderPersons(this.persons),
+      persons: this.inbox.renderPersonImages(this.persons),
       subject: this.subject,
       date:    date,
       unseen:  this.unseenCount,

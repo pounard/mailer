@@ -144,6 +144,7 @@ a, a:hover {
     width: 50%;
     height: 100%;
     display: none; /* Hidden per default */
+    overflow: auto; /* Scrollbar instead of extending the page */
 }
 #compose, #thread-view {
     display: none; /* Hidden per default */

@@ -43,7 +43,7 @@ var View;
     var $element, date = undefined;
 
     if ("string" === typeof this.date) {
-      date = new Date(date);
+      date = new Date(Date.parse(this.date));
       date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/");
     }
 
@@ -52,10 +52,12 @@ var View;
     }
 
     $element = $(Template.render("mail", {
-      persons: this.inbox.renderPersons([this.from]),
+      persons: this.inbox.renderPersonImages([this.from]),
+      from:    this.inbox.renderPersonLink(this.from),
       subject: this.subject,
       date:    date,
-      classes: this.classes.join(" ")
+      classes: this.classes.join(" "),
+      body:    this.bodyPlain
     }));
     this.element = $element.get(0);
 

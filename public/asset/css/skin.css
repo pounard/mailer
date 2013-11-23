@@ -149,6 +149,12 @@ form .actions > * {
     margin-bottom: 0.5em;
 }
 
+.person img {
+    border: 1px solid #eee;
+    border-radius: 2px;
+    margin-right: 1em;
+}
+
 .thread {
     border-bottom: 1px solid #ddd;
     padding: 0.5em 1em;
@@ -167,7 +173,7 @@ form .actions > * {
 .thread .summary {
     color: #808080;
 }
-.thread .date {
+.thread .date, .mail .date {
     position: absolute;
     top: 5px;
     right: 7px;
@@ -193,4 +199,33 @@ form .actions > * {
     background-color: #B31B1B;
     line-height: 1.2;
     color: #fff;
+}
+
+.mail {
+    padding: 0.5em 1em;
+    padding-bottom: 2em;
+    margin-bottom: 0.5em;
+    margin-top: 1em;
+}
+
+.mail .date {
+    float: right;
+}
+
+.mail .from {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.mail .people {
+    float: left;
+}
+
+.mail .subject {
+    line-height: 32px;
+    font-weight: bold;
+}
+
+.mail {
+    border-bottom: 1px solid #ccc;
 }

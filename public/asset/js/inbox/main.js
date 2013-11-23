@@ -43,19 +43,31 @@ var Inbox, inboxInstance;
   /**
    * Render array of persons
    */
-  Inbox.prototype.renderPersons = function (persons) {
+  Inbox.prototype.renderPersonImages = function (persons) {
     var out = [];
     if (!Inbox.isArray(persons)) {
       persons = [persons];
     }
     $.each(persons, function (key, person) {
-      out.push(Template.render("person", {
+      out.push(Template.render("personImage", {
         classes: "person",
         image: "/asset/img/icons/person-32.png",
-        name: person.name || person.mail
+        name: person.name || person.mail,
+        mail: person.mail
       }));
     });
     return out.join("");
+  };
+
+  /**
+   * Render array of persons
+   */
+  Inbox.prototype.renderPersonLink = function (person) {
+    return Template.render("personLink", {
+      classes: "person-link",
+      name: person.name || person.mail,
+      mail: person.mail
+    });
   };
 
   /**

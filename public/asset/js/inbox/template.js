@@ -41,6 +41,7 @@ var Template;
       + '<div class="people">{{{persons}}}</div>'
       + '<div class="subject">{{subject}}</div>'
       + '<div class="clear"></div>'
+      + '<div class="from">From {{{from}}}</div>'
       + '<p class="body">{{{body}}}</p>'
       + '</div>';
 
@@ -58,9 +59,16 @@ var Template;
       + '</a>'
       + '</div>';
 
-  Template.person =
+  Template.personImage =
         '<span class="{{classes}}">'
+      + '<a href="mailto://{{mail}}" title="{{name}}">'
       + '<img src="{{image}}" title="{{name}}"/>'
+      + '</a>'
+      + '</span>';
+
+  Template.personLink =
+        '<span class="{{classes}}">'
+      + '<a href="mailto://{{mail}}" title="{{name}}">{{name}}</a>'
       + '</span>';
 
 }(jQuery));
