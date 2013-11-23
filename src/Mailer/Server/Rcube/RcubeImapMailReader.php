@@ -282,6 +282,31 @@ class RcubeImapMailReader extends AbstractServer implements
         throw new NotFoundError("Mail not found");
     }
 
+    /**
+     * Find and set body into given array
+     *
+     * @param Multipart $multipart
+     * @param unknown $array
+     */
+    private function findBody(Multipart $multipart, &$array)
+    {
+        if (isset($array['bodyHtml']) && isset($array['bodyPlain'])) {
+            return;
+        }
+
+        foreach ($multipart as $part) {
+            if ($part instanceof Multipart) {
+                $this->findBody($part, $array);
+            } else if ('text' === $part->getType()) {
+                if (false !== strpos($part->getSubtype(), 'html')) {
+                    $array['bodyHtml'] = $part->getContents();
+                } if (false !== strpos($part->getSubtype(), 'plain')) {
+                    $array['bodyPlain'] = $part->getContents();
+                }
+            }
+        }
+    }
+
     public function getMails($name, array $idList)
     {
         $client = $this->getClient();
@@ -355,16 +380,7 @@ class RcubeImapMailReader extends AbstractServer implements
                     }
                 );
 
-                // Compute data from body structure and fetch textual information
-                foreach ($multipart as $part) {
-                    if ('text' === $part->getType()) {
-                        if (false !== strpos($part->getSubtype(), 'html')) {
-                            $array['bodyHtml'] = $part->getContents();
-                        } if (false !== strpos($part->getSubtype(), 'plain')) {
-                            $array['bodyPlain'] = $part->getContents();
-                        }
-                    }
-                }
+                $this->findBody($multipart, $array);
 
                 $mail = new Mail();
                 $mail->fromArray($array);
