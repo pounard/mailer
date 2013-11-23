@@ -77,6 +77,7 @@ var Folder;
   Folder.prototype.load = function () {
     var self = this;
     this.inbox.resetThreads();
+    this.inbox.closePane();
     this.touch = new Date();
     this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
       url: 'folder/' + this.path + '/list',
