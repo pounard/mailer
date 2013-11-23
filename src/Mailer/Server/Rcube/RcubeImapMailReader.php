@@ -325,9 +325,13 @@ class RcubeImapMailReader extends AbstractServer implements
                             $name,
                             $uid,
                             true,
-                            isset($index) ? $index : 'TEXT', // FIXME Always an int
+                            $index === Part::INDEX_ROOT ? 'TEXT' : $index,
                             $part->getEncoding()
                         );
+
+                        if (empty($body)) {
+                            return false;
+                        }
 
                         // convert charset (if text or message part)
                         $parameters = $part->getParameters();
@@ -342,9 +346,7 @@ class RcubeImapMailReader extends AbstractServer implements
                                 // try to extract charset information from HTML meta tag (#1488125)
                                 if ('html' === $part->getSubtype() && preg_match('/<meta[^>]+charset=([a-z0-9-_]+)/i', $body, $m)) {
                                     $charset = strtoupper($m[1]);
-                                } /* else { @todo Where does this default charset comes from?
-                                    $charset = $this->default_charset;
-                                } */
+                                }
                             }
                         }
                         $body = @\rcube_charset::convert($body, $charset, $defaultCharset);
@@ -353,7 +355,16 @@ class RcubeImapMailReader extends AbstractServer implements
                     }
                 );
 
-                $array['bodyStructure'] = $multipart;
+                // Compute data from body structure and fetch textual information
+                foreach ($multipart as $part) {
+                    if ('text' === $part->getType()) {
+                        if (false !== strpos($part->getSubtype(), 'html')) {
+                            $array['bodyHtml'] = $part->getContents();
+                        } if (false !== strpos($part->getSubtype(), 'plain')) {
+                            $array['bodyPlain'] = $part->getContents();
+                        }
+                    }
+                }
 
                 $mail = new Mail();
                 $mail->fromArray($array);
@@ -416,11 +427,12 @@ class RcubeImapMailReader extends AbstractServer implements
      *
      * This is the heart of this module's UI
      *
+     * @param string $name
      * @param Envelope[] $envelopes
      *
      * @return array
      */
-    private function buildThreadArray(array $envelopes)
+    private function buildThreadArray($name, array $envelopes)
     {
         $first       = null;
         $last        = null;
@@ -472,7 +484,7 @@ class RcubeImapMailReader extends AbstractServer implements
         }
 
         // @todo Make summary selection configurable
-        //$mail = $this->getMail($name, $id);
+        $mail = $this->getMail($name, $firstUnread->getUid());
 
         return array(
             'subject'      => $first->getSubject(),
@@ -562,7 +574,7 @@ class RcubeImapMailReader extends AbstractServer implements
             }
 
             $thread = new Thread();
-            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($envelopes));
+            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $envelopes));
 
             $tree[$root] = $thread;
         }

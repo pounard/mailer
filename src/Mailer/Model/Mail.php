@@ -10,18 +10,33 @@ use Mailer\Server\Protocol\Body\Multipart;
 class Mail extends Envelope
 {
     /**
-     * @var Multipart
+     * @var string
      */
-    private $bodyStructure;
+    private $bodyPlain;
 
     /**
-     * Get body structure
-     *
-     * @return Multipart
+     * @var string
      */
-    public function getBodyStructure()
+    private $bodyHtml;
+
+    /**
+     * Get body as plain text if available
+     *
+     * @return string
+     */
+    public function getBodyPlain()
     {
-        return $this->getBodyStructure();
+        return $this->bodyPlain;
+    }
+
+    /**
+     * Get body as html if available
+     *
+     * @return string
+     */
+    public function getBodyHtml()
+    {
+        return $this->bodyHtml;
     }
 
     public function toArray()
@@ -29,22 +44,9 @@ class Mail extends Envelope
         $array = parent::toArray();
 
         $array += array(
-            'bodyStructure' => $this->bodyStructure,
+            'bodyPlain' => $this->bodyPlain,
+            'bodyHtml'  => $this->bodyHtml,
         );
-
-        // Special case for mail: create the body content and send it
-        // into the array so that the client will get full body text
-        if (null !== $this->bodyStructure) {
-            foreach ($this->bodyStructure as $part) {
-                if ('text' === $part->getType()) {
-                    if (false !== strpos($part->getSubtype(), 'html')) {
-                        $array['bodyHtml'] = $part->getContents();
-                    } if (false !== strpos($part->getSubtype(), 'plain')) {
-                        $array['bodyPlain'] = $part->getContents();
-                    }
-                }
-            }
-        }
 
         return $array;
     }
@@ -54,9 +56,11 @@ class Mail extends Envelope
         parent::fromArray($array);
 
         $array += array(
-            'bodyStructure' => null,
+            'bodyPlain' => '',
+            'bodyHtml'  => '',
         );
 
-        $this->bodyStructure = $array['bodyStructure'];
+        $this->bodyPlain = $array['bodyPlain'];
+        $this->bodyHtml  = $array['bodyHtml'];
     }
 }
