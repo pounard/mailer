@@ -291,6 +291,8 @@ class RcubeImapMailReader extends AbstractServer implements
             throw new NotFoundError("Mailbox or mail(s) have not been found");
         }
 
+        $defaultCharset = $this->getDefaultCharset();
+
         foreach ($ret as $index => $header) {
             if ($header instanceof \rcube_message_header) {
 
@@ -315,11 +317,11 @@ class RcubeImapMailReader extends AbstractServer implements
 
                 $multipart = Multipart::createInstanceFromArray(
                     $bodyStructure,
-                    function (Part $part) use ($client, $uid, $name) {
+                    function (Part $part) use ($client, $uid, $name, $defaultCharset) {
 
                         // Slice of code from Roundcube client
                         $index = $part->getIndex();
-                        $body = $client->handlePartBody(
+                        $body = @$client->handlePartBody(
                             $name,
                             $uid,
                             true,
@@ -344,18 +346,12 @@ class RcubeImapMailReader extends AbstractServer implements
                                     $charset = $this->default_charset;
                                 } */
                             }
-                            $body = \rcube_charset::convert($body, $charset);
                         }
+                        $body = @\rcube_charset::convert($body, $charset, $defaultCharset);
 
                         return $body;
                     }
                 );
-
-                foreach ($multipart as $part) {
-                    print_r($part->getContents());
-                    echo "\n\n\n";
-                }
-                die();
 
                 $array['bodyStructure'] = $multipart;
 
