@@ -4,8 +4,15 @@ namespace Mailer\Server\Protocol\Body;
 
 use Mailer\Server\ProtocolHelper;
 
-class Part
+class Part implements PartInterface
 {
+    /**
+     * When message is not multipart fetch content won't be the same
+     * command, this contanst indicates to the fetch callback it should
+     * not trust the index but fetch the root part instead
+     */
+    const INDEX_ROOT = -1;
+
     /**
      * Create instance from array
      *

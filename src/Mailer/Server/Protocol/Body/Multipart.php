@@ -4,7 +4,7 @@ namespace Mailer\Server\Protocol\Body;
 
 use Mailer\Server\ProtocolHelper;
 
-class Multipart implements \Countable, \IteratorAggregate
+class Multipart implements \Countable, \IteratorAggregate, PartInterface
 {
     /**
      * Create instance from array
@@ -37,10 +37,16 @@ class Multipart implements \Countable, \IteratorAggregate
         if (!empty($array)) {
             if (is_array($array[0])) {
 
-                // RFC3501 nested list of body parts: list stops when
-                // parenthesis ends and we hit a string
-                while (($part = array_shift($array)) && is_array($part)) {
-                    $instance->appendPart(Part::createInstanceFromArray($part, $fetchCallback));
+                if (is_array($array[0][0])) {
+                    // Per RFC3501 multipart can nest multipart
+                    $instance->appendPart(self::createInstanceFromArray(array_shift($array), $fetchCallback));
+                    $part = array_shift($array); // Because else do that too
+                } else {
+                    // RFC3501 nested list of body parts: list stops when
+                    // parenthesis ends and we hit a string
+                    while (($part = array_shift($array)) && is_array($part)) {
+                        $instance->appendPart(Part::createInstanceFromArray($part, $fetchCallback));
+                    }
                 }
 
                 // RFC3501 first string is the multipart subtype
@@ -97,8 +103,8 @@ class Multipart implements \Countable, \IteratorAggregate
             } else {
                 // RFC3501 There can be only one part then it's not multipart
                 // This code abstract it to multipart anyway
-                $instance->appendPart(Part::createInstanceFromArray($array, $fetchCallback));
                 $instance->setMultipart(false);
+                $instance->appendPart(Part::createInstanceFromArray($array, $fetchCallback));
             }
         }
 
@@ -116,7 +122,7 @@ class Multipart implements \Countable, \IteratorAggregate
     private $subtype;
 
     /**
-     * @var Part[]
+     * @var PartInterface[]
      */
     private $parts = array();
 
@@ -134,6 +140,18 @@ class Multipart implements \Countable, \IteratorAggregate
      * @var array
      */
     private $bodyDispositionAttributes = array();
+
+    /**
+     * Get type
+     *
+     * Pass-throught to PassInterface::getType() method
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return 'multipart';
+    }
 
     /**
      * Change multipart flag
@@ -258,9 +276,16 @@ class Multipart implements \Countable, \IteratorAggregate
      *
      * @param Part $part
      */
-    public function appendPart(Part $part)
+    public function appendPart(PartInterface $part)
     {
-        $part->setIndex(count($this->parts)); // Index starts by 0
+        if ($part instanceof Part) {
+            if ($this->multipart) {
+                $index = count($this->parts); // Index starts by 0
+            } else {
+                $index = Part::INDEX_ROOT;
+            }
+            $part->setIndex($index);
+        }
         $this->parts[] = $part;
     }
 
