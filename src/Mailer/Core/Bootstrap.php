@@ -76,9 +76,12 @@ class Bootstrap
         $container['session']->start();
 
         // Server wide configuration
+        /*
         $container['config'] = function () use ($config) {
             return new MemoryBackend($config['config']);
         };
+         */
+        $container['config'] = $config['config'];
         if (isset($config['config']['charset'])) {
             // Set default charset to environment
             mb_internal_encoding($config['config']['charset']);
