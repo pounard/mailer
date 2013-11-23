@@ -24,9 +24,15 @@ class Mail extends Envelope
      *
      * @return string
      */
-    public function getBodyPlain()
+    public function getBodyPlain($escaped = false)
     {
-        return $this->bodyPlain;
+        if (!empty($this->bodyPlain) && $escaped) {
+            // Temporary code
+            $filter = new \Mailer\View\Helper\Filter\PlainFilter();
+            return $filter->filter($this->bodyPlain);
+        } else {
+            return $this->bodyPlain;
+        }
     }
 
     /**
@@ -34,7 +40,7 @@ class Mail extends Envelope
      *
      * @return string
      */
-    public function getBodyHtml()
+    public function getBodyHtml($escaped = false)
     {
         return $this->bodyHtml;
     }
@@ -44,8 +50,10 @@ class Mail extends Envelope
         $array = parent::toArray();
 
         $array += array(
-            'bodyPlain' => $this->bodyPlain,
-            'bodyHtml'  => $this->bodyHtml,
+            'bodyPlain'         => $this->bodyPlain,
+            'bodyHtml'          => $this->bodyHtml,
+            'bodyPlainFiltered' => $this->getBodyPlain(true),
+            'bodyHtmlFiltered'  => $this->getBodyHtml(true),
         );
 
         return $array;
