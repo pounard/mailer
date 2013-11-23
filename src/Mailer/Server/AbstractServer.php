@@ -22,6 +22,8 @@ abstract class AbstractServer extends AbstractContainerAware implements
 
     private $options = array();
 
+    private $defaultCharset;
+
     public function getHost()
     {
         return $this->host;
@@ -106,9 +108,21 @@ abstract class AbstractServer extends AbstractContainerAware implements
         return $this->options;
     }
 
+    public function getDefaultCharset()
+    {
+        return $this->defaultCharset;
+    }
+
     public function setContainer(\Pimple $container)
     {
         parent::setContainer($container);
+
+        $config = $container['config'];
+        if (isset($config['charset'])) {
+            $this->defaultCharset = $config['charset'];
+        } else {
+            $this->defaultCharset = mb_internal_encoding();
+        }
 
         if ($account = $container['session']->getAccount()) {
             $this->setCredentials(
