@@ -7,6 +7,7 @@ return array(
             // Your site title
             'title' => "My webmail",
         ),
+        'charset' => "UTF-8",
     ),
     // Maybe you want to override those but if you are not
     // a developer please don't

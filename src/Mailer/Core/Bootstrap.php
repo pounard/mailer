@@ -79,6 +79,10 @@ class Bootstrap
         $container['config'] = function () use ($config) {
             return new MemoryBackend($config['config']);
         };
+        if (isset($config['config']['charset'])) {
+            // Set default charset to environment
+            mb_internal_encoding($config['config']['charset']);
+        }
 
         // Services
         $container['imap'] = function () use ($container, $config) {
