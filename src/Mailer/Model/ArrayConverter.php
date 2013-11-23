@@ -21,8 +21,11 @@ class ArrayConverter
             }
         } else if ($data instanceof \DateTime) {
             $ret = $data->format(\DateTime::ISO8601);
-        } else {
+        } else if (is_scalar($data)) {
             $ret = $data;
+        } else {
+            trigger_error("Property could not be converted");
+            $ret = null;
         }
 
         return $ret;
