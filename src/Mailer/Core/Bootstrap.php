@@ -7,6 +7,7 @@ use Mailer\Error\ConfigError;
 use Mailer\Server\Cache\CachedMailReader;
 use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
+use Mailer\Server\Proxy\MailReader;
 use Mailer\Server\Rcube\RcubeImapMailReader;
 
 use Config\Impl\Memory\MemoryBackend;
@@ -84,8 +85,13 @@ class Bootstrap
         }
         mb_internal_encoding($config['config']['charset']);
 
+        // @todo
+        $pimple['userconfig'] = array();
+
         // Services
         $pimple['mailreader'] = function () use ($container, $config) {
+
+            // @todo Find a better way to handle cache
             if (isset($config['redis'])) {
                 $redis = new \Redis();
                 $redis->connect($config['redis']['host']);

@@ -50,6 +50,16 @@ class Folder implements ExchangeInterface
     private $unseenCount;
 
     /**
+     * @var boolean
+     */
+    private $special;
+
+    /**
+     * @var string
+     */
+    private $role;
+
+    /**
      * Get folder name
      *
      * @return string
@@ -119,6 +129,26 @@ class Folder implements ExchangeInterface
         return $this->parent;
     }
 
+    /**
+     * Is this a special folder
+     *
+     * @return boolean
+     */
+    public function isSpecial()
+    {
+        return $this->special;
+    }
+
+    /**
+     * If special get role name
+     *
+     * @return string
+     */
+    public function getSpecialRole()
+    {
+        return $this->role;
+    }
+
     public function toArray()
     {
         return array(
@@ -130,6 +160,8 @@ class Folder implements ExchangeInterface
             'messageCount' => $this->messageCount,
             'recentCount'  => $this->recentCount,
             'unseenCount'  => $this->unseenCount,
+            'special'      => $this->special,
+            'role'         => $this->role,
         );
     }
 
@@ -144,6 +176,8 @@ class Folder implements ExchangeInterface
             'messageCount' => 0,
             'recentCount'  => 0,
             'unseenCount'  => 0,
+            'special'      => false,
+            'role'         => null,
         );
 
         $this->name         = $array['name'];
@@ -154,6 +188,8 @@ class Folder implements ExchangeInterface
         $this->messageCount = (int)$array['messageCount'];
         $this->recentCount  = (int)$array['recentCount'];
         $this->unseenCount  = (int)$array['unseenCount'];
+        $this->special      = (bool)$array['special'];
+        $this->role         = $array['role'];
 
         if ((null === $this->name || null === $this->parent)) {
             if ((null !== $this->delimiter) && (false !== ($pos = strrpos($this->path, $this->delimiter)))) {
