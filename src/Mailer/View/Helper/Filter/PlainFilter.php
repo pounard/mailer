@@ -86,6 +86,19 @@ class PlainFilter extends AbstractContainerAware implements FilterInterface
         return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/[^()<>\s]+)#i', '\\1<a href="\\2">\\2</a>', $text);
     }
 
+    /**
+     * Filters original mail copy (starts with ">") and replace it with a
+     * nice collapsible div
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    public function originalFilter($text)
+    {
+        return $text;
+    }
+
     public function filter($text)
     {
         // Input text is supposedly plain text
@@ -93,6 +106,7 @@ class PlainFilter extends AbstractContainerAware implements FilterInterface
         $text = htmlentities($text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_DISALLOWED);
 
         // @todo This should be configurable per the user
+        $text = $this->originalFilter($text);
         $text = $this->urlToLinks($text);
         $text = $this->autoParagraph($text);
 
