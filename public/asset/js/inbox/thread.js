@@ -40,7 +40,8 @@ var Thread;
       subject: this.subject,
       date:    date,
       unseen:  this.unseenCount,
-      classes: this.classes.join(" ")
+      classes: this.classes.join(" "),
+      summary: this.summary
     }));
     this.element = $element.get(0);
 
@@ -81,7 +82,8 @@ var Thread;
     this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
       url: 'folder/' + this.folder.path + '/thread/' + this.id,
       data: {
-        complete: 1
+        complete: 1,
+        reverse: 1
       },
       success: function (data) {
         $.each(data, function (id, view) {

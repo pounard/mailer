@@ -42,7 +42,7 @@ var Template;
       + '<div class="subject">{{subject}}</div>'
       + '<div class="clear"></div>'
       + '<div class="from">From {{{from}}}</div>'
-      + '<p class="body">{{{body}}}</p>'
+      + '<div class="body">{{{body}}}</div>'
       + '</div>';
 
   Template.thread =

@@ -158,6 +158,7 @@ form .actions > * {
 .thread {
     border-bottom: 1px solid #ddd;
     padding: 0.5em 1em;
+    max-height: 90px; /* 2 lines summary */
 }
 .thread .people {
     float: left;
@@ -206,6 +207,14 @@ form .actions > * {
     padding-bottom: 2em;
     margin-bottom: 0.5em;
     margin-top: 1em;
+}
+
+.mail .body p {
+    margin: 0.5em 0px; 
+}
+
+.mail .body a {
+    color: #0077CC;
 }
 
 .mail .date {

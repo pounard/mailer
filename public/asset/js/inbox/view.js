@@ -57,7 +57,7 @@ var View;
       subject: this.subject,
       date:    date,
       classes: this.classes.join(" "),
-      body:    this.bodyPlain
+      body:    this.bodyPlainFiltered || this.bodyPlain
     }));
     this.element = $element.get(0);
 
