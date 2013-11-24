@@ -4,7 +4,10 @@ namespace Mailer\Server\Protocol\Body;
 
 use Mailer\Server\ProtocolHelper;
 
-class Multipart implements \Countable, \IteratorAggregate, PartInterface
+class Multipart extends AbstractPart implements
+    \Countable,
+    \IteratorAggregate,
+    PartInterface
 {
     /**
      * Create instance from array
@@ -117,11 +120,6 @@ class Multipart implements \Countable, \IteratorAggregate, PartInterface
     private $multipart = true;
 
     /**
-     * @var string
-     */
-    private $subtype;
-
-    /**
      * @var PartInterface[]
      */
     private $parts = array();
@@ -171,26 +169,6 @@ class Multipart implements \Countable, \IteratorAggregate, PartInterface
     public function isMultipart()
     {
         return $this->multipart;
-    }
-
-    /**
-     * Get multipart subtype
-     *
-     * @return string
-     */
-    public function getSubtype()
-    {
-        return $this->subtype;
-    }
-
-    /**
-     * Set multipart subtype
-     *
-     * @param string $subtype
-     */
-    public function setSubtype($subtype)
-    {
-        $this->subtype = $subtype;
     }
 
     /**
@@ -278,15 +256,32 @@ class Multipart implements \Countable, \IteratorAggregate, PartInterface
      */
     public function appendPart(PartInterface $part)
     {
-        if ($part instanceof Part) {
-            if ($this->multipart) {
-                $index = count($this->parts); // Index starts by 0
+        if ($this->multipart) {
+            $localIndex = count($this->parts);
+            $thisIndex = $this->getIndex();
+            if (PartInterface::INDEX_ROOT === $thisIndex) {
+                $index = $localIndex;
             } else {
-                $index = Part::INDEX_ROOT;
+                $index = $thisIndex . PartInterface::INDEX_SEPARATOR . $localIndex;
             }
             $part->setIndex($index);
         }
         $this->parts[] = $part;
+    }
+
+    public function setIndex($index)
+    {
+        // Overrided because during creation children will be appened
+        // here before this very own instance goes into its parent
+        if (!empty($this->parts)) {
+            foreach ($this->parts as $key => $part) {
+                if (PartInterface::INDEX_ROOT === $index) {
+                    $part->setIndex($key);
+                } else {
+                    $part->setIndex($index . PartInterface::INDEX_SEPARATOR . $key);
+                }
+            }
+        }
     }
 
     public function count()

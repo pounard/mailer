@@ -4,15 +4,8 @@ namespace Mailer\Server\Protocol\Body;
 
 use Mailer\Server\ProtocolHelper;
 
-class Part implements PartInterface
+class Part extends AbstractPart implements PartInterface
 {
-    /**
-     * When message is not multipart fetch content won't be the same
-     * command, this contanst indicates to the fetch callback it should
-     * not trust the index but fetch the root part instead
-     */
-    const INDEX_ROOT = -1;
-
     /**
      * Create instance from array
      *
@@ -127,23 +120,6 @@ class Part implements PartInterface
     private $fetchCallback;
 
     /**
-     * Part index in parent multipart
-     *
-     * @var int
-     */
-    private $index = 0;
-
-    /**
-     * @var string
-     */
-    private $type;
-
-    /**
-     * @var  string
-     */
-    private $subtype;
-
-    /**
      * @var array
      */
     private $parameters = array();
@@ -235,66 +211,6 @@ class Part implements PartInterface
                 array_shift($array);
             }
         }
-    }
-
-    /**
-     * Set index in parent multipart
-     *
-     * @param int $index
-     */
-    public function setIndex($index)
-    {
-        $this->index = $index;
-    }
-
-    /**
-     * Get index in parent multipart
-     *
-     * @return int
-     */
-    public function getIndex()
-    {
-        return $this->index;
-    }
-
-    /**
-     * Set type
-     *
-     * @param string $type
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * Get type
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Set substype
-     *
-     * @param string $subtype
-     */
-    public function setSubtype($subtype)
-    {
-        $this->subtype = $subtype;
-    }
-
-    /**
-     * Get subtype
-     *
-     * @return string
-     */
-    public function getSubtype()
-    {
-        return $this->subtype;
     }
 
     /**
@@ -427,7 +343,7 @@ class Part implements PartInterface
     public function getContents()
     {
         // This could be skipped and returned implictely but it makes
-        // it more readable this way: strick false means there was an
+        // it more readable this way: strict false means there was an
         // error while fetching the content, which any other case such
         // as an empty string is a valid content
         if (false === $this->contents) {
