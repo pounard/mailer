@@ -40,14 +40,13 @@ class Multipart extends AbstractPart implements
         if (!empty($array)) {
             if (is_array($array[0])) {
 
-                if (is_array($array[0][0])) {
-                    // Per RFC3501 multipart can nest multipart
-                    $instance->appendPart(self::createInstanceFromArray(array_shift($array), $fetchCallback));
-                    $part = array_shift($array); // Because else do that too
-                } else {
-                    // RFC3501 nested list of body parts: list stops when
-                    // parenthesis ends and we hit a string
-                    while (($part = array_shift($array)) && is_array($part)) {
+                while (($part = array_shift($array)) && is_array($part)) {
+                    if (is_array($part[0])) {
+                        // Per RFC3501 multipart can nest multipart
+                        $instance->appendPart(self::createInstanceFromArray($part, $fetchCallback));
+                    } else {
+                        // RFC3501 nested list of body parts: list stops when
+                        // parenthesis ends and we hit a string
                         $instance->appendPart(Part::createInstanceFromArray($part, $fetchCallback));
                     }
                 }

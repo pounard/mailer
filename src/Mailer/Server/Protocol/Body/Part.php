@@ -50,7 +50,7 @@ class Part extends AbstractPart implements PartInterface
         if (class_exists($className)) {
             $instance = new $className();
         } else {
-            trigger_error(sprintf("Unsuported body part type '%s': using generic implementation", $type));
+            //trigger_error(sprintf("Unsuported body part type '%s': using generic implementation", $type));
             $isKnownType = false;
             $instance = new Part();
         }
