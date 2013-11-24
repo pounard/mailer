@@ -11,10 +11,9 @@ class ImapAuthProvider extends AbstractContainerAware implements AuthProviderInt
 {
     public function authenticate($username, $password)
     {
-        $container = $this->getContainer();
-        $server = $container['imap'];
-        $server->setCredentials($username, $password);
+        $mailReader = $this->getContainer()->getMailReader();
+        $mailReader->setCredentials($username, $password);
 
-        return $server->connect();
+        return $mailReader->connect();
     }
 }

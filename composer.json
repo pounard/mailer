@@ -16,6 +16,8 @@
         }
     },
     "require": {
+        "zendframework/zend-mail": "2.2.*",
+        "zendframework/zend-mime": "2.2.*",
         "php-config/php-config": "dev-master",
         "pimple/pimple": "2.*@dev",
         "doctrine/cache": "1.3.*"

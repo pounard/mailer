@@ -13,9 +13,10 @@ class LoginController extends AbstractController
 {
     public function isAuthorized(RequestInterface $request, array $args)
     {
-        $container = $this->getContainer();
-
-        return !$container['session']->isAuthenticated();
+        return $this
+            ->getContainer()
+            ->getSession()
+            ->isAuthenticated();
     }
 
     public function getAction(RequestInterface $request, array $args)
@@ -37,7 +38,7 @@ class LoginController extends AbstractController
         $container = $this->getContainer();
         if ($container['auth']->authenticate($_POST['username'], $_POST['password'])) {
             // Yeah! Success.
-            if (!$container['session']->regenerate(new Account(-1, $_POST['username'], $_POST['password']))) {
+            if (!$container->getSession()->regenerate(new Account(-1, $_POST['username'], $_POST['password']))) {
                 throw new LogicError("Could not create session");
             }
             return new RedirectResponse('');

@@ -139,10 +139,8 @@ class Dispatcher extends AbstractContainerAware
             }
 
             try {
-                list($controller, $args) = $this
-                    ->getRouter()
-                    ->findController($request);
-
+                // Most dispatching magic happens here
+                list($controller, $args) = $this->getRouter()->findController($request);
                 $view = $this->executeController($request, $controller, $args);
                 $contentType = $renderer->getContentType();
 
@@ -150,7 +148,7 @@ class Dispatcher extends AbstractContainerAware
                     $view->send(null);
                 } else {
                     // Because one liners are too mainstream
-                    $response->send($renderer->render($view), $contentType);
+                    $response->send($renderer->render($view, $request), $contentType);
                 }
 
             // Within exception handling the dispatcher will act as a controller
@@ -159,8 +157,7 @@ class Dispatcher extends AbstractContainerAware
                 if ($renderer instanceof HtmlRenderer) {
                     // If HTML is the demanded protocol then redirect to the
                     // login controller whenever the user is not authenticated
-                    $container = $this->getContainer();
-                    if ($container['session']->isAuthenticated()) {
+                    if ($this->getContainer()->getSession()->isAuthenticated()) {
                         $response->send($renderer->render(new view(array('e' => $e), 'app/unauth')));
                     } else {
                         $response = new RedirectResponse('app/login');
@@ -169,10 +166,10 @@ class Dispatcher extends AbstractContainerAware
                 } else {
                     // Unauthorized error will end up releasing a 403 error in
                     // the client demanded protocol
-                    $response->send($renderer->render(new View(array('e' => $e), 'app/error')));
+                    $response->send($renderer->render(new View(array('e' => $e), 'app/error'), $request));
                 }
             } catch (\Exception $e) {
-                $response->send($renderer->render(new View(array('e' => $e), 'app/error')));
+                $response->send($renderer->render(new View(array('e' => $e), 'app/error'), $request));
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();

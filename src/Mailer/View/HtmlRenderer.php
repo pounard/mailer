@@ -3,8 +3,9 @@
 namespace Mailer\View;
 
 use Mailer\Core\AbstractContainerAware;
-use Mailer\Error\TechnicalError;
+use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
+use Mailer\Error\TechnicalError;
 
 /**
  * Container is needed here because we need site configuration for default
@@ -30,7 +31,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
      * @return array
      *   Variables for the template
      */
-    protected function prepareVariables($values)
+    protected function prepareVariables(RequestInterface $request, $values)
     {
         if (is_array($values)) {
             $ret = $values;
@@ -39,15 +40,15 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         }
 
         $container = $this->getContainer();
-        $config = $container['config'];
-        $request = $container['request'];
+        $session = $container->getSession();
+        $config = $container->getConfig();
 
-        $ret['title'] = $config['/html/title'];
-        $ret['basepath'] = $container['basepath'];
-        $ret['url'] = $container['basepath'] . $request->getResource();
-        $ret['session'] = $container['session'];
-        $ret['account'] = $ret['session']->getAccount();
-        $ret['isAuthenticated'] = $ret['session']->isAuthenticated();
+        $ret['title'] = $config['html']['title'];
+        $ret['basepath'] = $request->getBasePath();
+        $ret['url'] = $ret['basepath'] . $request->getResource();
+        $ret['session'] = $session;
+        $ret['account'] = $session->getAccount();
+        $ret['isAuthenticated'] = $session->isAuthenticated();
         $ret['pagetitle'] = isset($values['pagetitle']) ? $values['pagetitle'] : null;
 
         return $ret;
@@ -77,21 +78,17 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         return ob_get_clean();
     }
 
-    public function render(View $view)
+    public function render(View $view, RequestInterface $request)
     {
         // Render the content template
         $partial = $this->renderTemplate(
-            $this->prepareVariables(
-                $view->getValues()
-            ),
+            $this->prepareVariables($request, $view->getValues()),
             $view->getTemplate()
         );
 
         // Wrap the rendering into an full HTML page
         return $this->renderTemplate(
-            $this->prepareVariables(
-                array('content' => $partial)
-            ),
+            $this->prepareVariables($request, array('content' => $partial)),
             'app/layout'
         );
     }

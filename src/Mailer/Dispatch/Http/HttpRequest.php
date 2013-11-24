@@ -116,6 +116,12 @@ class HttpRequest extends DefaultRequest
         }
     }
 
+    public function getBasePath()
+    {
+        // @todo DYNAMIC!
+        return '/';
+    }
+
     public function createResponse()
     {
         return new HttpResponse($this);

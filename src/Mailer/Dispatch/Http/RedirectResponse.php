@@ -34,8 +34,6 @@ class RedirectResponse extends AbstractContainerAware implements
 
     public function send($output, $contentType = null)
     {
-        $container = $this->getContainer();
-
         $url = $this->url;
         if (false === strpos($url, '://')) {
             // Got a resource

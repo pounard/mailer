@@ -5,6 +5,7 @@ namespace Mailer\Server\Cache;
 use Mailer\Server\ServerInterface;
 
 use Doctrine\Common\Cache\Cache;
+use Mailer\Core\Container;
 
 /**
  * Imap server connection using the PHP IMAP extension
@@ -71,16 +72,13 @@ abstract class AbstractCachedServerProxy extends AbstractServerProxy
         }
     }
 
-    public function setContainer(\Pimple $container)
+    public function setContainer(Container $container)
     {
         parent::setContainer($container);
 
         // Per default cache prefix will always be user dependent
-        if (null === $this->prefix &&
-            isset($container['session']) &&
-            ($account = $container['session']->getAccount()))
-        {
-            $this->prefix = $account->getId();
+        if (null === $this->prefix) {
+            $this->prefix = $container->getSession()->getAccount()->getId();
         }
     }
 

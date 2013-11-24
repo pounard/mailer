@@ -2,12 +2,13 @@
 
 namespace Mailer\View;
 
-use Mailer\Model\ArrayConverter;
+use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
+use Mailer\Model\ArrayConverter;
 
 class JsonRenderer implements RendererInterface
 {
-    public function render(View $view)
+    public function render(View $view, RequestInterface $request)
     {
         $converter = new ArrayConverter();
 

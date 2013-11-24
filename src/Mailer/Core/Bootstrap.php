@@ -42,26 +42,23 @@ class Bootstrap
      */
     static public function bootstrap(
         ContainerAwareInterface $component,
-        RequestInterface $request,
         $config)
     {
         self::prepareEnvironment();
 
-        $container = $component->getContainer();
+        $container = new Container();
+        $component->setContainer($container);
 
-        // Set some global dynamic parameters
-        // FIXME -- I said dynamic...
-        $container['basepath'] = '/';
-        $container['request'] = $request;
+        $pimple = $container->getInternalContainer();
 
         // Set some various services
         foreach ($config['services'] as $key => $value) {
             if (is_callable($value)) {
-                $container[$key] = function () use ($container, $value) {
+                $pimple[$key] = function () use ($container, $value) {
                     call_user_func($value, $container);
                 };
             } else if (class_exists($value)) {
-                $container[$key] = function () use ($container, $value) {
+                $pimple[$key] = function () use ($container, $value) {
                     $service = new $value();
                     if ($service instanceof ContainerAwareInterface) {
                         $service->setContainer($container);
@@ -73,22 +70,22 @@ class Bootstrap
             }
         }
 
-        $container['session']->start();
+        $pimple['session']->start();
 
         // Server wide configuration
         /*
-        $container['config'] = function () use ($config) {
+        $pimple['config'] = function () use ($config) {
             return new MemoryBackend($config['config']);
         };
          */
-        $container['config'] = $config['config'];
-        if (isset($config['config']['charset'])) {
-            // Set default charset to environment
-            mb_internal_encoding($config['config']['charset']);
+        $pimple['config'] = $config['config'];
+        if (!isset($config['config']['charset'])) {
+          $config['config']['charset'] = "UTF-8";
         }
+        mb_internal_encoding($config['config']['charset']);
 
         // Services
-        $container['imap'] = function () use ($container, $config) {
+        $pimple['mailreader'] = function () use ($container, $config) {
             if (isset($config['redis'])) {
                 $redis = new \Redis();
                 $redis->connect($config['redis']['host']);
@@ -107,7 +104,7 @@ class Bootstrap
             }
             return $service;
         };
-        $container['smtp'] = function () use ($container, $config) {
+        $pimple['smtp'] = function () use ($container, $config) {
             $service = new PhpSmtpServer();
             $service->setOptions($config['servers']['stmp']);
             if ($service instanceof ContainerAwareInterface) {

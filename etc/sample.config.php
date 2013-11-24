@@ -23,6 +23,15 @@ return array(
         'host' => 'localhost',
         'port' => null,
     ),
+    // Default folders config
+    // @todo Make this configurable per user
+    'folders' => array(
+        'special' => array(
+            'draft' => 'Drafts',
+            'sent' => 'Sent',
+            'trash' => 'Trash',
+        ),
+    ),
     // In this section configure the servers you want to use
     'servers' => array(
         'smtp' => array(

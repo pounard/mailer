@@ -3,6 +3,7 @@
 namespace Mailer\Server\Cache;
 
 use Mailer\Core\AbstractContainerAware;
+use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Server\ServerInterface;
 
@@ -87,7 +88,7 @@ abstract class AbstractServerProxy extends AbstractContainerAware implements
         return $this->nested->getOptions();
     }
 
-    public function setContainer(\Pimple $container)
+    public function setContainer(Container $container)
     {
         parent::setContainer($container);
 

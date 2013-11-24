@@ -234,6 +234,23 @@ class Part extends AbstractPart implements PartInterface
     }
 
     /**
+     * Get single parater
+     *
+     * @param string $name
+     * @param mixed $default
+     *
+     * @return mixed
+     */
+    public function getParameter($name, $default = null)
+    {
+        if (isset($this->parameters[$name])) {
+            return $this->parameters[$name];
+        } else {
+            return $default;
+        }
+    }
+
+    /**
      * Set description
      *
      * @param string $description

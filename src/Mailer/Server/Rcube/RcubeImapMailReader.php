@@ -307,6 +307,28 @@ class RcubeImapMailReader extends AbstractServer implements
         }
     }
 
+    /**
+     * Clean fetched body
+     *
+     * @param string $body
+     * @param string $charset
+     */
+    private function cleanBody($body, $type, $subtype, $charset = 'US-ASCII')
+    {
+        // Remove NULL characters if any (#1486189)
+        if (strpos($body, "\x00") !== false) {
+            $body = str_replace("\x00", '', $body);
+        }
+        if ('US-ASCII' === $charset && preg_match('/^(text|message)$/', $type)) {
+            // try to extract charset information from HTML meta tag (#1488125)
+            if (false !== strpos($subtype, 'html') && preg_match('/<meta[^>]+charset=([a-z0-9-_]+)/i', $body, $matches)) {
+                $charset = strtoupper($matches[1]);
+            }
+        }
+
+        return @\rcube_charset::convert($body, $charset, $this->getContainer()->getDefaultCharset());
+    }
+
     public function getMails($name, array $idList)
     {
         $client = $this->getClient();
@@ -315,8 +337,6 @@ class RcubeImapMailReader extends AbstractServer implements
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
         }
-
-        $defaultCharset = $this->getDefaultCharset();
 
         foreach ($ret as $index => $header) {
             if ($header instanceof \rcube_message_header) {
@@ -342,42 +362,17 @@ class RcubeImapMailReader extends AbstractServer implements
 
                 $multipart = Multipart::createInstanceFromArray(
                     $bodyStructure,
-                    function (Part $part) use ($client, $uid, $name, $defaultCharset) {
+                    function (Part $part) use ($client, $uid, $name) {
 
-                        // Slice of code from Roundcube client
                         $index = $part->getIndex();
-                        $body = @$client->handlePartBody(
-                            $name,
-                            $uid,
-                            true,
-                            $index === Part::INDEX_ROOT ? 'TEXT' : $index,
-                            $part->getEncoding()
-                        );
+                        $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
+                        $body  = @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
 
-                        if (empty($body)) {
+                        if (empty($body)) { // Can have no body there.
                             return false;
+                        } else {
+                            return $this->cleanBody($body, $part->getType(), $part->getSubtype(), $part->getParameter('charset'));
                         }
-
-                        // convert charset (if text or message part)
-                        $parameters = $part->getParameters();
-                        // @todo Default charset fallback is stupid
-                        $charset = isset($parameters['charset']) ? strtoupper($parameters['charset']) : 'US-ASCCI';
-                        if ($body && preg_match('/^(text|message)$/', $part->getType())) {
-                            // Remove NULL characters if any (#1486189)
-                            if (strpos($body, "\x00") !== false) {
-                                $body = str_replace("\x00", '', $body);
-                            }
-                            if ('US-ASCII' === $charset) {
-                                // try to extract charset information from HTML meta tag (#1488125)
-                                if ('html' === $part->getSubtype() && preg_match('/<meta[^>]+charset=([a-z0-9-_]+)/i', $body, $m)) {
-                                    $charset = strtoupper($m[1]);
-                                }
-                            }
-                        }
-
-                        $body = @\rcube_charset::convert($body, $charset, $defaultCharset);
-
-                        return $body;
                     }
                 );
 
@@ -523,8 +518,6 @@ class RcubeImapMailReader extends AbstractServer implements
         $complete = false,
         $refresh = false)
     {
-        // Ordering by ASC will avoid calling the reverse() operation on
-        // roundcube thread returned instance
         $tree = $this->getPartialThreads($name, 0, null, Sort::SORT_SEQ, Sort::ORDER_ASC, $refresh);
 
         foreach ($tree as $root => $uidList) {
@@ -547,14 +540,10 @@ class RcubeImapMailReader extends AbstractServer implements
                 return !$envelope->isDeleted();
             });
 
-            break;
+            return $list;
         }
 
-        if (!isset($list)) {
-            throw new NotFoundError("Could not find thread");
-        }
-
-        return $list;
+        throw new NotFoundError("Could not find thread");
     }
 
     /**

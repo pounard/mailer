@@ -38,9 +38,10 @@ abstract class AbstractController extends AbstractContainerAware implements
 
     public function isAuthorized(RequestInterface $request, array $args)
     {
-        $container = $this->getContainer();
-
-        return $container['session']->isAuthenticated();
+        return $this
+            ->getContainer()
+            ->getSession()
+            ->isAuthenticated();
     }
 
     public function deleteAction(RequestInterface $request, array $args)

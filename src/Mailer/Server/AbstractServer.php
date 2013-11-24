@@ -3,6 +3,7 @@
 namespace Mailer\Server;
 
 use Mailer\Core\AbstractContainerAware;
+use Mailer\Core\Container;
 use Mailer\Error\LogicError;
 
 abstract class AbstractServer extends AbstractContainerAware implements
@@ -21,8 +22,6 @@ abstract class AbstractServer extends AbstractContainerAware implements
     private $acceptInvalidCert = true;
 
     private $options = array();
-
-    private $defaultCharset;
 
     public function getHost()
     {
@@ -108,23 +107,13 @@ abstract class AbstractServer extends AbstractContainerAware implements
         return $this->options;
     }
 
-    public function getDefaultCharset()
-    {
-        return $this->defaultCharset;
-    }
-
-    public function setContainer(\Pimple $container)
+    public function setContainer(Container $container)
     {
         parent::setContainer($container);
 
-        $config = $container['config'];
-        if (isset($config['charset'])) {
-            $this->defaultCharset = $config['charset'];
-        } else {
-            $this->defaultCharset = mb_internal_encoding();
-        }
-
-        if ($account = $container['session']->getAccount()) {
+        $session = $container->getSession();
+        if ($session->isAuthenticated()) {
+            $account = $session->getAccount();
             $this->setCredentials(
                 $account->getUsername(),
                 $account->getPassword()

@@ -16,5 +16,5 @@ $request = HttpRequest::createFromGlobals();
 $dispatcher = new Dispatcher();
 
 $config = require_once __DIR__ . '/../etc/config.php';
-Bootstrap::bootstrap($dispatcher, $request, $config);
+Bootstrap::bootstrap($dispatcher, $config);
 $dispatcher->dispatch($request);

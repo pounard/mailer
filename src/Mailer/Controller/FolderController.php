@@ -11,11 +11,11 @@ use Mailer\Server\MailReaderInterface;
 /**
  * Return parameters from the request
  */
-class FolderController extends AbstractMailController
+class FolderController extends AbstractController
 {
     public function getAction(RequestInterface $request, array $args)
     {
-        $server = $this->getServer();
+        $server = $this->getContainer()->getMailReader();
 
         switch (count($args)) {
 

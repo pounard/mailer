@@ -5,21 +5,11 @@ namespace Mailer\Core;
 abstract class AbstractContainerAware implements ContainerAwareInterface
 {
     /**
-     * @var \Pimple
+     * @var Container
      */
     private $container;
 
-    /**
-     * Default constructor
-     *
-     * Ensures that we always have a valid container
-     */
-    public function __construct()
-    {
-        $this->container = new \Pimple();
-    }
-
-    public function setContainer(\Pimple $container)
+    public function setContainer(Container $container)
     {
         $this->container = $container;
     }

@@ -23,6 +23,13 @@ namespace Mailer\Dispatch;
 interface RequestInterface
 {
     /**
+     * Get base path (especially usefull when using HTTP)
+     *
+     * @return string
+     */
+    public function getBasePath();
+
+    /**
      * Get asked resource or command
      *
      * @return string

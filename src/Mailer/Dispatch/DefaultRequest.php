@@ -49,6 +49,12 @@ class DefaultRequest implements RequestInterface
         $this->method  = $method;
     }
 
+    public function getBasePath()
+    {
+        // @todo DYNAMIC!
+        return '/';
+    }
+
     public function getResource()
     {
         return $this->path;
