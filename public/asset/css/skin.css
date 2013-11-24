@@ -115,7 +115,7 @@ form .actions > * {
     list-style-position: outside;
 }
 
-#folders li.special, #folders li.folder {
+#folders .special, #folders .folder {
     padding-left: 28px;
     line-height: 28px;
     background-image: url(../img/icons/folder-14.png);
@@ -123,12 +123,32 @@ form .actions > * {
     background-repeat: no-repeat;
 }
 
-#folders li.special-search {
+#folders .folder-search {
     background-image: url(../img/icons/search-14.png);
 }
 
-#folders li.special-starred {
+#folders .folder-starred {
     background-image: url(../img/icons/starred-on-14.png);
+}
+
+#folders .folder-inbox {
+    background-image: url(../img/icons/mail-close-14.png);
+}
+
+#folders .folder-sent {
+    /* background-image: url(../img/icons/mail-close-14.png); */
+}
+
+#folders .folder-draft {
+    /* background-image: url(../img/icons/starred-on-14.png); */
+}
+
+#folders .folder-spam {
+    background-image: url(../img/icons/warning-14.png);
+}
+
+#folders .folder-trash {
+    background-image: url(../img/icons/trash-14.png);
 }
 
 #folders .unseen {
@@ -173,6 +193,7 @@ form .actions > * {
 }
 .thread .summary {
     color: #808080;
+    font-size: 0.95em;
 }
 .thread .date, .mail .date {
     position: absolute;
@@ -209,8 +230,31 @@ form .actions > * {
     margin-top: 1em;
 }
 
+
+.mail .star {
+    /* Move out text */
+    color: transparent;
+    height: 14px;
+    width: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    /* Background image */
+    background-image: url(../img/icons/starred-off-14.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    /* From */
+    float: left;
+    margin: 0 1em;
+}
+.mail .starred {
+    background-image: url(../img/icons/starred-on-14.png);
+}
+
 .mail .body p {
-    margin: 0.5em 0px; 
+    margin: 0.5em 0px;
+    font-size: 1.05em;
+    line-height: 1.42857;
+    color: black;
 }
 
 .mail .body a {
@@ -226,12 +270,17 @@ form .actions > * {
     margin-bottom: 0.5em;
 }
 
+.mail .from a {
+    color: #228B22;
+    font-weight: bold;
+}
+
 .mail .people {
     float: left;
 }
 
 .mail .subject {
-    line-height: 32px;
+    /* line-height: 32px; /* Removed the image */
     font-weight: bold;
 }
 

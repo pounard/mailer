@@ -21,6 +21,7 @@ var Inbox, inboxInstance;
     this.folders         = {};
     this.threads         = {};
     this.mails           = {};
+    this.settings        = {};
   };
 
   /**
@@ -97,31 +98,6 @@ var Inbox, inboxInstance;
   };
 
   /**
-   * Get the right container for the given folder
-   *
-   * @param folder
-   *   Folder instance
-   *
-   * @return
-   *   jQuery selector for parent container
-   */
-  Inbox.prototype.getFolderContainer = function (folder) {
-    var parent, $container;
-    if (folder.parent && this.folders[folder.parent]) {
-      parent = this.folders[folder.parent];
-      parent.classes.push("parent");
-      $container = $(parent.children);
-    } else {
-      if (folder.special) {
-        $container = this.$specialFolders;
-      } else {
-        $container = this.$allFolders;
-      }
-    }
-    return $container.eq(0);
-  };
-
-  /**
    * Get the right container for displaying the mail view
    *
    * @return
@@ -152,16 +128,72 @@ var Inbox, inboxInstance;
     this.$view.show();
   };
 
-  Inbox.prototype.addFolder = function (folder) {
-    this.folders[folder.path] = folder;
-    this.getFolderContainer(folder).append(folder.render());
+  Inbox.prototype.getSetting = function (name, defaultValue) {
+    if (this.settings) {
+      if (this.settings.user && this.settings.user[name]) {
+        return this.settings.user[name];
+      }
+      if (this.settings.global && this.settings.global[name]) {
+        return this.settings.global[name];
+      }
+    }
+    return defaultValue;
   };
 
+  /**
+   * Add folder
+   */
+  Inbox.prototype.addFolder = function (folder) {
+    var key = 0, parent, $container = undefined, folders;
+
+    // Register new folder
+    this.folders[folder.path] = folder;
+
+    // Check for parent case in which the folder must belong
+    // to the parent folder container
+    if (folder.parent && this.folders[folder.parent]) {
+      parent = this.folders[folder.parent];
+      parent.classes.push("parent");
+      $container = $(parent.children);
+    } else {
+      // Check for special folders that need specific placement
+      // in the folder pane: start with the obvious INBOX folder
+      if ("INBOX" === folder.name) {
+        folder.classes.push("folder-inbox");
+        $container = this.$specialFolders;
+      } else {
+        folders = this.getSetting("folders", {});
+        // All other must be determined from the server given
+        // special folder list
+        for (key in folders) {
+          if (folders[key] === folder.name) {
+            folder.classes.push("folder-" + key);
+            $container = this.$specialFolders;
+            break;
+          }
+        }
+      }
+
+      if (!$container) {
+        $container = this.$allFolders;
+      }
+      $container.append(folder.render());
+    }
+
+    // this.getFolderContainer(folder).append(folder.render());
+  };
+
+  /**
+   * Add thread
+   */
   Inbox.prototype.addThread = function (thread) {
     this.threads[thread.id] = thread;
     this.getInboxContainer().append(thread.render());
   };
 
+  /**
+   * Add view
+   */
   Inbox.prototype.addView = function (view) {
     this.openThreadView();
     if (view) {
@@ -188,7 +220,13 @@ var Inbox, inboxInstance;
   // Run all the things!
   $(document).ready(function () {
     inboxInstance = new Inbox();
-    inboxInstance.refreshFolderList();
+    inboxInstance.dispatcher.fetchJson(null, {
+      url: 'settings',
+      success: function (data) {
+        inboxInstance.settings = data;
+        inboxInstance.refreshFolderList();
+      }
+    });
   });
 
 }(jQuery, document));
