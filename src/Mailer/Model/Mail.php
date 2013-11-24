@@ -45,6 +45,20 @@ class Mail extends Envelope
         return $this->bodyHtml;
     }
 
+    /**
+     * Get summary from plain text version of mail
+     *
+     * @return string
+     */
+    public function getSummary()
+    {
+        if (!empty($this->bodyPlain)) {
+            if (preg_match('/^.{1,200}\b/su', $this->bodyPlain, $match)) {
+                return $match[0] . '…';
+            }
+        }
+    }
+
     public function toArray()
     {
         $array = parent::toArray();
@@ -54,6 +68,7 @@ class Mail extends Envelope
             'bodyHtml'          => $this->bodyHtml,
             'bodyPlainFiltered' => $this->getBodyPlain(true),
             'bodyHtmlFiltered'  => $this->getBodyHtml(true),
+            'summary'           => $this->getSummary(),
         );
 
         return $array;

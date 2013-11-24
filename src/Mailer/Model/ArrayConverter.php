@@ -15,6 +15,16 @@ class ArrayConverter
             $data = $data->toArray();
         }
 
+        if ($data instanceof \Exception) {
+            $ret = array(
+                'type' => 'error',
+                'message' => $data->getMessage(),
+            );
+            foreach ($data->getTrace() as $trace) {
+                unset($trace['args']);
+                $ret['trace'][] = $trace;
+            }
+        }
         if ($data instanceof \Traversable || is_array($data)) {
             foreach ($data as $key => $item) {
                 $ret[$key] = $this->recursiveSerialize($item);
@@ -24,7 +34,7 @@ class ArrayConverter
         } else if (is_scalar($data)) {
             $ret = $data;
         } else {
-            trigger_error("Property could not be converted");
+            // trigger_error("Property could not be converted");
             $ret = null;
         }
 

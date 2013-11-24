@@ -298,9 +298,9 @@ class RcubeImapMailReader extends AbstractServer implements
             if ($part instanceof Multipart) {
                 $this->findBody($part, $array);
             } else if ('text' === $part->getType()) {
-                if (false !== strpos($part->getSubtype(), 'html')) {
+                if (empty($array['bodyHtml']) && false !== strpos($part->getSubtype(), 'html')) {
                     $array['bodyHtml'] = $part->getContents();
-                } if (false !== strpos($part->getSubtype(), 'plain')) {
+                } if (empty($array['bodyPlain']) && false !== strpos($part->getSubtype(), 'plain')) {
                     $array['bodyPlain'] = $part->getContents();
                 }
             }
@@ -374,6 +374,7 @@ class RcubeImapMailReader extends AbstractServer implements
                                 }
                             }
                         }
+
                         $body = @\rcube_charset::convert($body, $charset, $defaultCharset);
 
                         return $body;
@@ -504,7 +505,7 @@ class RcubeImapMailReader extends AbstractServer implements
 
         return array(
             'subject'      => $first->getSubject(),
-            'summary'      => null, // @todo
+            'summary'      => $mail->getSummary(), // @todo
             'persons'      => $personMap,
             'startedDate'  => $first->getDate(),
             'lastUpdate'   => $last->getDate(),
@@ -515,7 +516,12 @@ class RcubeImapMailReader extends AbstractServer implements
         ); 
     }
 
-    public function getThread($name, $id, $complete = false, $refresh = false)
+    public function getThread(
+        $name,
+        $id,
+        $order = Sort::ORDER_ASC,
+        $complete = false,
+        $refresh = false)
     {
         // Ordering by ASC will avoid calling the reverse() operation on
         // roundcube thread returned instance
@@ -531,6 +537,10 @@ class RcubeImapMailReader extends AbstractServer implements
                 $list = $this->getMails($name, $uidList);
             } else {
                 $list = $this->getEnvelopes($name, $uidList);
+            }
+
+            if (Sort::ORDER_DESC === $order) {
+                $list = array_reverse($list);
             }
 
             $list = array_filter($list, function ($envelope) {

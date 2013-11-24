@@ -16,9 +16,9 @@ class CachedMailReader extends AbstractCachedServerProxy implements
         $onlySubscribed = true,
         $refresh        = false)
     {
-        $id = 'map';
+        $key = 'map';
 
-        if ($map = $this->fetch($id)) {
+        if ($map = $this->fetch($key)) {
             return $map;
         }
 
@@ -28,30 +28,39 @@ class CachedMailReader extends AbstractCachedServerProxy implements
             $refresh
         );
 
-        $this->save($id, $map);
+        $this->save($key, $map);
 
         return $map;
     }
 
     public function getFolder($name, $refresh = false)
     {
-        $id = 'f:' . $name;
+        $key = 'f:' . $name;
 
-        if (!$refresh && ($ret = $this->fetch($id))) {
+        if (!$refresh && ($ret = $this->fetch($key))) {
             return $ret;
         }
 
         $ret = $this->nested->getFolder($name, $refresh);
 
-        $this->save($id, $ret);
+        $this->save($key, $ret);
 
         return $ret;
     }
 
     public function getEnvelope($name, $id)
     {
-        // @todo
-        return $this->nested->getEnvelope($name, $id);
+        $key = 'e:'  . $name . ':' . $id;
+
+        if (!$refresh && ($ret = $this->fetch($id))) {
+            return $ret;
+        }
+
+        $ret = $this->nested->getEnvelope($name, $id);
+
+        $this->save($key, $data);
+
+        return $ret;
     }
 
     public function getEnvelopes($name, array $idList)
@@ -60,22 +69,69 @@ class CachedMailReader extends AbstractCachedServerProxy implements
         return $this->nested->getEnvelopes($name, $idList);
     }
 
+    private function getMailKey($name, $id)
+    {
+        return 'm:'  . $name . ':' . $id;
+    } 
+
     public function getMail($name, $id)
     {
-        // @todo
-        return $this->nested->getMail($name, $id);
+        $key = $this->getMailKey($name, $id);
+
+        if ($ret = $this->fetch()) {
+            return $ret;
+        }
+
+        $ret = $this->nested->getMail($name, $id);
+
+        $this->save($key, $data);
+
+        return $ret;
     }
 
     public function getMails($name, array $idList)
     {
-        // @todo
-        return $this->nested->getMails($name, $idList);
+        $ret     = array();
+        $missing = array();
+
+        foreach ($idList as $id) {
+            if ($ret = $this->fetch($this->getMailKey($name, $id))) {
+                $ret[$id] = $ret;
+            } else {
+                $missing[$id] = $id;
+            }
+        }
+
+        if (!empty($missing)) {
+            foreach ($this->nested->getMails($name, $missing) as $mail) {
+                $id = $mail->getUid();
+                $ret[$id] = $mail;
+                $this->save($this->getMailKey($name, $id), $mail);
+            }
+        }
+
+        // @todo array_multisort()?
+        return $ret;
     }
 
-    public function getThread($name, $id, $complete = false, $refresh = false)
+    public function getThread(
+        $name,
+        $id,
+        $order = Sort::ORDER_ASC,
+        $complete = false,
+        $refresh = false)
     {
-        // @todo
-        return $this->nested->getThread($name, $id, $complete, $refresh);
+        $key = 't:' . $name . ':' . $id  . ':' . ($complete ? 1 : 0) . ':' . $order;
+
+        if (!$refresh && ($ret = $this->fetch($key))) {
+            return $ret;
+        }
+
+        $ret = $this->nested->getThread($name, $id, $order, $complete, $refresh);
+
+        $this->save($key, $ret);
+
+        return $ret;
     }
 
     public function getThreads(

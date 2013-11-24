@@ -5,6 +5,7 @@ namespace Mailer\Controller;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
+use Mailer\Model\Sort;
 use Mailer\Server\MailReaderInterface;
 
 /**
@@ -21,7 +22,7 @@ class FolderController extends AbstractMailController
             case 0:
                 return $server->getFolderMap(
                     $request->getOption('parent', null),
-                    (bool)$request->getOption('all'),
+                    /*!*/(bool)$request->getOption('all'),
                     (bool)$request->getOption('refresh'));
 
             case 1:
@@ -68,6 +69,7 @@ class FolderController extends AbstractMailController
                         return $server->getThread(
                             $args[0],
                             (int)$args[2],
+                            ($request->getOption('reverse', 0) ? Sort::ORDER_DESC : Sort::ORDER_ASC),
                             (bool)$request->getOption('complete', true),
                             (bool)$request->getOption('refresh')
                         );
