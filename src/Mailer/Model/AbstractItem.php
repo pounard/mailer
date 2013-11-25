@@ -2,21 +2,11 @@
 
 namespace Mailer\Model;
 
-abstract class AbstractItem implements ItemInterface
+abstract class AbstractItem extends AbstractContainer implements ItemInterface
 {
     protected $mailbox;
 
     protected $uid;
-
-    protected $created;
-
-    protected $updated;
-
-    protected $total = 1;
-
-    protected $unseen = 0;
-
-    protected $recent = 0;
 
     protected $subject = '';
 
@@ -34,31 +24,6 @@ abstract class AbstractItem implements ItemInterface
     public function getUid()
     {
         return $this->uid;
-    }
-
-    public function getCreationDate()
-    {
-        return $this->created;
-    }
-
-    public function getLastUpdate()
-    {
-        return $this->updated;
-    }
-
-    public function getMessageCount()
-    {
-        return $this->messageCount;
-    }
-
-    public function getUnseenCount()
-    {
-        return $this->unseenCount;
-    }
-
-    public function getRecentCount()
-    {
-        return $this->recentCount;
     }
 
     public function getSubject()
@@ -86,11 +51,6 @@ abstract class AbstractItem implements ItemInterface
         return array(
             'mailbox' => $this->mailbox,
             'uid'     => $this->uid,
-            'created' => $this->created,
-            'updated' => $this->updated,
-            'total'   => $this->total,
-            'unseen'  => $this->unseen,
-            'recent'  => $this->recent,
             'subject' => $this->subject,
             'summary' => $this->summary,
             'from'    => $this->from,
@@ -104,11 +64,6 @@ abstract class AbstractItem implements ItemInterface
 
         $this->mailbox = $array['mailbox'];
         $this->uid     = (int)$array['uid'];
-        $this->created = $array['created'];
-        $this->updated = $array['updated'];
-        $this->total   = (int)$array['total'];
-        $this->unseen  = (int)$array['unseen'];
-        $this->recent  = (int)$array['recent'];
         $this->subject = $array['subject'];
         $this->summary = $array['summary'];
         $this->from    = $array['from'];
