@@ -145,7 +145,7 @@ class MailboxIndex
 
         if (!$refresh) {
             foreach ($uidList as $uid) {
-                $key = $this->index->getCacheKey('m', $uid);
+                $key = $this->index->getCacheKey('e', $uid);
                 if ($mail = $cache->fetch($key)) {
                     $ret[] = $mail;
                 } else {
@@ -160,7 +160,7 @@ class MailboxIndex
             $missing = $this->index->getMailReader()->getEnvelopes($this->name, $uidList);
             foreach ($missing as $mail) {
                 $ret[] = $mail;
-                $key = $this->index->getCacheKey('m', $uid);
+                $key = $this->index->getCacheKey('e', $uid);
                 $cache->save($key, $mail);
             }
         }

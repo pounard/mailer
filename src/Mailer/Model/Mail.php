@@ -2,13 +2,9 @@
 
 namespace Mailer\Model;
 
-use Mailer\Error\NotImplementedError;
 use Mailer\Mime\Multipart;
 use Mailer\Mime\Part;
 
-/**
- * Represents a single mail.
- */
 class Mail extends Envelope
 {
     /**
@@ -16,12 +12,24 @@ class Mail extends Envelope
      */
     private $structure;
 
+    /**
+     * @var string
+     */
+    private $bodyPlain;
+
+    /**
+     * @var string
+     */
+    private $bodyHtml;
+
     public function toArray()
     {
         $array = parent::toArray();
 
         $array += array(
             'structure' => $this->structure,
+            'bodyPlain' => $this->bodyPlain,
+            'bodyHtml'  => $this->bodyHtml,
         );
 
         return $array;
@@ -34,5 +42,7 @@ class Mail extends Envelope
         parent::fromArray($array);
 
         $this->structure = $array['structure'];
+        $this->bodyPlain = $array['bodyPlain'];
+        $this->bodyHtml  = $array['bodyHtml'];
     }
 }

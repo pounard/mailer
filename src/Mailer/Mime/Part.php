@@ -60,18 +60,13 @@ class Part extends AbstractPart
      *
      * @param array $array
      *   Raw single body structure data array as described in the README.md file
-     * @param callback $fetchCallback
-     *   Single part fetch callback, server and backend dependent implementation
      *
      * @return Part
      *
-     * @see \Mailer\Mime\Part::fetchCallback
-     * @see \Mailer\Mime\Part::getContents()
-     * @see \Mailer\Mime\Part::setContents()
      * @see \Mailer\Mime\Part\Message
      * @see \Mailer\Mime\Part\Text
      */
-    static public function createInstanceFromArray(array $array, $fetchCallback = null)
+    static public function createInstanceFromArray(array $array)
     {
         $type = null;
         $isKnownType = true;
@@ -135,10 +130,6 @@ class Part extends AbstractPart
             if ($array = $instance->parseAdditionalData($array)) {
                 $instance->parseExtensionData($array);
             }
-        }
-
-        if (null !== $fetchCallback) {
-            $instance->setContents($fetchCallback);
         }
 
         return $instance;
@@ -414,7 +405,10 @@ class Part extends AbstractPart
                 if (false === $ret || null === $ret) { // Error
                     $this->contents = false;
                 } else {
-                    $this->contents = (string)$ret;
+                    $this->contents = Charset::convert(
+                        $ret,
+                        $this->getParameter('charset', 'US-ASCII')
+                    );
                 }
             }
         }

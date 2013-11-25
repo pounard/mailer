@@ -3,7 +3,6 @@
 namespace Mailer\Server\Imap\Impl;
 
 use Mailer\Error\LogicError;
-use Mailer\Error\NotImplementedError;
 use Mailer\Error\NotFoundError;
 use Mailer\Mime\Multipart;
 use Mailer\Mime\Part;
@@ -12,7 +11,6 @@ use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\Thread;
 use Mailer\Server\AbstractServer;
 use Mailer\Server\Imap\MailReaderInterface;
 use Mailer\Server\Imap\Query;
@@ -281,53 +279,6 @@ class RcubeImapMailReader extends AbstractServer implements
         throw new NotFoundError("Mail not found");
     }
 
-    /**
-     * Find and set body into given array
-     *
-     * @param Multipart $multipart
-     * @param unknown $array
-     */
-    private function findBody(Multipart $multipart, &$array)
-    {
-        if (isset($array['bodyHtml']) && isset($array['bodyPlain'])) {
-            return;
-        }
-
-        foreach ($multipart as $part) {
-            if ($part instanceof Multipart) {
-                $this->findBody($part, $array);
-            } else if ('text' === $part->getType()) {
-                if (empty($array['bodyHtml']) && false !== strpos($part->getSubtype(), 'html')) {
-                    $array['bodyHtml'] = $part->getContents();
-                } if (empty($array['bodyPlain']) && false !== strpos($part->getSubtype(), 'plain')) {
-                    $array['bodyPlain'] = $part->getContents();
-                }
-            }
-        }
-    }
-
-    /**
-     * Clean fetched body
-     *
-     * @param string $body
-     * @param string $charset
-     */
-    public function cleanBody($body, $type, $subtype, $charset = 'US-ASCII')
-    {
-        // Remove NULL characters if any (#1486189)
-        if (strpos($body, "\x00") !== false) {
-            $body = str_replace("\x00", '', $body);
-        }
-        if ('US-ASCII' === $charset && preg_match('/^(text|message)$/', $type)) {
-            // try to extract charset information from HTML meta tag (#1488125)
-            if (false !== strpos($subtype, 'html') && preg_match('/<meta[^>]+charset=([a-z0-9-_]+)/i', $body, $matches)) {
-                $charset = strtoupper($matches[1]);
-            }
-        }
-
-        return @\rcube_charset::convert($body, $charset, $this->getContainer()->getDefaultCharset());
-    }
-
     public function getMails($name, array $uidList)
     {
         $client = $this->getClient();
@@ -357,23 +308,23 @@ class RcubeImapMailReader extends AbstractServer implements
                 if (empty($bodyStructure)) {
                     trigger_error(sprintf("Mail with uid '%s' has no body structure", $uid));
                 } else {
-                    $multipart = Multipart::createInstanceFromArray(
-                        $bodyStructure,
-                        function (Part $part) use ($client, $uid, $name, $self) {
+                    $multipart = Multipart::createInstanceFromArray($bodyStructure);
 
-                            $index = $part->getIndex();
-                            $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
-                            $body  = @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
-
-                            if (empty($body)) { // Can have no body there.
-                                return false;
-                            } else {
-                                return $self->cleanBody($body, $part->getType(), $part->getSubtype(), strtoupper($part->getParameter('charset')));
-                            }
-                        }
-                    );
-
-                    $this->findBody($multipart, $array);
+                    // Callback depends on current arguments
+                    $callback  = function (Part $part) use ($client, $uid, $name, $self) {
+                        $index = $part->getIndex();
+                        $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
+                        return @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
+                    };
+                    // Fetch plain text and HTML body parts if found
+                    if ($part = $multipart->findPartFirst('text', 'plain')) {
+                        $part->setContents($callback);
+                        $array['bodyPlain'] = $part->getContents();
+                    }
+                    if ($part = $multipart->findPartFirst('text', 'html')) {
+                        $part->setContents($callback);
+                        $array['bodyHtml'] = $part->getContents();
+                    }
                 }
 
                 $mail = new Mail();

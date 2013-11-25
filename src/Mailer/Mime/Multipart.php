@@ -20,17 +20,10 @@ class Multipart extends AbstractPart implements
      *
      * @param array $array
      *   Raw body structure data array as described in the README.md file
-     * @param callback $fetchCallback
-     *   Single part fetch callback, server and backend dependent,
-     *   implementation
      *
      * @return Multipart
-     *
-     * @see Part::fetchCallback
-     * @see Part::createInstanceFromArray()
-     * @see Part::setContents()
      */
-    static public function createInstanceFromArray(array $array, $fetchCallback = null)
+    static public function createInstanceFromArray(array $array)
     {
         $instance = new self();
 
@@ -40,11 +33,11 @@ class Multipart extends AbstractPart implements
                 while (($part = array_shift($array)) && is_array($part)) {
                     if (is_array($part[0])) {
                         // Per RFC3501 multipart can nest multipart
-                        $instance->appendPart(self::createInstanceFromArray($part, $fetchCallback));
+                        $instance->appendPart(self::createInstanceFromArray($part));
                     } else {
                         // RFC3501 nested list of body parts: list stops when
                         // parenthesis ends and we hit a string
-                        $instance->appendPart(Part::createInstanceFromArray($part, $fetchCallback));
+                        $instance->appendPart(Part::createInstanceFromArray($part));
                     }
                 }
 
@@ -103,7 +96,7 @@ class Multipart extends AbstractPart implements
                 // RFC3501 There can be only one part then it's not multipart
                 // This code abstract it to multipart anyway
                 $instance->setMultipart(false);
-                $instance->appendPart(Part::createInstanceFromArray($array, $fetchCallback));
+                $instance->appendPart(Part::createInstanceFromArray($array));
             }
         }
 
@@ -255,7 +248,7 @@ class Multipart extends AbstractPart implements
         if ($this->multipart) {
             $localIndex = count($this->parts);
             $thisIndex = $this->getIndex();
-            if (AbstractPart::INDEX_ROOT === $thisIndex) {
+            if (Part::INDEX_ROOT === $thisIndex) {
                 $index = $localIndex;
             } else {
                 $index = $thisIndex . AbstractPart::INDEX_SEPARATOR . $localIndex;
@@ -271,7 +264,7 @@ class Multipart extends AbstractPart implements
         // here before this very own instance goes into its parent
         if (!empty($this->parts)) {
             foreach ($this->parts as $key => $part) {
-                if (AbstractPart::INDEX_ROOT === $index) {
+                if (Part::INDEX_ROOT === $index) {
                     $part->setIndex($key);
                 } else {
                     $part->setIndex($index . AbstractPart::INDEX_SEPARATOR . $key);
@@ -296,7 +289,7 @@ class Multipart extends AbstractPart implements
                     return $ret;
                 }
             } else {
-                if ((null === $type || $type === $part->type) && (null === $subtype || $type === $part->subtype)) {
+                if ((null === $type || $type === $part->type) && (null === $subtype || $subtype === $part->subtype)) {
                     return $part;
                 }
             }
@@ -317,9 +310,11 @@ class Multipart extends AbstractPart implements
 
         foreach ($this->parts as $part) {
             if ($part instanceof Multipart) {
-                $ret = array_merge($ret, $part->findPartFirst());
+                foreach ($part->findPartFirst() as $index => $part) {
+                    $ret[$index] = $part;
+                }
             } else {
-                if ((null === $type || $type === $part->type) && (null === $subtype || $type === $part->subtype)) {
+                if ((null === $type || $type === $part->type) && (null === $subtype || $subtype === $part->subtype)) {
                     $ret[$part->index] = $part;
                 }
             }
