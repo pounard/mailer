@@ -16,7 +16,6 @@ var Thread;
     }
     this.folder = folder;
     this.inbox = folder.inbox;
-
     this.classes = ["thread"];
   };
 
@@ -24,7 +23,7 @@ var Thread;
    * Render the folder
    */
   Thread.prototype.render = function () {
-    var $element, date = this.lastUpdate || this.startDate;
+    var $element, date = this.updated || this.created;
 
     if ("string" === typeof date) {
       date = new Date(Date.parse(date));
@@ -39,7 +38,9 @@ var Thread;
       persons: this.inbox.renderPersonImages(this.persons),
       subject: this.subject,
       date:    date,
-      unseen:  this.unseenCount,
+      total:   this.total,
+      recent:  this.recent,
+      unseen:  this.unseen,
       classes: this.classes.join(" "),
       summary: this.summary
     }));
@@ -80,7 +81,7 @@ var Thread;
     var self = this;
     this.inbox.openThreadView(true);
     this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
-      url: 'folder/' + this.folder.path + '/thread/' + this.id,
+      url: 'folder/' + this.folder.path + '/thread/' + this.uid,
       data: {
         complete: 1,
         reverse: 1

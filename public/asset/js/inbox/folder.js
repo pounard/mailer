@@ -8,17 +8,15 @@ var Folder;
   "use strict";
 
   Folder = function (data, inbox) {
-    this.name = data.name;
-    this.parent = data.parent || undefined;
-    this.lastUpdate = new Date(data.lastUpdate);
-    this.messageCount = data.messageCount || 0;
-    this.recentCount = data.recentCount || 0;
-    this.unseenCount = data.unseenCount || 0;
-    this.delimiter = data.delimiter || ".";
-    this.path = data.path || this.name;
-    this.inbox = inbox || inboxInstance;
-    this.special = data.special || false;
+    var k = undefined;
+    for (k in data) {
+      if (data.hasOwnProperty(k)) {
+        this[k] = data[k];
+      }
+    }
+    this.inbox = inbox;
     this.element = undefined;
+    this.children = undefined;
     this.classes = ["folder"];
     this.touch = undefined;
   };
@@ -36,8 +34,9 @@ var Folder;
 
     $element = $(Template.render("folder", {
       name:    this.name,
-      unseen:  this.unseenCount,
-      total:   this.messageCount,
+      unseen:  this.unseen,
+      recent:  this.recent,
+      total:   this.total,
       classes: this.classes.join(" ")
     }));
     this.element  = $element.get(0);

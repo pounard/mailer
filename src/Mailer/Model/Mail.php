@@ -80,7 +80,6 @@ class Mail extends Envelope
             'bodyHtml'          => '', //$this->bodyHtml,
             'bodyPlainFiltered' => $this->getBodyPlain(true),
             'bodyHtmlFiltered'  => $this->getBodyHtml(true),
-            'summary'           => $this->getSummary(),
         );
 
         return $array;
@@ -88,6 +87,8 @@ class Mail extends Envelope
 
     public function fromArray(array $array)
     {
+        $array += $this->toArray();
+
         parent::fromArray($array);
 
         $array += array(

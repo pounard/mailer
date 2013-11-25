@@ -112,10 +112,12 @@ class Folder extends AbstractContainer implements ExchangeInterface
     {
         $array += $this->toArray();
 
-        $this->name         = $array['name'];
-        $this->path         = $array['path'];
-        $this->delimiter    = $array['delimiter'];
-        $this->parent       = $array['parent'];
+        parent::fromArray($array);
+
+        $this->name      = $array['name'];
+        $this->path      = $array['path'];
+        $this->delimiter = $array['delimiter'];
+        $this->parent    = $array['parent'];
 
         if ((null === $this->name || null === $this->parent)) {
             if ((null !== $this->delimiter) && (false !== ($pos = strrpos($this->path, $this->delimiter)))) {

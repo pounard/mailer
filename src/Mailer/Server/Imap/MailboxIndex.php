@@ -234,7 +234,9 @@ class MailboxIndex
         // @todo Make summary selection configurable
         $mail = $this->getMail($firstUnread->getUid());
 
-        return array(
+        $thread = new Thread();
+        $thread->fromArray(array(
+            'uid'     => $first->getUid(),
             'subject' => $first->getSubject(),
             'summary' => $mail->getSummary(), // @todo
             'created' => $first->getCreationDate(),
@@ -246,7 +248,9 @@ class MailboxIndex
             'persons' => $persons,
             'from'    => $first->getFrom(),
             'to'      => $first->getTo(),
-        ); 
+        ));
+
+        return $thread;
     }
 
     /**
@@ -315,11 +319,11 @@ class MailboxIndex
 
         $thread = $this->getThread($uid);
 
-        $mailList = $this->getMails($thread->getUidMap());
+        $mailList = $this->getMails(array_keys($thread->getUidMap()));
 
         // @todo
         // Apply query to what has been fetched
 
-        return $thread;
+        return $mailList;
     }
 }

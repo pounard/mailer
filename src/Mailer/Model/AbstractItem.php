@@ -48,7 +48,7 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
 
     public function toArray()
     {
-        return array(
+        return parent::toArray() + array(
             'mailbox' => $this->mailbox,
             'uid'     => $this->uid,
             'subject' => $this->subject,
@@ -61,6 +61,8 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->mailbox = $array['mailbox'];
         $this->uid     = (int)$array['uid'];

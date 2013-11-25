@@ -20,6 +20,11 @@ class Thread extends AbstractItem
      */
     private $persons = array();
 
+    public function getType()
+    {
+        return ItemInterface::TYPE_THREAD;
+    }
+
     /**
      * Get uid map
      *
@@ -56,6 +61,8 @@ class Thread extends AbstractItem
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->uidMap  = (array)$array['uidMap'];
         $this->persons = (array)$array['persons'];

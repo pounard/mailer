@@ -138,12 +138,12 @@ class RcubeImapMailReader extends AbstractServer implements
                 while (!isset($map[$parent])) {
                     $map[$parent] = new Folder();
                     $map[$parent]->fromArray(array(
-                        'path'         => $parent,
-                        'parent'       => null, // @todo
-                        'delimiter'    => $delim,
-                        'unseenCount'  => 0,
-                        'recentCount'  => 0,
-                        'messageCount' => 0,
+                        'path'      => $parent,
+                        'parent'    => null, // @todo
+                        'delimiter' => $delim,
+                        'unseen'    => 0,
+                        'recent'    => 0,
+                        'total'     => 0,
                     ));
                     $parent = $map[$parent]->getParentKey();
                 }
@@ -169,11 +169,11 @@ class RcubeImapMailReader extends AbstractServer implements
         }
 
         $data = array(
-            'path'         => $name,
-            'delimiter'    => @$client->getHierarchyDelimiter(),
-            'messageCount' => $total,
-            'recentCount'  => @$client->countRecent($name),
-            'unseenCount'  => @$client->countUnseen($name),
+            'path'      => $name,
+            'delimiter' => @$client->getHierarchyDelimiter(),
+            'total'     => $total,
+            'recent'    => @$client->countRecent($name),
+            'unseen'    => @$client->countUnseen($name),
         );
 
         $folder = new Folder();
@@ -196,23 +196,23 @@ class RcubeImapMailReader extends AbstractServer implements
     {
         return array(
             'mailbox'    => $name,
-            'subject'    => @$header->get('subject'), // @todo
-            'from'       => Person::fromMailAddress(@$header->get('from')), // @todo
-            'to'         => Person::fromMailAddress(@$header->get('to')), // @todo
-            'date'       => DateHelper::fromRfc2822(@$header->get('date')), // @todo
+            'subject'    => @$header->get('subject'),
+            'from'       => Person::fromMailAddress(@$header->get('from')),
+            'to'         => Person::fromMailAddress(@$header->get('to')),
+            'created'    => DateHelper::fromRfc2822(@$header->get('date')),
             'id'         => @$header->messageID,
             'references' => @$header->get('references'),
             'replyTo'    => @$header->get('replyto'),
             'inReplyTo'  => @$header->get('in_reply_to'),
             'size'       => @$header->get('size'),
             'uid'        => @$header->uid,
-            'num'        => @$header->id,
-            'recent'     => isset($header->flags['RECENT']),
-            'flagged'    => isset($header->flags['FLAGGED']),
-            'answered'   => isset($header->flags['ANSWERED']),
-            'deleted'    => isset($header->flags['DELETED']),
-            'seen'       => isset($header->flags['SEEN']),
-            'draft'      => isset($header->flags['DRAFT']),
+            'seq'        => @$header->id,
+            'isRecent'   => isset($header->flags['RECENT']),
+            'isFlagged'  => isset($header->flags['FLAGGED']),
+            'isAnswered' => isset($header->flags['ANSWERED']),
+            'isDeleted'  => isset($header->flags['DELETED']),
+            'isSeen'     => isset($header->flags['SEEN']),
+            'isDraft'    => isset($header->flags['DRAFT']),
         );
     }
 
@@ -412,22 +412,22 @@ class RcubeImapMailReader extends AbstractServer implements
      *
      * @param string $name
      *   Mailbox name
-     * @param int $id
+     * @param int $uid
      *   Root message uid
      *
      * @return int[]
      *   Keys are unique mail uids and values are associated parents
      *   Mails are sorted by uid
      */
-    public function getThread($name, $id)
+    public function getThread($name, $uid)
     {
-        $threads = $this->getThreads(new Query(Query::LIMIT_NONE));
+        $threads = $this->getThreads($name, new Query(Query::LIMIT_NONE));
 
         if (isset($threads[$uid])) {
-            return $thread[$uid];
+            return $threads[$uid];
         }
 
-        throw new NotFoundError("Thread '%d' does not exist in folder '%s'", $id, $folder);
+        throw new NotFoundError("Thread '%d' does not exist in folder '%s'", $uid);
     }
 
     /**

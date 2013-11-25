@@ -82,13 +82,13 @@ class FolderController extends AbstractController
                 switch ($args[1]) {
 
                     case 'thread':
-                        return $index->getThread(
-                            $args[0],
-                            (int)$args[2],
-                            ($request->getOption('reverse', 0) ? Query::ORDER_DESC : Query::ORDER_ASC),
-                            (bool)$request->getOption('complete', true),
-                            (bool)$request->getOption('refresh')
-                        );
+                        return $index
+                            ->getMailboxIndex($args[0])
+                            ->getThreadMails(
+                                (int)$args[2],
+                                $this->getQueryFromRequest($request),
+                                (bool)$request->getOption('refresh')
+                            );
 
                     default:
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));

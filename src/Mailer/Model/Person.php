@@ -114,12 +114,7 @@ class Person implements ExchangeInterface
 
     public function fromArray(array $array)
     {
-        $array += array(
-            'mail'  => null,
-            'name'  => null,
-            'image' => null,
-            'id'    => null,
-        );
+        $array += $this->toArray();
 
         $this->mail  = $array['mail'];
         $this->name  = $array['name'];
