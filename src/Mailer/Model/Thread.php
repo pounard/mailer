@@ -16,6 +16,11 @@ class Thread extends AbstractItem
     private $uidMap = array();
 
     /**
+     * @var Person[]
+     */
+    private $persons = array();
+
+    /**
      * Get uid map
      *
      * @return array
@@ -30,10 +35,21 @@ class Thread extends AbstractItem
         return $this->uidMap;
     }
 
+    /**
+     * Get all parties involved in the thread
+     *
+     * @return Person[]
+     */
+    public function getPersons()
+    {
+        return $this->persons;
+    }
+
     public function toArray()
     {
         return parent::toArray() + array(
-            'uidMap' => $this->uidMap,
+            'uidMap'  => $this->uidMap,
+            'persons' => $this->persons,
         );
     }
 
@@ -41,6 +57,7 @@ class Thread extends AbstractItem
     {
         $array += $this->toArray();
 
-        $this->uidMap = (array)$array['uidMap'];
+        $this->uidMap  = (array)$array['uidMap'];
+        $this->persons = (array)$array['persons'];
     }
 }

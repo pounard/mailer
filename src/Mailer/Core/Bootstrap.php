@@ -107,7 +107,7 @@ class Bootstrap
             $index = new Index($reader, $cache);
             $index->setContainer($container);
 
-            return $service;
+            return $index;
         };
         $pimple['smtp'] = function () use ($container, $config) {
             $service = new PhpSmtpServer();

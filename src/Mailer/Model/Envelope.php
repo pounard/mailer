@@ -177,7 +177,7 @@ class Envelope extends AbstractItem
 
     public function toArray()
     {
-        parent::toArray() + array(
+        return parent::toArray() + array(
             'cc'         => $this->cc,
             'bcc'        => $this->bcc,
             'messageId'  => $this->messageId,

@@ -73,6 +73,10 @@ class Index extends AbstractContainerAware
     /**
      * Get internal mail reader instance
      *
+     * If you are calling this method into a controller then you are doing
+     * it wrong: it should never be accessed outside of the index with one
+     * exception which is the IMAP auth connector.
+     *
      * @return MailReaderInterface
      */
     public function getMailReader()
@@ -101,10 +105,10 @@ class Index extends AbstractContainerAware
     public function getMailboxIndex($name, $refresh = true)
     {
         if (!isset($this->mailboxes[$name])) {
-            $this->mailboxes[$name] = new MailboxIndex($index, $name);
+            $this->mailboxes[$name] = new MailboxIndex($this, $name);
         }
 
-        $this->mailboxes[$name];
+        return $this->mailboxes[$name];
     }
 
     /**

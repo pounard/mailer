@@ -20,25 +20,34 @@ class FolderController extends AbstractController
         switch (count($args)) {
 
             case 0:
-                return $index->getFolderMap(
-                    $request->getOption('parent', null),
-                    /*!*/(bool)$request->getOption('all'),
-                    (bool)$request->getOption('refresh'));
+                $onlySubs = /*!*/(bool)$request->getOption('all');
+                $refresh  = (bool)$request->getOption('refresh');
+                $parent   = $request->getOption('parent', null);
+
+                if ($parent) {
+                    return $index->getMailboxIndex($parent)->getChildren($onlySubs, $refresh);
+                } else {
+                    return $index->getMailboxMap($onlySubs, $refresh);
+                }
 
             case 1:
-                return $index->getFolder($args[0], (bool)$request->getOption('refresh'));
+                return $index->getMailbox($args[0], (bool)$request->getOption('refresh'));
 
             case 2:
                 switch ($args[1]) {
 
                     case 'list':
-                        return $index->getThreads($args[0], (bool)$request->getOption('refresh'));
+                        return $index
+                            ->getMailboxIndex($args[0])
+                            ->getThreads(
+                                $this->getQueryFromRequest($request),
+                                (bool)$request->getOption('refresh')
+                            );
 
                     case 'refresh':
-                        // Force refresh to have at least the last update time
-                        // and the new unread count
-                        $folder = $index->getFolder($args[0], true);
+                        $mailboxIndex = $index->getMailboxIndex($args[0]);
 
+                        /*
                         if ($since = $request->getOption('since', null)) {
                             if (is_numeric($since)) {
                                 $since = new \DateTime('@' . $since);
@@ -55,8 +64,15 @@ class FolderController extends AbstractController
                         } else {
                             $list = array();
                         }
+                         */
 
-                        return array('folder' => $folder, 'list' => $list);
+                        return array(
+                            'folder' => $mailboxIndex->getInstance(true),
+                            'list'   => $mailboxIndex->getThreads(
+                                $this->getQueryFromRequest($request),
+                                true
+                            ),
+                        );
 
                     default:
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));

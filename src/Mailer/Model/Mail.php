@@ -10,14 +10,19 @@ use Mailer\Mime\Multipart;
 class Mail extends Envelope
 {
     /**
-     * @var string
+     * @var Multipart
      */
-    private $bodyPlain;
+    private $structure;
 
-    /**
-     * @var string
-     */
-    private $bodyHtml;
+    public function findPartFirst($type = null, $subtype = null)
+    {
+        
+    }
+
+    public function findPartAll($type = null, $subtype = null)
+    {
+        
+    }
 
     /**
      * Get body as plain text if available
@@ -26,6 +31,7 @@ class Mail extends Envelope
      */
     public function getBodyPlain($escaped = false)
     {
+        return '';
         if (!empty($this->bodyPlain) && $escaped) {
             // Temporary code
             $filter = new \Mailer\View\Helper\FilterCollection(array(
@@ -46,6 +52,7 @@ class Mail extends Envelope
      */
     public function getBodyHtml($escaped = false)
     {
+        return '';
         return $this->bodyHtml;
     }
 
@@ -56,6 +63,7 @@ class Mail extends Envelope
      */
     public function getSummary()
     {
+        return '';
         if (!empty($this->bodyPlain)) {
             if (preg_match('/^.{1,200}\b/su', $this->bodyPlain, $match)) {
                 return $match[0] . '…';
@@ -68,8 +76,8 @@ class Mail extends Envelope
         $array = parent::toArray();
 
         $array += array(
-            'bodyPlain'         => $this->bodyPlain,
-            'bodyHtml'          => $this->bodyHtml,
+            'bodyPlain'         => '', //$this->bodyPlain,
+            'bodyHtml'          => '', //$this->bodyHtml,
             'bodyPlainFiltered' => $this->getBodyPlain(true),
             'bodyHtmlFiltered'  => $this->getBodyHtml(true),
             'summary'           => $this->getSummary(),

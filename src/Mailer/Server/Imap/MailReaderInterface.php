@@ -5,7 +5,6 @@ namespace Mailer\Server\Imap;
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
-use Mailer\Model\Thread;
 use Mailer\Server\Imap\Query;
 use Mailer\Server\ServerInterface;
 
@@ -43,60 +42,62 @@ interface MailReaderInterface extends ServerInterface
      *
      * @param string $name
      *   Mailbox name
-     * @param int $id
+     * @param int $uid
      *   Mail unique identifiers
      *
      * @return Envelope
      */
-    public function getEnvelope($name, $id);
+    public function getEnvelope($name, $uid);
 
     /**
      * Get mails envelopes
      *
      * @param string $name
      *   Mailbox name
-     * @param int[] $id
+     * @param int[] $uidList
      *   List of mail unique identifiers
      *
      * @return Envelope[]
      */
-    public function getEnvelopes($name, array $idList);
+    public function getEnvelopes($name, array $uidList);
 
     /**
      * Get single mail
      *
      * @param string $name
      *   Mailbox name
-     * @param int $id
+     * @param int $uid
      *   Mail unique identifiers
      *
      * @return Mail
      */
-    public function getMail($name, $id);
+    public function getMail($name, $uid);
 
     /**
      * Get mails
      *
      * @param string $name
      *   Mailbox name
-     * @param int[] $id
+     * @param int[] $uidList
      *   List of mail unique identifiers
      *
      * @return Mail[]
      */
-    public function getMails($name, array $idList);
+    public function getMails($name, array $uidList);
 
     /**
      * Get thread starting with the given mail unique identifier
      *
      * @param string $name
      *   Mailbox name
-     * @param int $id
+     * @param int $uid
      *   Root message uid
      *
-     * @return Thread
+     * @return int[]
+     *   Keys are unique mail uids and values are associated parents
+     *   Mails are sorted by uid
      */
-    public function getThread($name, $id);
+    public function getThread($name, $uid);
 
     /**
      * Get mail list from the given folder
@@ -107,8 +108,9 @@ interface MailReaderInterface extends ServerInterface
      * @param string $name
      * @param Query $query
      *
-     * @return Thread[]
-     *   Ordered thread list
+     * @return int[][]
+     *   Array of arrays returned by the getThread() method keyed by root node
+     *   uid and ordered such as asked in the query
      */
     public function getThreads($name, Query $query = null);
 }

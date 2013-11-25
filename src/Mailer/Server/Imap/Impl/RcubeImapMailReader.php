@@ -387,16 +387,67 @@ class RcubeImapMailReader extends AbstractServer implements
     }
 
     /**
-     * Alias of getThreads() that don't load envelopes
+     * Flatten the given tree
      *
-     * @return array
+     * @param array $tree
+     *
+     * @return $map
      */
-    private function getPartialThreads($name, Query $query = null)
+    private function flattenTree($tree, $parent)
+    {
+        $ret = array();
+
+        foreach ($tree as $key => $value) {
+            $ret[$key] = $parent;
+            if (!empty($value)) {
+                $ret = array_merge($ret, $this->flattenTree($value, $key));
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Get thread starting with the given mail unique identifier
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int $id
+     *   Root message uid
+     *
+     * @return int[]
+     *   Keys are unique mail uids and values are associated parents
+     *   Mails are sorted by uid
+     */
+    public function getThread($name, $id)
+    {
+        $threads = $this->getThreads(new Query(Query::LIMIT_NONE));
+
+        if (isset($threads[$uid])) {
+            return $thread[$uid];
+        }
+
+        throw new NotFoundError("Thread '%d' does not exist in folder '%s'", $id, $folder);
+    }
+
+    /**
+     * Get mail list from the given folder
+     *
+     * Threads order should be derivated from the latest received mail and not
+     * the root message date.
+     *
+     * @param string $name
+     * @param Query $query
+     *
+     * @return int[][]
+     *   Array of arrays returned by the getThread() method keyed by root node
+     *   uid and ordered such as asked in the query
+     */
+    public function getThreads($name, Query $query = null)
     {
         $map = array();
 
-        $client = $this->getClient();
-
+        $client  = @$this->getClient();
         $threads = @$client->thread($name, 'REFERENCES', '', true);
 
         if (null === $query) {
@@ -409,169 +460,19 @@ class RcubeImapMailReader extends AbstractServer implements
         $limit = $query->getLimit();
         $offset = $query->getOffset();
 
-        if ($offset !== 0 || ($limit && $limit < $threads->count())) {
-            $threads->slice($offset, $limit);
+        if ($offset !== 0 || ($limit && $limit < @$threads->count())) {
+            @$threads->slice($offset, $limit);
         }
 
-        $tree = $threads->get_tree();
+        $tree = @$threads->get_tree();
 
         foreach ($tree as $root => $values) {
-            $uidList = $this->flattenTree($values);
-            $uidList[] = $root;
-            $uidList = array_unique($uidList, SORT_NUMERIC);
-
+            $uidList = $this->flattenTree($values, $root);
+            $uidList[$root] = 0;
+            ksort($uidList, SORT_NUMERIC);
             $map[$root] = $uidList;
         }
 
-        return $tree;
-    }
-
-    /**
-     * Build thread info from envelopes
-     *
-     * This is the heart of this module's UI
-     *
-     * @param string $name
-     * @param Envelope[] $envelopes
-     *
-     * @return array
-     */
-    private function buildThreadArray($name, array $envelopes)
-    {
-        $first       = null;
-        $last        = null;
-        $firstUnread = null;
-        $lastUnread  = null;
-        $personMap   = array();
-        $uidMap      = array();
-        $recent      = 0;
-        $unseen      = 0;
-        $total       = count($envelopes);
-
-        foreach ($envelopes as $envelope) {
-
-            // @todo Make comparaison (using date or arrival) configurable
-            if (null === $first || $envelope->isBefore($first)) {
-                $first = $envelope;
-            }
-            if (null === $last || $last->isBefore($envelope)) {
-                $last = $envelope;
-            }
-
-            $from = $envelope->getFrom();
-            $personMap[$from->getMail()] = $from;
-            $to = $envelope->getTo();
-            $personMap[$to->getMail()] = $to;
-
-            if (!$envelope->isSeen()) {
-                ++$unseen;
-                if (null === $firstUnread || $envelope->isBefore($firstUnread)) {
-                    $firstUnread = $envelope;
-                }
-                if (null === $lastUnread || $lastUnread->isBefore($envelope)) {
-                    $lastUnread = $envelope;
-                }
-            }
-            if ($envelope->isRecent()) {
-                ++$recent;
-            }
-
-            // @todo Uid?
-            $uidMap[$envelope->getUid()] = $envelope->getInReplyto(); 
-        }
-
-        if (null === $firstUnread) {
-            $firstUnread = $first;
-        }
-        if (null === $lastUnread) {
-            $lastUnread = $last;
-        }
-
-        // @todo Make summary selection configurable
-        $mail = $this->getMail($name, $firstUnread->getUid());
-
-        return array(
-            'subject'      => $first->getSubject(),
-            'summary'      => $mail->getSummary(), // @todo
-            'persons'      => $personMap,
-            'startedDate'  => $first->getDate(),
-            'lastUpdate'   => $last->getDate(),
-            'messageCount' => $total,
-            'recentCount'  => $recent,
-            'unseenCount'  => $unseen,
-            'uidMap'       => $uidMap,
-        ); 
-    }
-
-    public function getThread($name, $id)
-    {
-        $tree = $this->getPartialThreads($name);
-
-        foreach ($tree as $root => $uidList) {
-
-            if ((int)$root !== (int)$id) {
-                continue;
-            }
-
-            $list = $this->getEnvelopes($name, $uidList);
-            $list = array_filter($list, function ($envelope) {
-                return !$envelope->isDeleted();
-            });
-
-            $thread = new Thread();
-            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $list));
-        }
-
-        throw new NotFoundError("Could not find thread");
-    }
-
-    /**
-     * Flatten the given tree
-     *
-     * @param array $tree
-     *
-     * @return $map
-     */
-    private function flattenTree($tree)
-    {
-        $ret = array();
-
-        foreach ($tree as $key => $value) {
-            $ret[] = $key;
-            if (!empty($value)) {
-                $ret = array_merge($ret, $this->flattenTree($value));
-            }
-        }
-
-        return $ret;
-    }
-
-    public function getThreads($name, Query $query = null)
-    {
-        if (null === $query) {
-            $query = new Query();
-        }
-
-        $tree = $this->getPartialThreads($name, $query);
-
-        foreach ($tree as $root => $uidList) {
-
-            $list = $this->getEnvelopes($name, $uidList);
-            $list = array_filter($list, function ($list) {
-                return !$envelope->isDeleted();
-            });
-
-            if (empty($list)) { // Everything has been deleted
-                unset($tree[$root]);
-                continue;
-            }
-
-            $thread = new Thread();
-            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $list));
-
-            $tree[$root] = $thread;
-        }
-
-        return $tree;
+        return $map;
     }
 }

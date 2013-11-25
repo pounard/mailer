@@ -7,10 +7,28 @@ use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\MethodNotAllowedError;
 use Mailer\Error\UnauthorizedError;
+use Mailer\Server\Imap\Query;
 
 abstract class AbstractController extends AbstractContainerAware implements
     ControllerInterface
 {
+    /**
+     * Get query from request
+     *
+     * @param RequestInterface $request
+     *
+     * @return Query
+     */
+    public function getQueryFromRequest(RequestInterface $request)
+    {
+        return new Query(
+            $request->getOption('limit',  Query::LIMIT_DEFAULT),
+            $request->getOption('offset', Query::OFFSET_DEFAULT),
+            $request->getOption('sort',   Query::SORT_SEQ),
+            $request->getOption('order',  Query::ORDER_DESC)
+        );
+    }
+
     public function dispatch(RequestInterface $request, array $args)
     {
         if (!$this->isAuthorized($request, $args)) {

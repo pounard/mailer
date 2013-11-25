@@ -4,7 +4,10 @@ namespace Mailer\Server\Imap;
 
 use Mailer\Core\AbstractContainerAware;
 use Mailer\Error\NotImplementedError;
+use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
+use Mailer\Model\Mail;
+use Mailer\Model\Thread;
 
 /**
  * Mailbox index
@@ -97,10 +100,49 @@ class MailboxIndex
      * @param \DateTime $since
      *   Date from which this should be updated
      *   If none given then rebild the full index
+     *
+     * @return Folder
+     *   Updated folder instance
      */
     public function update(\DateTime $since = null)
     {
         throw new NotImplementedError();
+    }
+
+    /**
+     * Get single envelope
+     *
+     * Use wisely this method may not be cached.
+     * In some cases this method may return Mail instances.
+     *
+     * @param int $uid
+     *
+     * @return Envelope
+     */
+    public function getEnvelope($uid, $refresh = false)
+    {
+        return $this
+            ->getIndex()
+            ->getMailReader()
+            ->getEnvelope($this->name, $uid);
+    }
+
+    /**
+     * Get list of envelopes
+     *
+     * Use wisely this method may not be cached.
+     * In some cases this method may return Mail instances.
+     *
+     * @param int[] $idList
+     *
+     * @return Envelope[]
+     */
+    public function getEnvelopes(array $idList, $refresh = false)
+    {
+        return $this
+            ->getIndex()
+            ->getMailReader()
+            ->getEnvelopes($this->name, $idList);
     }
 
     /**
@@ -134,6 +176,80 @@ class MailboxIndex
     }
 
     /**
+     * Build thread from raw data
+     *
+     * @param int $uid
+     *   Root mail uid
+     * @param int $uidMap
+     *   Full uid list as returned by MailReaderInterface::getThread()
+     */
+    private function buildThread($uid, array $uidMap)
+    {
+        $first       = null;
+        $last        = null;
+        $firstUnread = null;
+        $lastUnread  = null;
+        $recent      = 0;
+        $unseen      = 0;
+        $persons     = array();
+
+        foreach ($this->getEnvelopes(array_keys($uidMap)) as $envelope) {
+
+            // @todo Make comparaison (using date or arrival) configurable
+            if (null === $first || $envelope->isBefore($first)) {
+                $first = $envelope;
+            }
+            if (null === $last || $last->isBefore($envelope)) {
+                $last = $envelope;
+            }
+
+            if ($from = $envelope->getFrom()) {
+              $persons[$from->getMail()] = $from;
+            }
+            foreach ($envelope->getTo() as $person) {
+              $persons[$person->getMail()] = $person;
+            }
+
+            if (!$envelope->isSeen()) {
+                ++$unseen;
+                if (null === $firstUnread || $envelope->isBefore($firstUnread)) {
+                    $firstUnread = $envelope;
+                }
+                if (null === $lastUnread || $lastUnread->isBefore($envelope)) {
+                    $lastUnread = $envelope;
+                }
+            }
+            if ($envelope->isRecent()) {
+                ++$recent;
+            }
+        }
+
+        if (null === $firstUnread) {
+            $firstUnread = $first;
+        }
+        if (null === $lastUnread) {
+            $lastUnread = $last;
+        }
+
+        // @todo Make summary selection configurable
+        $mail = $this->getMail($firstUnread->getUid());
+
+        return array(
+            'subject' => $first->getSubject(),
+            'summary' => $mail->getSummary(), // @todo
+            'created' => $first->getCreationDate(),
+            'updated' => $last->getCreationDate(),
+            'total'   => count($uidMap),
+            'recent'  => $recent,
+            'unseen'  => $unseen,
+            'uidMap'  => $uidMap,
+            'persons' => $persons,
+            'from'    => $first->getFrom(),
+            'to'      => $first->getTo(),
+        ); 
+    }
+
+    /**
      * Get single thread
      *
      * @param int $uid
@@ -142,41 +258,68 @@ class MailboxIndex
      */
     public function getThread($uid, $refresh = false)
     {
-        $thread = $this
-            ->getIndex()
-            ->getMailReader()
-            ->getThread($this->name, $uid);
+        return $this->buildThread(
+            $uid,
+            $thread = $this
+              ->getIndex()
+              ->getMailReader()
+              ->getThread(
+                  $this->name,
+                  $uid
+            )
+        );
     }
 
     /**
      * Get list of threads
      *
-     * @param int[] $idList
-     * @param int $limit
-     * @param int $offset
-     * @param int $sort
-     * @param int $order
+     * @param Query $query
+     * @param string $refresh
      *
      * @return Thread[]
      */
-    public function getThreads(Query $query, $refresh = false)
+    public function getThreads(Query $query = null, $refresh = false)
     {
-        throw new NotImplementedError();
+        if (null === $query) {
+            $query = new Query();
+        }
+
+        $map = $this
+            ->getIndex()
+            ->getMailReader()
+            ->getThreads($this->name, $query);
+
+        foreach ($map as $uid => $uidMap) {
+            $map[$uid] = $this->buildThread($uid, $uidMap);
+        }
+
+        return $map;
     }
 
     /**
      * Get all thread mails
      *
+     * Only sort and sort order will be used in the query object.
+     *
      * @param int $uid
-     * @param int $limit
-     * @param int $offset
-     * @param int $sort
-     * @param int $order
+     * @param Query $query
+     * @param string $refresh
      *
      * @return Mail[]
      */
-    public function getThreadMails($uid, Query $query, $refresh = false)
+    public function getThreadMails($uid, Query $query = null, $refresh = false)
     {
-        throw new NotImplementedError();
+        if (null === $query) {
+            $query = new Query();
+        }
+
+        $thread = $this->getThread($uid);
+
+        $mailList = $this->getMails($thread->getUidMap());
+
+        // @todo
+        // Apply query to what has been fetched
+
+        return $thread;
     }
 }

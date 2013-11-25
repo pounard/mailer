@@ -62,6 +62,16 @@ class Query
      */
     const LIMIT_NONE = 0;
 
+    /**
+     * Default limit
+     */
+    const LIMIT_DEFAULT = 50;
+
+    /**
+     * Default offset
+     */
+    const OFFSET_DEFAULT = 0;
+
     private $limit = 20;
 
     private $offset = 0;
@@ -71,8 +81,8 @@ class Query
     private $order = self::ORDER_ASC;
 
     public function __construct(
-        $limit    = 100,
-        $offset   = 0,
+        $limit    = self::LIMIT_DEFAULT,
+        $offset   = self::OFFSET_DEFAULT,
         $sort     = self::SORT_SEQ,
         $order    = self::ORDER_DESC)
     {
