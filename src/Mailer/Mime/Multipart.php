@@ -4,8 +4,7 @@ namespace Mailer\Mime;
 
 class Multipart extends AbstractPart implements
     \Countable,
-    \IteratorAggregate,
-    PartInterface
+    \IteratorAggregate
 {
     /**
      * Create instance from array
@@ -114,27 +113,27 @@ class Multipart extends AbstractPart implements
     /**
      * @var boolean
      */
-    private $multipart = true;
+    protected $multipart = true;
 
     /**
-     * @var PartInterface[]
+     * @var AbstractPart[]
      */
-    private $parts = array();
+    protected $parts = array();
 
     /**
      * @var array
      */
-    private $extensionParameters = array();
+    protected $extensionParameters = array();
 
     /**
      * @var string
      */
-    private $bodyDisposition = null;
+    protected $bodyDisposition = null;
 
     /**
      * @var array
      */
-    private $bodyDispositionAttributes = array();
+    protected $bodyDispositionAttributes = array();
 
     /**
      * Get type
@@ -251,15 +250,15 @@ class Multipart extends AbstractPart implements
      *
      * @param Part $part
      */
-    public function appendPart(PartInterface $part)
+    public function appendPart(AbstractPart $part)
     {
         if ($this->multipart) {
             $localIndex = count($this->parts);
             $thisIndex = $this->getIndex();
-            if (PartInterface::INDEX_ROOT === $thisIndex) {
+            if (AbstractPart::INDEX_ROOT === $thisIndex) {
                 $index = $localIndex;
             } else {
-                $index = $thisIndex . PartInterface::INDEX_SEPARATOR . $localIndex;
+                $index = $thisIndex . AbstractPart::INDEX_SEPARATOR . $localIndex;
             }
             $part->setIndex($index);
         }
@@ -272,13 +271,61 @@ class Multipart extends AbstractPart implements
         // here before this very own instance goes into its parent
         if (!empty($this->parts)) {
             foreach ($this->parts as $key => $part) {
-                if (PartInterface::INDEX_ROOT === $index) {
+                if (AbstractPart::INDEX_ROOT === $index) {
                     $part->setIndex($key);
                 } else {
-                    $part->setIndex($index . PartInterface::INDEX_SEPARATOR . $key);
+                    $part->setIndex($index . AbstractPart::INDEX_SEPARATOR . $key);
                 }
             }
         }
+    }
+
+    /**
+     * Find first part matching the given conditions
+     *
+     * @param string $type
+     * @param string $subtype
+     *
+     * @return Part
+     */
+    public function findPartFirst($type = null, $subtype = null)
+    {
+        foreach ($this->parts as $part) {
+            if ($part instanceof Multipart) {
+                if ($ret = $part->findPartFirst()) {
+                    return $ret;
+                }
+            } else {
+                if ((null === $type || $type === $part->type) && (null === $subtype || $type === $part->subtype)) {
+                    return $part;
+                }
+            }
+        }
+    }
+
+    /**
+     * Find all the parts matching the given conditions
+     *
+     * @param string $type
+     * @param string $subtype
+     *
+     * @return Part
+     */
+    public function findPartAll($type = null, $subtype = null)
+    {
+        $ret = array();
+
+        foreach ($this->parts as $part) {
+            if ($part instanceof Multipart) {
+                $ret = array_merge($ret, $part->findPartFirst());
+            } else {
+                if ((null === $type || $type === $part->type) && (null === $subtype || $type === $part->subtype)) {
+                    $ret[$part->index] = $part;
+                }
+            }
+        }
+
+        return $ret;
     }
 
     public function count()

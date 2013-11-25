@@ -2,8 +2,20 @@
 
 namespace Mailer\Mime;
 
-class Part extends AbstractPart implements PartInterface
+class Part extends AbstractPart
 {
+    /**
+     * When message is not multipart fetch content won't be the same
+     * command, this contanst indicates to the fetch callback it should
+     * not trust the index but fetch the root part instead
+     */
+    const INDEX_ROOT = '';
+
+    /**
+     * Index separator for FETCH queries
+     */
+    const INDEX_SEPARATOR = '.';
+
     /**
      * Parse parameters list as an hashmap
      *
@@ -144,37 +156,37 @@ class Part extends AbstractPart implements PartInterface
      *
      * @var callable
      */
-    private $fetchCallback;
+    protected $fetchCallback;
 
     /**
      * @var array
      */
-    private $parameters = array();
+    protected $parameters = array();
 
     /**
      * @var string
      */
-    private $description;
+    protected $description;
 
     /**
      * @var string
      */
-    private $contentId;
+    protected $contentId;
 
     /**
      * @var string
      */
-    private $encoding;
+    protected $encoding;
 
     /**
      * @var int
      */
-    private $size;
+    protected $size;
 
     /**
      * @var string
      */
-    private $contents;
+    protected $contents;
 
     /**
      * Parse additional extension data that this generic class
