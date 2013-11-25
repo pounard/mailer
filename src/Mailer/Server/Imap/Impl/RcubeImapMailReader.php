@@ -233,9 +233,9 @@ class RcubeImapMailReader extends AbstractServer implements
         return $ret;
     }
 
-    public function getEnvelope($name, $id)
+    public function getEnvelope($name, $uid)
     {
-        $envelopes = $this->getEnvelopes($name, array($id));
+        $envelopes = $this->getEnvelopes($name, array($uid));
 
         if (!empty($envelopes)) {
             return array_shift($envelopes);
@@ -244,9 +244,9 @@ class RcubeImapMailReader extends AbstractServer implements
         throw new NotFoundError("Mail not found");
     }
 
-    public function getEnvelopes($name, array $idList)
+    public function getEnvelopes($name, array $uidList)
     {
-        $ret = @$this->getClient()->fetchHeaders($name, $idList, true);
+        $ret = @$this->getClient()->fetchHeaders($name, $uidList, true);
 
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
@@ -263,12 +263,16 @@ class RcubeImapMailReader extends AbstractServer implements
             }
         }
 
+        if (count($ret) !== count($uidList)) {
+            throw new NotFoundError("Some mails have not been found");
+        }
+
         return $ret;
     }
 
-    public function getMail($name, $id)
+    public function getMail($name, $uid)
     {
-        $mails = $this->getMails($name, array($id));
+        $mails = $this->getMails($name, array($uid));
 
         if (!empty($mails)) {
             return array_shift($mails);
@@ -324,11 +328,11 @@ class RcubeImapMailReader extends AbstractServer implements
         return @\rcube_charset::convert($body, $charset, $this->getContainer()->getDefaultCharset());
     }
 
-    public function getMails($name, array $idList)
+    public function getMails($name, array $uidList)
     {
         $client = $this->getClient();
         $self = $this;
-        $ret = @$client->fetchHeaders($name, $idList, true);
+        $ret = @$client->fetchHeaders($name, $uidList, true);
 
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
@@ -352,27 +356,25 @@ class RcubeImapMailReader extends AbstractServer implements
 
                 if (empty($bodyStructure)) {
                     trigger_error(sprintf("Mail with uid '%s' has no body structure", $uid));
-                    unset($ret[$index]);
-                    continue; // Invalid mail
-                }
+                } else {
+                    $multipart = Multipart::createInstanceFromArray(
+                        $bodyStructure,
+                        function (Part $part) use ($client, $uid, $name, $self) {
 
-                $multipart = Multipart::createInstanceFromArray(
-                    $bodyStructure,
-                    function (Part $part) use ($client, $uid, $name, $self) {
+                            $index = $part->getIndex();
+                            $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
+                            $body  = @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
 
-                        $index = $part->getIndex();
-                        $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
-                        $body  = @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
-
-                        if (empty($body)) { // Can have no body there.
-                            return false;
-                        } else {
-                            return $self->cleanBody($body, $part->getType(), $part->getSubtype(), strtoupper($part->getParameter('charset')));
+                            if (empty($body)) { // Can have no body there.
+                                return false;
+                            } else {
+                                return $self->cleanBody($body, $part->getType(), $part->getSubtype(), strtoupper($part->getParameter('charset')));
+                            }
                         }
-                    }
-                );
+                    );
 
-                $this->findBody($multipart, $array);
+                    $this->findBody($multipart, $array);
+                }
 
                 $mail = new Mail();
                 $mail->fromArray($array);
@@ -381,6 +383,10 @@ class RcubeImapMailReader extends AbstractServer implements
                 // This should never happen only doing this for autocompletion
                 unset($ret[$index]);
             }
+        }
+
+        if (count($ret) !== count($uidList)) {
+            throw new NotFoundError("Some mails have not been found");
         }
 
         return $ret;

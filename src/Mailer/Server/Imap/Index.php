@@ -56,18 +56,13 @@ class Index extends AbstractContainerAware
     /**
      * Get cache key for this cache entry
      *
-     * @param string $id
-     * @param string $type 
+     * @param ... parameters
      *
      * @return string
      */
-    public function getCacheKey($id, $type = null)
+    public function getCacheKey()
     {
-        if (null === $type) {
-            return sprintf("%s:N:%s", $this->cachePrefix, $id);
-        } else {
-            return sprintf("%s:%s:%s", $this->cachePrefix, $type, $id);
-        }
+        return $this->cachePrefix . ':' . implode(':', func_get_args());
     }
 
     /**
@@ -134,7 +129,16 @@ class Index extends AbstractContainerAware
      */
     public function getMailboxMap($onlySubscribed = true, $refresh = true)
     {
-        return $this->getMailReader()->getFolderMap(null, $onlySubscribed);
+        $key = $this->getCacheKey('fm', (int)$onlySubscribed);
+
+        if (!$refresh && ($ret = $this->cache->fetch($key))) {
+            return $ret;
+        }
+
+        $map = $this->getMailReader()->getFolderMap(null, $onlySubscribed);
+        $this->cache->save($key, $map);
+
+        return $map;
     }
 
     /**

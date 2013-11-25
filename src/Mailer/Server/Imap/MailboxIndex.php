@@ -9,6 +9,8 @@ use Mailer\Model\Folder;
 use Mailer\Model\Mail;
 use Mailer\Model\Thread;
 
+use Doctrine\Common\Cache\Cache;
+
 /**
  * Mailbox index
  */
@@ -35,7 +37,8 @@ class MailboxIndex
      * @param Index $index
      * @param string $name
      */
-    public function __construct(Index $index, $name)
+    public function __construct(
+        Index $index, $name)
     {
         $this->index = $index;
         $this->name = $name;
@@ -121,10 +124,7 @@ class MailboxIndex
      */
     public function getEnvelope($uid, $refresh = false)
     {
-        return $this
-            ->getIndex()
-            ->getMailReader()
-            ->getEnvelope($this->name, $uid);
+        return reset($this->getEnvelopes(array($uid), $refresh));
     }
 
     /**
@@ -133,16 +133,39 @@ class MailboxIndex
      * Use wisely this method may not be cached.
      * In some cases this method may return Mail instances.
      *
-     * @param int[] $idList
+     * @param int[] $uidList
      *
      * @return Envelope[]
      */
-    public function getEnvelopes(array $idList, $refresh = false)
+    public function getEnvelopes(array $uidList, $refresh = false)
     {
-        return $this
-            ->getIndex()
-            ->getMailReader()
-            ->getEnvelopes($this->name, $idList);
+        $ret     = array();
+        $missing = array();
+        $cache   = $this->index->getCache();
+
+        if (!$refresh) {
+            foreach ($uidList as $uid) {
+                $key = $this->index->getCacheKey('m', $uid);
+                if ($mail = $cache->fetch($key)) {
+                    $ret[] = $mail;
+                } else {
+                    $missing[] = $uid;
+                }
+            }
+        } else {
+            $missing = $uidList;
+        }
+
+        if (!empty($missing)) {
+            $missing = $this->index->getMailReader()->getEnvelopes($this->name, $uidList);
+            foreach ($missing as $mail) {
+                $ret[] = $mail;
+                $key = $this->index->getCacheKey('m', $uid);
+                $cache->save($key, $mail);
+            }
+        }
+
+        return $ret;
     }
 
     /**
@@ -154,25 +177,45 @@ class MailboxIndex
      */
     public function getMail($uid, $refresh = false)
     {
-        return $this
-            ->getIndex()
-            ->getMailReader()
-            ->getMail($this->name, $uid);
+        return reset($this->getMails(array($uid), $refresh));
     }
 
     /**
      * Get list of mails
      *
-     * @param int[] $idList
+     * @param int[] $uidList
      *
      * @return Mail[]
      */
-    public function getMails(array $idList, $refresh = false)
+    public function getMails(array $uidList, $refresh = false)
     {
-        return $this
-            ->getIndex()
-            ->getMailReader()
-            ->getMails($this->name, $idList);
+        $ret     = array();
+        $missing = array();
+        $cache   = $this->index->getCache();
+
+        if (!$refresh) {
+            foreach ($uidList as $uid) {
+                $key = $this->index->getCacheKey('m', $uid);
+                if ($mail = $cache->fetch($key)) {
+                    $ret[] = $mail;
+                } else {
+                    $missing[] = $uid;
+                }
+            }
+        } else {
+            $missing = $uidList;
+        }
+
+        if (!empty($missing)) {
+            $missing = $this->index->getMailReader()->getMails($this->name, $uidList);
+            foreach ($missing as $mail) {
+                $ret[] = $mail;
+                $key = $this->index->getCacheKey('m', $uid);
+                $cache->save($key, $mail);
+            }
+        }
+
+        return $ret;
     }
 
     /**
@@ -238,7 +281,7 @@ class MailboxIndex
         $thread->fromArray(array(
             'uid'     => $first->getUid(),
             'subject' => $first->getSubject(),
-            'summary' => $mail->getSummary(), // @todo
+            'summary' => $mail->getSummary(),
             'created' => $first->getCreationDate(),
             'updated' => $last->getCreationDate(),
             'total'   => count($uidMap),
