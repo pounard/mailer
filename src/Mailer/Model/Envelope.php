@@ -3,162 +3,41 @@
 namespace Mailer\Model;
 
 /**
- * Represents a single mail.
+ * Single mail headers envelope
  */
-class Envelope implements ExchangeInterface
+class Envelope extends AbstractItem
 {
-    /**
-     * @var string
-     */
-    private $mailbox;
+    protected $cc = array();
 
-    /**
-     * @var string
-     */
-    private $subject;
+    protected $bcc = array();
 
-    /**
-     * @var Person
-     */
-    private $from;
+    protected $messageId = '';
 
-    /**
-     * @var Person[]
-     */
-    private $to;
+    protected $references = '';
 
-    /**
-     *@var \DateTime
-     */
-    private $date;
+    protected $replyTo = '';
 
-    /**
-     * Server identifier
-     *
-     * @var string
-     */
-    private $id;
+    protected $inReplyTo = '';
 
-    /**
-     * Server identifier of message this message references
-     * 
-     * @var string
-     */
-    private $references;
+    protected $size = -1;
 
-    /**
-     * Reply to header
-     *
-     * @var string
-     */
-    private $replyTo;
+    protected $seq = -1;
 
-    /**
-     * Server identifier of message this message replies to
-     *
-     * @var string
-     */
-    private $inReplyTo;
+    protected $isRecent = false;
 
-    /**
-     * Size in bytes
-     *
-     * @var int
-     */
-    private $size;
+    protected $isFlagged = false;
 
-    /**
-     * Unique identifier
-     *
-     * @var int
-     */
-    private $uid;
+    protected $isAnswered = false;
 
-    /**
-     * Sequence number
-     *
-     * @var int
-     */
-    private $num;
+    protected $isDeleted = false;
 
-    /**
-     * @var boolean
-     */
-    private $recent;
+    protected $isSeen = true;
 
-    /**
-     * @var boolean
-     */
-    private $flagged;
+    protected $isDraft = false;
 
-    /**
-     * @var boolean
-     */
-    private $answered;
-
-    /**
-     * @var boolean
-     */
-    private $deleted;
-
-    /**
-     * @var boolean
-     */
-    private $seen;
-
-    /**
-     * @var boolean
-     */
-    private $draft;
-
-    /**
-     * Get mailbox name
-     *
-     * @return string
-     */
-    public function getMailbox($string)
+    public function getType()
     {
-        return $this->mailbox;
-    }
-
-    /**
-     * Get subject
-     *
-     * @return string
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * Get from
-     *
-     * @return Person
-     */
-    public function getFrom()
-    {
-        return $this->from;
-    }
-
-    /**
-     * Get to
-     *
-     * @return Person[]
-     */
-    public function getTo()
-    {
-        return $this->to;
-    }
-
-    /**
-     * Get sent date
-     *
-     * @return \DateTime
-     */
-    public function getDate()
-    {
-        return $this->date;
+        return ItemInterface::TYPE_MAIL;
     }
 
     /**
@@ -166,9 +45,9 @@ class Envelope implements ExchangeInterface
      *
      * @return string
      */
-    public function getId()
+    public function getMessageId()
     {
-        return $this->id;
+        return $this->messageId;
     }
 
     /**
@@ -212,23 +91,13 @@ class Envelope implements ExchangeInterface
     }
 
     /**
-     * Get unique identifier
-     *
-     * @return int
-     */
-    public function getUid()
-    {
-        return $this->uid;
-    }
-
-    /**
      * Get sequence number
      *
      * @return int
      */
-    public function getNum()
+    public function getSequenceNum()
     {
-        return $this->num;
+        return $this->seq;
     }
 
     /**
@@ -238,7 +107,7 @@ class Envelope implements ExchangeInterface
      */
     public function isRecent()
     {
-        return $this->recent;
+        return $this->isRecent;
     }
 
     /**
@@ -248,7 +117,7 @@ class Envelope implements ExchangeInterface
      */
     public function isFlagged()
     {
-        return $this->flagged;
+        return $this->isFlagged;
     }
 
     /**
@@ -258,7 +127,7 @@ class Envelope implements ExchangeInterface
      */
     public function isAnswered()
     {
-        return $this->answered;
+        return $this->isAnswered;
     }
 
     /**
@@ -268,7 +137,7 @@ class Envelope implements ExchangeInterface
      */
     public function isDeleted()
     {
-        return $this->deleted;
+        return $this->isDeleted;
     }
 
     /**
@@ -278,7 +147,7 @@ class Envelope implements ExchangeInterface
      */
     public function isSeen()
     {
-        return $this->seen;
+        return $this->isSeen;
     }
 
     /**
@@ -288,96 +157,63 @@ class Envelope implements ExchangeInterface
      */
     public function isDraft()
     {
-        return $this->draft;
+        return $this->isDraft;
     }
 
     /**
      * Does this envelope has been sent or arrived before the other one
      *
      * @param Envelope $envelope
-     * @param string $useArrival
      *
      * @return boolean
      */
     public function isBefore(Envelope $envelope, $useArrival = false)
     {
-        if (null === $this->date) {
-            return $this->uid < $envelope->getUid();
+        if (null === $this->created || null === $envelope->created) {
+            return $this->uid < $envelope->uid;
         }
-
-        $date = $envelope->getDate();
-
-        if (null === $date) {
-            return $this->uid < $envelope->getUid();
-        }
-
-        return $this->date < $date;
+        return $this->created < $envelope->created;
     }
 
     public function toArray()
     {
-        return array(
-            'mailbox'    => $this->mailbox,
-            'subject'    => $this->subject,
-            'from'       => $this->from,
-            'to'         => $this->to,
-            'date'       => $this->date,
-            'id'         => $this->id,
+        parent::toArray() + array(
+            'cc'         => $this->cc,
+            'bcc'        => $this->bcc,
+            'messageId'  => $this->messageId,
             'references' => $this->references,
             'replyTo'    => $this->replyTo,
             'inReplyTo'  => $this->inReplyTo,
             'size'       => $this->size,
-            'uid'        => $this->uid,
-            'num'        => $this->num,
-            'recent'     => $this->recent,
-            'flagged'    => $this->flagged,
-            'answered'   => $this->answered,
-            'deleted'    => $this->deleted,
-            'seen'       => $this->seen,
-            'draft'      => $this->draft,
+            'seq'        => $this->seq,
+            'isRecent'   => $this->isRecent,
+            'isFlagged'  => $this->isFlagged,
+            'isAnswered' => $this->isAnswered,
+            'isDeleted'  => $this->isDeleted,
+            'isSeen'     => $this->isSeen,
+            'isDraft'    => $this->isDraft,
         );
     }
 
     public function fromArray(array $array)
     {
-        $array += array(
-            'mailbox'    => '',
-            'subject'    => '',
-            'from'       => null,
-            'to'         => null,
-            'date'       => null,
-            'id'         => -1,
-            'references' => null,
-            'replyTo'    => null,
-            'inReplyTo'  => null,
-            'size'       => -1,
-            'uid'        => -1,
-            'num'        => -1,
-            'recent'     => false,
-            'flagged'    => false,
-            'answered'   => false,
-            'deleted'    => false,
-            'seen'       => true,
-            'draft'      => false,
-        );
+        $array += $this->toArray();
 
-        $this->mailbox    = $array['mailbox'];
-        $this->subject    = $array['subject'];
-        $this->from       = $array['from'];
-        $this->to         = $array['to'];
-        $this->date       = $array['date'];
-        $this->id         = $array['id'];
+        parent::fromArray($array);
+
+        $this->cc         = $array['cc'];
+        $this->bcc        = $array['bcc'];
+        $this->messageId  = $array['messageId'];
         $this->references = $array['references'];
         $this->replyTo    = $array['replyTo'];
         $this->inReplyTo  = $array['inReplyTo'];
         $this->size       = (int)$array['size'];
-        $this->uid        = (int)$array['uid'];
-        $this->num        = (int)$array['num'];
-        $this->recent     = (bool)$array['recent'];
-        $this->flagged    = (bool)$array['flagged'];
-        $this->answered   = (bool)$array['answered'];
-        $this->deleted    = (bool)$array['deleted'];
-        $this->seen       = (bool)$array['seen'];
-        $this->draft      = (bool)$array['draft'];
+        $this->seq        = (int)$array['seq'];
+        $this->isRecent   = (bool)$array['isRecent'];
+        $this->isFlagged  = (bool)$array['isFlagged'];
+        $this->isAnswered = (bool)$array['isAnswered'];
+        $this->isDeleted  = (bool)$array['isDeleted'];
+        $this->isSeen     = (bool)$array['isSeen'];
+        $this->isDraft    = (bool)$array['isDraft'];
     }
 }

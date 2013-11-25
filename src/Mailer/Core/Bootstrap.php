@@ -4,14 +4,15 @@ namespace Mailer\Core;
 
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\ConfigError;
-use Mailer\Server\Cache\CachedMailReader;
+use Mailer\Server\Imap\Impl\CachedMailReader;
+use Mailer\Server\Imap\Impl\RcubeImapMailReader;
 use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
 use Mailer\Server\Proxy\MailReader;
-use Mailer\Server\Rcube\RcubeImapMailReader;
 
 use Config\Impl\Memory\MemoryBackend;
 use Doctrine\Common\Cache\RedisCache;
+use Mailer\Server\Imap\Index;
 
 /**
  * OK this is far from ideal nevertheless it works
@@ -89,25 +90,23 @@ class Bootstrap
         $pimple['userconfig'] = array();
 
         // Services
-        $pimple['mailreader'] = function () use ($container, $config) {
+        $pimple['index'] = function () use ($container, $config) {
 
             // @todo Find a better way to handle cache
+            $cache = null;
             if (isset($config['redis'])) {
                 $redis = new \Redis();
                 $redis->connect($config['redis']['host']);
                 $cache = new RedisCache();
                 $cache->setRedis($redis);
             }
-            if (isset($cache)) {
-                $service = new CachedMailReader(new RcubeImapMailReader(), $cache);
-            } else {
-                $service = new RcubeImapMailReader();
-            }
 
-            $service->setOptions($config['servers']['imap']);
-            if ($service instanceof ContainerAwareInterface) {
-                $service->setContainer($container);
-            }
+            $reader = new RcubeImapMailReader();
+            $reader->setOptions($config['servers']['imap']);
+
+            $index = new Index($reader, $cache);
+            $index->setContainer($container);
+
             return $service;
         };
         $pimple['smtp'] = function () use ($container, $config) {

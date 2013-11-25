@@ -1,21 +1,21 @@
 <?php
 
-namespace Mailer\Server\Rcube;
+namespace Mailer\Server\Imap\Impl;
 
 use Mailer\Error\LogicError;
 use Mailer\Error\NotImplementedError;
 use Mailer\Error\NotFoundError;
+use Mailer\Mime\Multipart;
+use Mailer\Mime\Part;
 use Mailer\Model\DateHelper;
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\Sort;
 use Mailer\Model\Thread;
 use Mailer\Server\AbstractServer;
-use Mailer\Server\MailReaderInterface;
-use Mailer\Server\Protocol\Body\Multipart;
-use Mailer\Server\Protocol\Body\Part;
+use Mailer\Server\Imap\MailReaderInterface;
+use Mailer\Server\Imap\Query;
 
 class RcubeImapMailReader extends AbstractServer implements
     MailReaderInterface
@@ -106,14 +106,10 @@ class RcubeImapMailReader extends AbstractServer implements
      *
      * @param string $parent
      * @param boolean $onlySubscribed
-     * @param boolean $refresh
      *
      * @return Folder[]
      */
-    public function getFolderMap(
-        $parent         = null,
-        $onlySubscribed = true,
-        $refresh        = false)
+    public function getFolderMap($parent = null, $onlySubscribed = true)
     {
         $map = array();
 
@@ -161,11 +157,10 @@ class RcubeImapMailReader extends AbstractServer implements
      * Get a single folder
      *
      * @param string $name
-     * @param boolean $refresh
      *
      * @return Folder
      */
-    public function getFolder($name, $refresh = false)
+    public function getFolder($name)
     {
         $client = $this->getClient();
 
@@ -400,21 +395,17 @@ class RcubeImapMailReader extends AbstractServer implements
         $name,
         $offset   = 0,
         $limit    = 50,
-        $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_ASC,
-        $refresh = false)
+        $sort     = Query::SORT_SEQ,
+        $order    = Query::ORDER_ASC)
     {
         $map = array();
 
         $client = $this->getClient();
 
-        if (Sort::SORT_SEQ !== $sort) {
-            throw new NotImplementedError("Only sort by sequence is implemented yet");
-        }
 
         $threads = @$client->thread($name, 'REFERENCES', '', true);
 
-        if (Sort::ORDER_DESC === $order) {
+        if (Query::ORDER_DESC === $order) {
             $threads->revert();
         }
 
@@ -432,7 +423,25 @@ class RcubeImapMailReader extends AbstractServer implements
             $map[$root] = $uidList;
         }
 
-        return $map;
+        $this->orderPartialThreads($map);
+
+        return $tree;
+    }
+
+    /**
+     * Order partial thread tree
+     *
+     * @param array $tree
+     *   Output of the getPartialThreads() method
+     */
+    private function orderPartialThreads(&$tree)
+    {
+        // In most cases sorting by sequence or arrival is the same: please
+        // keep in mind this function will be used for basic UI in most cases
+        // and not for complex queries
+        if (Query::SORT_SEQ !== $sort && Query::SORT_ARRIVAL !== $sort && Query::SORT_DATE !== $sort) {
+            throw new NotImplementedError("Only sort by sequence is implemented yet");
+        }
     }
 
     /**
@@ -515,11 +524,10 @@ class RcubeImapMailReader extends AbstractServer implements
     public function getThread(
         $name,
         $id,
-        $order = Sort::ORDER_ASC,
-        $complete = false,
-        $refresh = false)
+        $order = Query::ORDER_ASC,
+        $complete = false)
     {
-        $tree = $this->getPartialThreads($name, 0, null, Sort::SORT_SEQ, Sort::ORDER_ASC, $refresh);
+        $tree = $this->getPartialThreads($name, 0, null, Query::SORT_SEQ, Query::ORDER_ASC);
 
         foreach ($tree as $root => $uidList) {
 
@@ -533,7 +541,7 @@ class RcubeImapMailReader extends AbstractServer implements
                 $list = $this->getEnvelopes($name, $uidList);
             }
 
-            if (Sort::ORDER_DESC === $order) {
+            if (Query::ORDER_DESC === $order) {
                 $list = array_reverse($list);
             }
 
@@ -572,11 +580,10 @@ class RcubeImapMailReader extends AbstractServer implements
         $name,
         $offset   = 0,
         $limit    = 50,
-        $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_DESC,
-        $refresh = false)
+        $sort     = Query::SORT_SEQ,
+        $order    = Query::ORDER_DESC)
     {
-        $tree = $this->getPartialThreads($name, $offset, $limit, $sort, $order, $refresh);
+        $tree = $this->getPartialThreads($name, $offset, $limit, $sort, $order);
 
         foreach ($tree as $root => $uidList) {
 

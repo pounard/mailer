@@ -1,8 +1,8 @@
 <?php
 
-namespace Mailer\Server\Protocol\Body\Part;
+namespace Mailer\Mime\Part;
 
-use Mailer\Server\Protocol\Body\Part;
+use Mailer\Mime\Part;
 
 class Text extends Part
 {

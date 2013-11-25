@@ -1,6 +1,6 @@
 <?php
 
-namespace Mailer\Server\Protocol\Body;
+namespace Mailer\Mime;
 
 abstract class AbstractPart implements PartInterface
 {

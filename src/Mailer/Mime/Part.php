@@ -1,11 +1,38 @@
 <?php
 
-namespace Mailer\Server\Protocol\Body;
-
-use Mailer\Server\ProtocolHelper;
+namespace Mailer\Mime;
 
 class Part extends AbstractPart implements PartInterface
 {
+    /**
+     * Parse parameters list as an hashmap
+     *
+     * @param array $list
+     *
+     * @return array
+     */
+    static public function parseParameters(array $list)
+    {
+        $ret = array();
+
+        $key = null;
+        foreach ($list as $value) {
+            if (null === $key) {
+                $key = $value;
+            } else {
+                $ret[$key] = $value;
+                $key = null;
+            }
+        }
+
+        if (null !== $key) {
+            // Malformed options list
+            throw new \InvalidArgumentException("Malformed option list item count is odd");
+        }
+
+        return $ret;
+    }
+
     /**
      * Create instance from array
      *
@@ -26,11 +53,11 @@ class Part extends AbstractPart implements PartInterface
      *
      * @return Part
      *
-     * @see \Mailer\Server\Protocol\Body\Part::fetchCallback
-     * @see \Mailer\Server\Protocol\Body\Part::getContents()
-     * @see \Mailer\Server\Protocol\Body\Part::setContents()
-     * @see \Mailer\Server\Protocol\Body\Part\Message
-     * @see \Mailer\Server\Protocol\Body\Part\Text
+     * @see \Mailer\Mime\Part::fetchCallback
+     * @see \Mailer\Mime\Part::getContents()
+     * @see \Mailer\Mime\Part::setContents()
+     * @see \Mailer\Mime\Part\Message
+     * @see \Mailer\Mime\Part\Text
      */
     static public function createInstanceFromArray(array $array, $fetchCallback = null)
     {
@@ -64,7 +91,7 @@ class Part extends AbstractPart implements PartInterface
 
         if (!empty($array)) {
             if ($part = array_shift($array)) { // Can be NIL
-                $instance->setParameters(ProtocolHelper::parseParameters($part));
+                $instance->setParameters(Part::parseParameters($part));
             }
         }
 
@@ -168,7 +195,7 @@ class Part extends AbstractPart implements PartInterface
      * @return array
      *   Data array with consumed data pruned out
      *
-     * @see \Mailer\Server\Protocol\Body\Part\Text
+     * @see \Mailer\Mime\Part\Text
      *   As a valid and almost complete example
      */
     public function parseAdditionalData(array $array)

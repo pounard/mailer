@@ -1,12 +1,13 @@
 <?php
 
-namespace Mailer\Server;
+namespace Mailer\Server\Imap;
 
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
-use Mailer\Model\Sort;
 use Mailer\Model\Thread;
+use Mailer\Server\Imap\Query;
+use Mailer\Server\ServerInterface;
 
 /**
  * Imap server connection using the PHP IMAP extension
@@ -23,25 +24,19 @@ interface MailReaderInterface extends ServerInterface
      *
      * @param string $parent
      * @param boolean $onlySubscribed
-     * @param boolean $refresh
      *
      * @return Folder[]
      */
-    public function getFolderMap(
-        $parent         = null,
-        $onlySubscribed = true,
-        $refresh        = false);
+    public function getFolderMap($parent = null, $onlySubscribed = true);
 
     /**
      * Get a single folder
      *
      * @param string $name
-     *   Mailbox name
-     * @param boolean $refresh
      *
      * @return Folder
      */
-    public function getFolder($name, $refresh = false);
+    public function getFolder($name);
 
     /**
      * Get single mail envelope
@@ -103,25 +98,22 @@ interface MailReaderInterface extends ServerInterface
      * @param boolean $complete
      *   If set to true will return complete Mail instances instead of
      *   Envelope instances in the thread
-     * @param boolean $refresh
      *
      * @return Mail[]
      */
-    public function getThread(
-        $name,
-        $id,
-        $order = Sort::ORDER_ASC,
-        $complete = false,
-        $refresh = false);
+    public function getThread($name, $id, $order = Query::ORDER_ASC, $complete = false);
 
     /**
      * Get mail list from the given folder
+     *
+     * Threads order should be derivated from the latest received mail and not
+     * the root message date.
      *
      * @param string $name
      *   Folder name
      * @param int $offset
      *   Where to start
-     * @param int $limti
+     * @param int $limit
      *   Number of threads to fetch
      * @param int $sort
      *   Sort field
@@ -135,7 +127,6 @@ interface MailReaderInterface extends ServerInterface
         $name,
         $offset   = 0,
         $limit    = 100,
-        $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_DESC,
-        $refresh = false);
+        $sort     = Query::SORT_SEQ,
+        $order    = Query::ORDER_DESC);
 }

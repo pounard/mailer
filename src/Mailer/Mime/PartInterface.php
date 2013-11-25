@@ -1,6 +1,6 @@
 <?php
 
-namespace Mailer\Server\Protocol\Body;
+namespace Mailer\Mime;
 
 /**
  * This interface is not RFC compliant but allows typing of multipart

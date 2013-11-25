@@ -1,8 +1,6 @@
 <?php
 
-namespace Mailer\Server\Protocol\Body;
-
-use Mailer\Server\ProtocolHelper;
+namespace Mailer\Mime;
 
 class Multipart extends AbstractPart implements
     \Countable,
@@ -64,7 +62,7 @@ class Multipart extends AbstractPart implements
                 if (!empty($array)) {
                     // Roundcube implementation returns some NULL values
                     if ($part = array_shift($array)) { // Can be NIL
-                        $instance->setExtensionParameters(ProtocolHelper::parseParameters($part));
+                        $instance->setExtensionParameters(Part::parseParameters($part));
                     }
                 }
 
@@ -73,7 +71,7 @@ class Multipart extends AbstractPart implements
                     if ($part = array_shift($array)) { // Can be NIL
                         $disposition = strtolower((string)$part[0]);
                         if (isset($part[1])) {
-                            $attributes = ProtocolHelper::parseParameters($part[1]);
+                            $attributes = Part::parseParameters($part[1]);
                         } else {
                             $attributes = array();
                         }

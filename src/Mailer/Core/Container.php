@@ -79,10 +79,10 @@ class Container
     /**
      * Get mail reader
      *
-     * @return \Mailer\Server\MailReaderInterface
+     * @return \Mailer\Server\Imap\Index
      */
-    public function getMailReader()
+    public function getIndex()
     {
-        return $this->container['mailreader'];
+        return $this->container['index'];
     }
 }

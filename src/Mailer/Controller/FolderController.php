@@ -5,8 +5,8 @@ namespace Mailer\Controller;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
-use Mailer\Model\Sort;
-use Mailer\Server\MailReaderInterface;
+use Mailer\Server\Imap\MailReaderInterface;
+use Mailer\Server\Imap\Query;
 
 /**
  * Return parameters from the request
@@ -15,29 +15,29 @@ class FolderController extends AbstractController
 {
     public function getAction(RequestInterface $request, array $args)
     {
-        $server = $this->getContainer()->getMailReader();
+        $index = $this->getContainer()->getIndex();
 
         switch (count($args)) {
 
             case 0:
-                return $server->getFolderMap(
+                return $index->getFolderMap(
                     $request->getOption('parent', null),
                     /*!*/(bool)$request->getOption('all'),
                     (bool)$request->getOption('refresh'));
 
             case 1:
-                return $server->getFolder($args[0], (bool)$request->getOption('refresh'));
+                return $index->getFolder($args[0], (bool)$request->getOption('refresh'));
 
             case 2:
                 switch ($args[1]) {
 
                     case 'list':
-                        return $server->getThreads($args[0], (bool)$request->getOption('refresh'));
+                        return $index->getThreads($args[0], (bool)$request->getOption('refresh'));
 
                     case 'refresh':
                         // Force refresh to have at least the last update time
                         // and the new unread count
-                        $folder = $server->getFolder($args[0], true);
+                        $folder = $index->getFolder($args[0], true);
 
                         if ($since = $request->getOption('since', null)) {
                             if (is_numeric($since)) {
@@ -51,7 +51,7 @@ class FolderController extends AbstractController
                         }
 
                         if ($since < $folder->getLastUpdate()) {
-                            $list = $server->getThreadsSince($args[0], $since);
+                            $list = $index->getThreadsSince($args[0], $since);
                         } else {
                             $list = array();
                         }
@@ -66,10 +66,10 @@ class FolderController extends AbstractController
                 switch ($args[1]) {
 
                     case 'thread':
-                        return $server->getThread(
+                        return $index->getThread(
                             $args[0],
                             (int)$args[2],
-                            ($request->getOption('reverse', 0) ? Sort::ORDER_DESC : Sort::ORDER_ASC),
+                            ($request->getOption('reverse', 0) ? Query::ORDER_DESC : Query::ORDER_ASC),
                             (bool)$request->getOption('complete', true),
                             (bool)$request->getOption('refresh')
                         );

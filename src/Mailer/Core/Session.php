@@ -2,8 +2,8 @@
 
 namespace Mailer\Core;
 
-use Mailer\Security\Account;
 use Mailer\Error\LogicError;
+use Mailer\Security\Account;
 
 /**
  * Very simple session component

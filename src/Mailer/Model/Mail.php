@@ -2,7 +2,7 @@
 
 namespace Mailer\Model;
 
-use Mailer\Server\Protocol\Body\Multipart;
+use Mailer\Mime\Multipart;
 
 /**
  * Represents a single mail.
