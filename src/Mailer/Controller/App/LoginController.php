@@ -13,7 +13,7 @@ class LoginController extends AbstractController
 {
     public function isAuthorized(RequestInterface $request, array $args)
     {
-        return $this
+        return !$this
             ->getContainer()
             ->getSession()
             ->isAuthenticated();
@@ -36,7 +36,8 @@ class LoginController extends AbstractController
 
         // FIXME Very very bad (using globals).
         $container = $this->getContainer();
-        if ($container['auth']->authenticate($_POST['username'], $_POST['password'])) {
+        $pimple = $container->getInternalContainer();
+        if ($pimple['auth']->authenticate($_POST['username'], $_POST['password'])) {
             // Yeah! Success.
             if (!$container->getSession()->regenerate(new Account(-1, $_POST['username'], $_POST['password']))) {
                 throw new LogicError("Could not create session");
