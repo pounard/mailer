@@ -145,10 +145,10 @@ class Dispatcher extends AbstractContainerAware
                 $contentType = $renderer->getContentType();
 
                 if ($view instanceof ResponseInterface) {
-                    $view->send(null);
+                    $view->send($request, null);
                 } else {
                     // Because one liners are too mainstream
-                    $response->send($renderer->render($view, $request), $contentType);
+                    $response->send($request, $renderer->render($view, $request), $contentType);
                 }
 
             // Within exception handling the dispatcher will act as a controller
@@ -158,22 +158,22 @@ class Dispatcher extends AbstractContainerAware
                     // If HTML is the demanded protocol then redirect to the
                     // login controller whenever the user is not authenticated
                     if ($this->getContainer()->getSession()->isAuthenticated()) {
-                        $response->send($renderer->render(new view(array('e' => $e), 'app/unauth')));
+                        $response->send($request, $renderer->render(new view(array('e' => $e), 'app/unauth')));
                     } else {
                         $response = new RedirectResponse('app/login');
-                        $response->send(null);
+                        $response->send($request, null);
                     }
                 } else {
                     // Unauthorized error will end up releasing a 403 error in
                     // the client demanded protocol
-                    $response->send($renderer->render(new View(array('e' => $e), 'app/error'), $request));
+                    $response->send($request, $renderer->render(new View(array('e' => $e), 'app/error'), $request));
                 }
             } catch (\Exception $e) {
-                $response->send($renderer->render(new View(array('e' => $e), 'app/error'), $request));
+                $response->send($request, $renderer->render(new View(array('e' => $e), 'app/error'), $request));
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();
-            $response->send($e->getMessage() . "\n" . $e->getTraceAsString());
+            $response->send($request, $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
 }

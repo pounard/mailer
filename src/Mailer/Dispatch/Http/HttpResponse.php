@@ -2,40 +2,27 @@
 
 namespace Mailer\Dispatch\Http;
 
+use Mailer\Core\AbstractContainerAware;
+use Mailer\Dispatch\RequestInterface;
 use Mailer\Dispatch\ResponseInterface;
 
-class HttpResponse implements ResponseInterface
+class HttpResponse extends AbstractContainerAware implements ResponseInterface
 {
     /**
      * @var string[]
      */
     protected $headers = array();
 
-    /**
-     * @var HttpRequest
-     */
-    protected $request;
-
-    /**
-     * Specific constructor
-     */
-    public function __construct(HttpRequest $request = null)
-    {
-        if (null !== $request) {
-            $this->request = $request;
-        }
-    }
-
-    public function sendHeaders($contentType = null)
+    public function sendHeaders(RequestInterface $request, $contentType = null)
     {
         if (null === $contentType) {
-            $this->headers["Content-Type"] = "text/html";
+            $this->headers["Content-Type"] = $request->getPreferredOutputContentType();
         } else {
             $this->headers["Content-Type"] = $contentType;
         }
 
-        // @todo
-        // Something better than this...
+        // @todo Request should drive charset
+        $this->headers["Content-Type"] .= '; charset=' . $this->getContainer()->getDefaultCharset();
 
         foreach ($this->headers as $name => $value) {
             header($name . ':' . $value);
@@ -76,9 +63,9 @@ class HttpResponse implements ResponseInterface
         }
     }
 
-    public function send($output, $contentType = null)
+    public function send(RequestInterface $request, $output, $contentType = null)
     {
-        $this->sendHeaders($contentType);
+        $this->sendHeaders($request, $contentType);
         $this->sendContent($output);
         $this->closeResponse();
     }

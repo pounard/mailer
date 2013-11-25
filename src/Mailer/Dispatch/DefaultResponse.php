@@ -4,7 +4,7 @@ namespace Mailer\Dispatch;
 
 class DefaultResponse implements ResponseInterface
 {
-    public function send($output, $contentType = null)
+    public function send(RequestInterface $request, $output, $contentType = null)
     {
         echo $output;
     }

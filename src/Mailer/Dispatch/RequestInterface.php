@@ -93,6 +93,14 @@ interface RequestInterface
     public function getOutputContentTypes();
 
     /**
+     * Get the preferred output content type
+     *
+     * @return string
+     *   Mime type or null
+     */
+    public function getPreferredOutputContentType();
+
+    /**
      * Create an appropriate response
      *
      * This method can return null case in which the dispatcher will just

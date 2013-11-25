@@ -3,6 +3,7 @@
 namespace Mailer\Dispatch\Http;
 
 use Mailer\Core\AbstractContainerAware;
+use Mailer\Dispatch\RequestInterface;
 use Mailer\Dispatch\ResponseInterface;
 
 class RedirectResponse extends AbstractContainerAware implements
@@ -32,13 +33,13 @@ class RedirectResponse extends AbstractContainerAware implements
         $this->code = $code;
     }
 
-    public function send($output, $contentType = null)
+    public function send(RequestInterface $request, $output, $contentType = null)
     {
         $url = $this->url;
         if (false === strpos($url, '://')) {
             // Got a resource
             // @todo Prefix with scheme and host
-            $url = sprintf("%s%s", $container['basepath'], $url);
+            $url = sprintf("%s%s", '/', $url);
             if (empty($url)) {
                 $url = '/';
             }

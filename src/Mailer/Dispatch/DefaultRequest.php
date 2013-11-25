@@ -109,6 +109,11 @@ class DefaultRequest implements RequestInterface
         return $this->outputType;
     }
 
+    public function getPreferredOutputContentType()
+    {
+        return reset($this->outputType);
+    }
+
     public function createResponse()
     {
         return null;
