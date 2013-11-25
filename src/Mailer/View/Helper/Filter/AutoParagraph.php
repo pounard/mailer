@@ -2,21 +2,17 @@
 
 namespace Mailer\View\Helper\Filter;
 
-use Mailer\Core\AbstractContainerAware;
 use Mailer\View\Helper\FilterInterface;
 
-class PlainFilter extends AbstractContainerAware implements FilterInterface
+/**
+ * Reformat the given plain text to a nice HTML body with <p> and <br/>
+ * where it should be
+ *
+ * Code comes from Drupal 7 credits goes to its authors
+ */
+class AutoParagraph implements FilterInterface
 {
-    /**
-     * Smart line ending conversion
-     *
-     * This code comes from Drupal 7, credits goes to its authors.
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    public function autoParagraph($text)
+    public function filter($text)
     {
         // All block level tags
         $block = '(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|p|h[1-6]|hr)';
@@ -31,7 +27,7 @@ class PlainFilter extends AbstractContainerAware implements FilterInterface
         // and begins and ends with a literal (inserting NULL as required).
         $ignore = false;
         $ignoretag = '';
-        $output = '';
+        $text = '';
         foreach ($chunks as $i => $chunk) {
             if ($i % 2) {
                 // Opening or closing tag?
@@ -65,50 +61,8 @@ class PlainFilter extends AbstractContainerAware implements FilterInterface
                 $chunk = preg_replace('!<br />(\s*</?(?:p|li|div|th|pre|td|ul|ol)>)!', '$1', $chunk);
                 $chunk = preg_replace('/&([^#])(?![A-Za-z0-9]{1,8};)/', '&amp;$1', $chunk);
             }
-            $output .= $chunk;
+            $text .= $chunk;
         }
-
-        return $output;
-    }
-
-    /**
-     * Conver all URL to links in text
-     *
-     * Solution found on Stack Overflow, credits goes to its author.
-     *   http://stackoverflow.com/questions/6393787/php-url-to-link-with-regex
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    public function urlToLinks($text)
-    {
-        return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/[^()<>\s]+)#i', '\\1<a href="\\2">\\2</a>', $text);
-    }
-
-    /**
-     * Filters original mail copy (starts with ">") and replace it with a
-     * nice collapsible div
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    public function originalFilter($text)
-    {
-        return $text;
-    }
-
-    public function filter($text)
-    {
-        // Input text is supposedly plain text
-        // @todo Encoding here
-        $text = htmlentities($text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_DISALLOWED);
-
-        // @todo This should be configurable per the user
-        $text = $this->originalFilter($text);
-        $text = $this->urlToLinks($text);
-        $text = $this->autoParagraph($text);
 
         return $text;
     }

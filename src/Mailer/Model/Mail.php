@@ -28,7 +28,11 @@ class Mail extends Envelope
     {
         if (!empty($this->bodyPlain) && $escaped) {
             // Temporary code
-            $filter = new \Mailer\View\Helper\Filter\PlainFilter();
+            $filter = new \Mailer\View\Helper\FilterCollection(array(
+                new \Mailer\View\Helper\Filter\HtmlEncode(),
+                new \Mailer\View\Helper\Filter\AutoParagraph(),
+                new \Mailer\View\Helper\Filter\UrlToLink(),
+            ));
             return $filter->filter($this->bodyPlain);
         } else {
             return $this->bodyPlain;
