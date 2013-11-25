@@ -4,11 +4,8 @@ namespace Mailer\Core;
 
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\ConfigError;
-use Mailer\Server\Imap\Impl\CachedMailReader;
 use Mailer\Server\Imap\Impl\RcubeImapMailReader;
-use Mailer\Server\Native\PhpImapMailReader;
 use Mailer\Server\Native\PhpSmtpServer;
-use Mailer\Server\Proxy\MailReader;
 
 use Config\Impl\Memory\MemoryBackend;
 use Doctrine\Common\Cache\RedisCache;
