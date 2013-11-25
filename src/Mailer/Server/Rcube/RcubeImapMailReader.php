@@ -313,7 +313,7 @@ class RcubeImapMailReader extends AbstractServer implements
      * @param string $body
      * @param string $charset
      */
-    private function cleanBody($body, $type, $subtype, $charset = 'US-ASCII')
+    public function cleanBody($body, $type, $subtype, $charset = 'US-ASCII')
     {
         // Remove NULL characters if any (#1486189)
         if (strpos($body, "\x00") !== false) {
@@ -332,6 +332,7 @@ class RcubeImapMailReader extends AbstractServer implements
     public function getMails($name, array $idList)
     {
         $client = $this->getClient();
+        $self = $this;
         $ret = @$client->fetchHeaders($name, $idList, true);
 
         if (false === $ret) {
@@ -362,7 +363,7 @@ class RcubeImapMailReader extends AbstractServer implements
 
                 $multipart = Multipart::createInstanceFromArray(
                     $bodyStructure,
-                    function (Part $part) use ($client, $uid, $name) {
+                    function (Part $part) use ($client, $uid, $name, $self) {
 
                         $index = $part->getIndex();
                         $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
@@ -371,7 +372,7 @@ class RcubeImapMailReader extends AbstractServer implements
                         if (empty($body)) { // Can have no body there.
                             return false;
                         } else {
-                            return $this->cleanBody($body, $part->getType(), $part->getSubtype(), $part->getParameter('charset'));
+                            return $self->cleanBody($body, $part->getType(), $part->getSubtype(), strtoupper($part->getParameter('charset')));
                         }
                     }
                 );
