@@ -93,15 +93,10 @@ interface MailReaderInterface extends ServerInterface
      *   Mailbox name
      * @param int $id
      *   Root message uid
-     * @param int $sort
-     *   Mail sorting order
-     * @param boolean $complete
-     *   If set to true will return complete Mail instances instead of
-     *   Envelope instances in the thread
      *
-     * @return Mail[]
+     * @return Thread
      */
-    public function getThread($name, $id, $order = Query::ORDER_ASC, $complete = false);
+    public function getThread($name, $id);
 
     /**
      * Get mail list from the given folder
@@ -110,23 +105,10 @@ interface MailReaderInterface extends ServerInterface
      * the root message date.
      *
      * @param string $name
-     *   Folder name
-     * @param int $offset
-     *   Where to start
-     * @param int $limit
-     *   Number of threads to fetch
-     * @param int $sort
-     *   Sort field
-     * @param int $order
-     *   Sort order
+     * @param Query $query
      *
      * @return Thread[]
      *   Ordered thread list
      */
-    public function getThreads(
-        $name,
-        $offset   = 0,
-        $limit    = 100,
-        $sort     = Query::SORT_SEQ,
-        $order    = Query::ORDER_DESC);
+    public function getThreads($name, Query $query = null);
 }

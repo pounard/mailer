@@ -391,23 +391,23 @@ class RcubeImapMailReader extends AbstractServer implements
      *
      * @return array
      */
-    private function getPartialThreads(
-        $name,
-        $offset   = 0,
-        $limit    = 50,
-        $sort     = Query::SORT_SEQ,
-        $order    = Query::ORDER_ASC)
+    private function getPartialThreads($name, Query $query = null)
     {
         $map = array();
 
         $client = $this->getClient();
 
-
         $threads = @$client->thread($name, 'REFERENCES', '', true);
 
-        if (Query::ORDER_DESC === $order) {
+        if (null === $query) {
+            $query = new Query();
+        }
+        if (Query::ORDER_DESC === $query->getOrder()) {
             $threads->revert();
         }
+
+        $limit = $query->getLimit();
+        $offset = $query->getOffset();
 
         if ($offset !== 0 || ($limit && $limit < $threads->count())) {
             $threads->slice($offset, $limit);
@@ -423,25 +423,7 @@ class RcubeImapMailReader extends AbstractServer implements
             $map[$root] = $uidList;
         }
 
-        $this->orderPartialThreads($map);
-
         return $tree;
-    }
-
-    /**
-     * Order partial thread tree
-     *
-     * @param array $tree
-     *   Output of the getPartialThreads() method
-     */
-    private function orderPartialThreads(&$tree)
-    {
-        // In most cases sorting by sequence or arrival is the same: please
-        // keep in mind this function will be used for basic UI in most cases
-        // and not for complex queries
-        if (Query::SORT_SEQ !== $sort && Query::SORT_ARRIVAL !== $sort && Query::SORT_DATE !== $sort) {
-            throw new NotImplementedError("Only sort by sequence is implemented yet");
-        }
     }
 
     /**
@@ -521,13 +503,9 @@ class RcubeImapMailReader extends AbstractServer implements
         ); 
     }
 
-    public function getThread(
-        $name,
-        $id,
-        $order = Query::ORDER_ASC,
-        $complete = false)
+    public function getThread($name, $id)
     {
-        $tree = $this->getPartialThreads($name, 0, null, Query::SORT_SEQ, Query::ORDER_ASC);
+        $tree = $this->getPartialThreads($name);
 
         foreach ($tree as $root => $uidList) {
 
@@ -535,21 +513,13 @@ class RcubeImapMailReader extends AbstractServer implements
                 continue;
             }
 
-            if ($complete) {
-                $list = $this->getMails($name, $uidList);
-            } else {
-                $list = $this->getEnvelopes($name, $uidList);
-            }
-
-            if (Query::ORDER_DESC === $order) {
-                $list = array_reverse($list);
-            }
-
+            $list = $this->getEnvelopes($name, $uidList);
             $list = array_filter($list, function ($envelope) {
                 return !$envelope->isDeleted();
             });
 
-            return $list;
+            $thread = new Thread();
+            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $list));
         }
 
         throw new NotFoundError("Could not find thread");
@@ -576,28 +546,28 @@ class RcubeImapMailReader extends AbstractServer implements
         return $ret;
     }
 
-    public function getThreads(
-        $name,
-        $offset   = 0,
-        $limit    = 50,
-        $sort     = Query::SORT_SEQ,
-        $order    = Query::ORDER_DESC)
+    public function getThreads($name, Query $query = null)
     {
-        $tree = $this->getPartialThreads($name, $offset, $limit, $sort, $order);
+        if (null === $query) {
+            $query = new Query();
+        }
+
+        $tree = $this->getPartialThreads($name, $query);
 
         foreach ($tree as $root => $uidList) {
 
-            $envelopes = array_filter($this->getEnvelopes($name, $uidList), function ($envelope) {
+            $list = $this->getEnvelopes($name, $uidList);
+            $list = array_filter($list, function ($list) {
                 return !$envelope->isDeleted();
             });
 
-            if (empty($envelopes)) { // Everything has been deleted
+            if (empty($list)) { // Everything has been deleted
                 unset($tree[$root]);
                 continue;
             }
 
             $thread = new Thread();
-            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $envelopes));
+            $thread->fromArray(array('id' => $root) + $this->buildThreadArray($name, $list));
 
             $tree[$root] = $thread;
         }

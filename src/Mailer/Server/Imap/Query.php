@@ -73,8 +73,8 @@ class Query
     public function __construct(
         $limit    = 100,
         $offset   = 0,
-        $sort     = Sort::SORT_SEQ,
-        $order    = Sort::ORDER_DESC)
+        $sort     = self::SORT_SEQ,
+        $order    = self::ORDER_DESC)
     {
         $this->limit = $limit;
         $this->offset = $offset;

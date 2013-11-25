@@ -142,7 +142,10 @@ class MailboxIndex
      */
     public function getThread($uid, $refresh = false)
     {
-        throw new NotImplementedError();
+        $thread = $this
+            ->getIndex()
+            ->getMailReader()
+            ->getThread($this->name, $uid);
     }
 
     /**
