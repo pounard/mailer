@@ -422,9 +422,6 @@ class RcubeImapMailReader extends AbstractServer implements
         foreach ($tree as $root => $values) {
             $uidList = $this->flattenTree($values, $root);
             $uidList[$root] = 0;
-            if (isset($uidList[0])) {
-                time();
-            }
             ksort($uidList, SORT_NUMERIC);
             $map[$root] = $uidList;
         }

@@ -160,9 +160,9 @@ form .actions > * {
     color: #fff;
     font-weight: bold;
     float: right;
-    padding: 0px 2px;
+    padding: 0px;
     font-size: 0.9em;
-    margin-right: 10px; /* WTF goes out??? */
+    margin-right: 10px; /* FIXME: Goes out because of content padding */
 }
 
 #special-folders {
@@ -185,7 +185,13 @@ form .actions > * {
 }
 .thread .subject {
     font-weight: bold;
+    height: 32px;
     line-height: 32px;
+    overflow: hidden;
+    padding-right: 7em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
 }
 .thread:hover {
     /* background-color: #ffffed; */
@@ -197,14 +203,15 @@ form .actions > * {
 }
 .thread .date, .mail .date {
     position: absolute;
-    top: 5px;
+    top: 0;
     right: 7px;
     color: #0077CC;
     font-weight: bold;
+    line-height: 32px;
 }
 .thread .unseen {
     position: absolute;
-    bottom: 5px;
+    bottom: 7px;
     right: 7px;
 }
 

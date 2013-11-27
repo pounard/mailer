@@ -3,15 +3,15 @@
 namespace Mailer\Server\Imap;
 
 use Mailer\Core\AbstractContainerAware;
+use Mailer\Error\NotFoundError;
 use Mailer\Error\NotImplementedError;
+use Mailer\Mime\Charset;
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
 use Mailer\Model\Thread;
 
 use Doctrine\Common\Cache\Cache;
-use Mailer\Mime\Charset;
-use Mailer\Error\NotFoundError;
 
 /**
  * Mailbox index
@@ -199,12 +199,12 @@ class MailboxIndex
                 // Also update some shortcuts in the object itself
                 $subtype = $part->getSubtype();
                 if ('plain' === $subtype) {
-                    $updates['bodyPlain'][] = $body;
+                    $updates['bodyPlain'][] = $this->index->bodyFilter($body, $subtype);
                     if (!isset($updates['summary'])) {
-                        $updates['summary'] = $body;
+                        $updates['summary'] = $this->index->bodyToSummary($body, $subtype);
                     }
                 } else if ('html' === $subtype) { 
-                    $updates['bodyHtml'][] = $body;
+                    $updates['bodyHtml'][] = $this->index->bodyFilter($body, $subtype);
                     /*
                     if (!isset($updates['summary'])) {
                         $updates['summary'] = $body;
@@ -350,7 +350,14 @@ class MailboxIndex
      */
     public function getThread($uid, $refresh = false)
     {
-        return $this->buildThread(
+        $cid = $this->index->getCacheKey('t', $uid);
+        $cache = $this->index->getCache();
+
+        if (!$refresh && ($ret = $cache->fetch($cid))) {
+            return $ret;
+        }
+
+        $thread = $this->buildThread(
             $uid,
             $thread = $this
               ->getIndex()
@@ -360,6 +367,10 @@ class MailboxIndex
                   $uid
             )
         );
+
+        $cache->save($cid, $thread);
+
+        return $thread;
     }
 
     /**
@@ -405,7 +416,7 @@ class MailboxIndex
             $query = new Query();
         }
 
-        $thread = $this->getThread($uid);
+        $thread = $this->getThread($uid, $refresh);
 
         $mailList = $this->getMails(array_keys($thread->getUidMap()));
 
