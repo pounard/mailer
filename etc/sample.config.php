@@ -30,7 +30,6 @@ return array(
     'services' => array(
         'auth' => '\Mailer\Security\Auth\ImapAuthProvider',
         'filterfactory' => '\Mailer\View\Helper\FilterFactory',
-        'modelfactory' => '\Mailer\Model\Factory\DefaultFactory',
         'session' => '\Mailer\Core\Session',
     ),
     // Just remove the 'redis' part to disable caching
