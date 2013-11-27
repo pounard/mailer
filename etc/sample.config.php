@@ -16,6 +16,14 @@ return array(
             'trash' => 'Trash',
             'spam' => 'spam',
         ),
+        // Output filtering configuration, you should not modify
+        // this in most cases, defaults are fine for basic usage
+        'filters' => array(
+            'html' => array('strip'),
+            'plain' => array('htmlesc', 'autop', 'urltoa'),
+            'secure' => array('strip'),
+            'summary' => array('strip', 'htmlesc', 'urltou'),
+        ),
     ),
     // Maybe you want to override those but if you are not
     // a developer please don't

@@ -63,8 +63,8 @@ class Charset
         }
 
         // See Roundcube method documentation, charset might be malformed.
-        $to   = \rcube_charset::parse_charset($to);
-        $from = \rcube_charset::parse_charset($from);
+        $to   = @\rcube_charset::parse_charset($to);
+        $from = @\rcube_charset::parse_charset($from);
 
         /*
          * Is this really necessary?

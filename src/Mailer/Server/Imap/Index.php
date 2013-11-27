@@ -7,8 +7,6 @@ use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Error\NotImplementedError;
 use Mailer\Model\Folder;
-use Mailer\View\Helper\FilterCollection;
-use Mailer\View\Helper\FilterInterface;
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
@@ -38,11 +36,6 @@ class Index extends AbstractContainerAware
      * @var string
      */
     private $cachePrefix;
-
-    /**
-     * @var FilterInterface[]
-     */
-    private $filters = array();
 
     /**
      * Default constructor
@@ -149,46 +142,6 @@ class Index extends AbstractContainerAware
     }
 
     /**
-     * Get configured filter for the given text subtype
-     *
-     * @param string $subtype
-     *   Input type ("plain" or "html")
-     *
-     * @return FilterInterface
-     */
-    public function getFilter($subtype)
-    {
-        if (isset($this->filters[$subtype])) {
-            $this->filters[$subtype];
-        }
-
-        $factory = $this->getContainer()->getFilterFactory();
-
-        // @todo Un-hardcode those
-        switch ($subtype) {
-
-            case 'plain':
-                $this->getContainer()->getFilterFactory();
-                $filter = new FilterCollection(array(
-                    $factory->getInstance('htmlesc'),
-                    $factory->getInstance('autop'),
-                    $factory->getInstance('urltoa'),
-                ));
-                break;
-
-            default: // Default is to be to more secure one
-            case 'html':
-                // @todo: WRONG UNSECURE
-                $filter = new FilterCollection(array(
-                    $factory->getInstance('null'),
-                ));
-                break;
-        }
-
-        return $this->filters[$subtype] = $filter;
-    }
-
-    /**
      * Compute summary from given string
      *
      * @param string $string
@@ -200,11 +153,11 @@ class Index extends AbstractContainerAware
      */
     public function bodyToSummary($string, $subtype = 'plain')
     {
-        $body = $this->getFilter($subtype)->filter($string);
+        // Fallback on something secure
+        $string = $this->bodyFilter($string, 'summary');
 
-        if (!empty($body)) {
-            $body = strip_tags($body);
-            if (preg_match('/^.{1,200}\b/su', $body, $match)) {
+        if (!empty($string)) {
+            if (preg_match('/^.{1,200}\b/su', $string, $match)) {
                 return $match[0] . '…';
             }
         }
@@ -224,8 +177,11 @@ class Index extends AbstractContainerAware
      */
     public function bodyFilter($string, $subtype = 'plain')
     {
-        // @todo
-        return $this->getFilter($subtype)->filter($string);
+        return $this
+            ->getContainer()
+            ->getFilterFactory()
+            ->getFilter($subtype)
+            ->filter($string);
     }
 
     /**
