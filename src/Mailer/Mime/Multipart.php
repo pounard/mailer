@@ -232,6 +232,22 @@ class Multipart extends AbstractPart implements
     public function getPartAt($index = 0)
     {
         if (!isset($this->parts[$index])) {
+            foreach ($this->parts as $localIndex => $part) {
+                // Note that this is very ugly but somehow working.
+                if ($part instanceof \Multipart &&
+                    // Just fetch the variable
+                    ($len = strlen($localIndex)) &&
+                    // Cannot proceed with longer string
+                    $len < strlen($index) &&
+                    // + 1 excludes separator
+                    Part::INDEX_SEPARATOR === $index[$len])
+                {
+                    $sub = substr($index, $len + 1); 
+                    if ($sub === $localIndex) {
+                        return $part->getPartAt($sub);
+                    }
+                }
+            }
             throw new \OutOfBoundsException("No part at given index");
         }
 
@@ -251,7 +267,7 @@ class Multipart extends AbstractPart implements
             if (Part::INDEX_ROOT === $thisIndex) {
                 $index = $localIndex;
             } else {
-                $index = $thisIndex . AbstractPart::INDEX_SEPARATOR . $localIndex;
+                $index = $thisIndex . Part::INDEX_SEPARATOR . $localIndex;
             }
             $part->setIndex($index);
         }
@@ -267,7 +283,7 @@ class Multipart extends AbstractPart implements
                 if (Part::INDEX_ROOT === $index) {
                     $part->setIndex($key);
                 } else {
-                    $part->setIndex($index . AbstractPart::INDEX_SEPARATOR . $key);
+                    $part->setIndex($index . Part::INDEX_SEPARATOR . $key);
                 }
             }
         }
@@ -310,9 +326,7 @@ class Multipart extends AbstractPart implements
 
         foreach ($this->parts as $part) {
             if ($part instanceof Multipart) {
-                foreach ($part->findPartFirst() as $index => $part) {
-                    $ret[$index] = $part;
-                }
+                $ret += $part->findPartAll($type, $subtype);
             } else {
                 if ((null === $type || $type === $part->type) && (null === $subtype || $subtype === $part->subtype)) {
                     $ret[$part->index] = $part;

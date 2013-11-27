@@ -77,6 +77,26 @@ class Container
     }
 
     /**
+     * Get model object factory
+     *
+     * @return \Mailer\Model\Factory\DefaultFactory
+     */
+    public function getModelFactory()
+    {
+        return $this->container['modelfactory'];
+    }
+
+    /**
+     * Get filter factory
+     *
+     * @return \Mailer\View\Helper\FilterFactory
+     */
+    public function getFilterFactory()
+    {
+        return $this->container['filterfactory'];
+    }
+
+    /**
      * Get mail reader
      *
      * @return \Mailer\Server\Imap\Index

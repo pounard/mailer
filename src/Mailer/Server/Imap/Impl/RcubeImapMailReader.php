@@ -308,28 +308,13 @@ class RcubeImapMailReader extends AbstractServer implements
                 if (empty($bodyStructure)) {
                     trigger_error(sprintf("Mail with uid '%s' has no body structure", $uid));
                 } else {
-                    $multipart = Multipart::createInstanceFromArray($bodyStructure);
-
-                    // Callback depends on current arguments
-                    $callback  = function (Part $part) use ($client, $uid, $name, $self) {
-                        $index = $part->getIndex();
-                        $index = ($index === Part::INDEX_ROOT ? 'TEXT' : $index);
-                        return @$client->handlePartBody($name, $uid, true, $index, $part->getEncoding());
-                    };
-                    // Fetch plain text and HTML body parts if found
-                    if ($part = $multipart->findPartFirst('text', 'plain')) {
-                        $part->setContents($callback);
-                        $array['bodyPlain'] = $part->getContents();
-                    }
-                    if ($part = $multipart->findPartFirst('text', 'html')) {
-                        $part->setContents($callback);
-                        $array['bodyHtml'] = $part->getContents();
-                    }
+                    $array['structure'] = Multipart::createInstanceFromArray($bodyStructure);
                 }
 
                 $mail = new Mail();
                 $mail->fromArray($array);
                 $ret[$index] = $mail;
+
             } else {
                 // This should never happen only doing this for autocompletion
                 unset($ret[$index]);
@@ -341,6 +326,15 @@ class RcubeImapMailReader extends AbstractServer implements
         }
 
         return $ret;
+    }
+
+    public function getPart($name, $uid, $index, $encoding = null)
+    {
+        if (Part::INDEX_ROOT === $index) {
+            $index = 'TEXT';
+        }
+
+        return @$this->getClient()->handlePartBody($name, $uid, true, $index, $encoding);
     }
 
     /**
@@ -357,7 +351,9 @@ class RcubeImapMailReader extends AbstractServer implements
         foreach ($tree as $key => $value) {
             $ret[$key] = $parent;
             if (!empty($value)) {
-                $ret = array_merge($ret, $this->flattenTree($value, $key));
+                foreach ($this->flattenTree($value, $key) as $k => $v) {
+                    $ret[$k] = $v;
+                }
             }
         }
 
@@ -426,6 +422,9 @@ class RcubeImapMailReader extends AbstractServer implements
         foreach ($tree as $root => $values) {
             $uidList = $this->flattenTree($values, $root);
             $uidList[$root] = 0;
+            if (isset($uidList[0])) {
+                time();
+            }
             ksort($uidList, SORT_NUMERIC);
             $map[$root] = $uidList;
         }

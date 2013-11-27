@@ -86,6 +86,23 @@ interface MailReaderInterface extends ServerInterface
     public function getMails($name, array $uidList);
 
     /**
+     * Get mail part
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int $uid
+     *   Mail unique identifier
+     * @param string $index
+     *   Index, can be Part::INDEX_ROOT
+     * @param string $encoding
+     *   Part encoding if specified
+     *
+     * @return string
+     *   Part content
+     */
+    public function getPart($name, $uid, $index, $encoding = null);
+
+    /**
      * Get thread starting with the given mail unique identifier
      *
      * @param string $name

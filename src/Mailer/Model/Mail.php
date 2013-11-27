@@ -3,7 +3,6 @@
 namespace Mailer\Model;
 
 use Mailer\Mime\Multipart;
-use Mailer\Mime\Part;
 
 class Mail extends Envelope
 {
@@ -15,12 +14,42 @@ class Mail extends Envelope
     /**
      * @var string
      */
-    private $bodyPlain;
+    private $bodyPlain = array();
 
     /**
      * @var string
      */
-    private $bodyHtml;
+    private $bodyHtml = array();
+
+    /**
+     * Get the mail structure
+     *
+     * @return Multipart
+     */
+    public function getStructure()
+    {
+        return $this->structure;
+    }
+
+    /**
+     * Get plain text version of body if any
+     *
+     * @return string[]
+     */
+    public function getBodyPlain()
+    {
+        return $this->bodyPlain;
+    }
+
+    /**
+     * Get HTML version of body if any
+     *
+     * @return string[]
+     */
+    public function getBodyHtml()
+    {
+        return $this->bodyHtml;
+    }
 
     public function toArray()
     {

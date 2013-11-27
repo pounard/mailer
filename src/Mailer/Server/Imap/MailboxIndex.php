@@ -10,6 +10,8 @@ use Mailer\Model\Mail;
 use Mailer\Model\Thread;
 
 use Doctrine\Common\Cache\Cache;
+use Mailer\Mime\Charset;
+use Mailer\Error\NotFoundError;
 
 /**
  * Mailbox index
@@ -115,7 +117,10 @@ class MailboxIndex
     /**
      * Get single envelope
      *
-     * Use wisely this method may not be cached.
+     * Use wisely this method may not be cached: in most cases it will be
+     * utilized by higher level methods such as thread handling and will be
+     * included in an already cached result
+     *
      * In some cases this method may return Mail instances.
      *
      * @param int $uid
@@ -130,7 +135,10 @@ class MailboxIndex
     /**
      * Get list of envelopes
      *
-     * Use wisely this method may not be cached.
+     * Use wisely this method may not be cached: in most cases it will be
+     * utilized by higher level methods such as thread handling and will be
+     * included in an already cached result
+     *
      * In some cases this method may return Mail instances.
      *
      * @param int[] $uidList
@@ -139,33 +147,7 @@ class MailboxIndex
      */
     public function getEnvelopes(array $uidList, $refresh = false)
     {
-        $ret     = array();
-        $missing = array();
-        $cache   = $this->index->getCache();
-
-        if (!$refresh) {
-            foreach ($uidList as $uid) {
-                $key = $this->index->getCacheKey('e', $uid);
-                if ($mail = $cache->fetch($key)) {
-                    $ret[] = $mail;
-                } else {
-                    $missing[] = $uid;
-                }
-            }
-        } else {
-            $missing = $uidList;
-        }
-
-        if (!empty($missing)) {
-            $missing = $this->index->getMailReader()->getEnvelopes($this->name, $uidList);
-            foreach ($missing as $mail) {
-                $ret[] = $mail;
-                $key = $this->index->getCacheKey('e', $uid);
-                $cache->save($key, $mail);
-            }
-        }
-
-        return $ret;
+        return $this->index->getMailReader()->getEnvelopes($this->name, $uidList);
     }
 
     /**
@@ -177,7 +159,64 @@ class MailboxIndex
      */
     public function getMail($uid, $refresh = false)
     {
-        return reset($this->getMails(array($uid), $refresh));
+        $list = $this->getMails(array($uid), $refresh);
+
+        return reset($list);
+    }
+
+    /**
+     * Compute mail summary by adding into the mail structure to textual
+     * parts
+     *
+     * @param Mail $mail
+     */
+    private function buildMail(Mail $mail)
+    {
+        $uid     = $mail->getUid();
+        $parts   = $mail->getStructure()->findPartAll('text');
+        $charset = $this->index->getContainer()->getDefaultCharset();
+        $updates = array();
+
+        foreach ($parts as $index => $part) {
+
+            $body = $this->index->getMailReader()->getPart(
+                $this->name,
+                $uid,
+                $index,
+                $part->getEncoding()
+            );
+
+            if (!empty($body)) {
+
+                $body = Charset::convert(
+                    $body,
+                    $part->getParameter('charset', "US-ASCII"),
+                    $charset
+                );
+
+                $part->setContents($body);
+
+                // Also update some shortcuts in the object itself
+                $subtype = $part->getSubtype();
+                if ('plain' === $subtype) {
+                    $updates['bodyPlain'][] = $body;
+                    if (!isset($updates['summary'])) {
+                        $updates['summary'] = $body;
+                    }
+                } else if ('html' === $subtype) { 
+                    $updates['bodyHtml'][] = $body;
+                    /*
+                    if (!isset($updates['summary'])) {
+                        $updates['summary'] = $body;
+                    }
+                     */
+                }
+            }
+        }
+
+        if (!empty($updates)) {
+            $mail->fromArray($updates);
+        }
     }
 
     /**
@@ -210,6 +249,11 @@ class MailboxIndex
             $missing = $this->index->getMailReader()->getMails($this->name, $uidList);
             foreach ($missing as $mail) {
                 $ret[] = $mail;
+
+                // Preload any textual parts to be cached along the mail and
+                // be able to compute a summary for threads
+                $this->buildMail($mail);
+
                 $key = $this->index->getCacheKey('m', $uid);
                 $cache->save($key, $mail);
             }
@@ -247,10 +291,10 @@ class MailboxIndex
             }
 
             if ($from = $envelope->getFrom()) {
-              $persons[$from->getMail()] = $from;
+                $persons[$from->getMail()] = $from;
             }
             foreach ($envelope->getTo() as $person) {
-              $persons[$person->getMail()] = $person;
+                $persons[$person->getMail()] = $person;
             }
 
             if (!$envelope->isSeen()) {
@@ -274,14 +318,15 @@ class MailboxIndex
             $lastUnread = $last;
         }
 
-        // @todo Make summary selection configurable
-        $mail = $this->getMail($firstUnread->getUid());
+        if (!$firstUnread instanceof Mail) {
+            $firstUnread = $this->getMail($firstUnread->getUid());
+        }
 
         $thread = new Thread();
         $thread->fromArray(array(
             'uid'     => $first->getUid(),
             'subject' => $first->getSubject(),
-            'summary' => $mail->getSummary(),
+            'summary' => $firstUnread->getSummary(),
             'created' => $first->getCreationDate(),
             'updated' => $last->getCreationDate(),
             'total'   => count($uidMap),
@@ -369,4 +414,57 @@ class MailboxIndex
 
         return $mailList;
     }
+
+    /**
+     * Get mail part as a string
+     *
+     * @param int $uid
+     * @param string $index
+     *   Part index
+     *
+     * @return string
+     *
+    public function getPart($uid, $index)
+    {
+        $cid = $this->index->getCacheKey('p', $uid, $index);
+        $cache = $this->index->getCache();
+
+        if ($ret = $cache->fetch($cid)) {
+            return $ret;
+        }
+
+        // We need the part for encoding and that's about all
+        // we need from it: sad story is we have to do all that
+        // in order to simply fetch it, I'm starting to reach the
+        // limits of a too abstracted library. Hopefully this also
+        // the most complex case we have to deal with.
+        $part = $this->getMail($uid)->getStructure()->getPartAt($index);
+        $body = $this->index->getMailReader()->getPart($uid, $index);
+
+        if (empty($body)) {
+            throw new NotFoundError("Part body is empty");
+        }
+
+        $body = Charset::convert(
+            $body,
+            $part->getParameter('charset', "US-ASCII"),
+            $this->index->getContainer()->getDefaultCharset()
+        );
+    }
+     */
+
+    /**
+     * Get mail part as a string
+     *
+     * @param int $uid
+     * @param string $index
+     *   Part index
+     *
+     * @return resource
+     *
+    public function getPartAsStream($uid, $index)
+    {
+        throw new NotImplementedError();
+    }
+     */
 }
