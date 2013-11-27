@@ -142,46 +142,40 @@ class Index extends AbstractContainerAware
     }
 
     /**
-     * Compute summary from given string
-     *
-     * @param string $string
-     *   Input string
-     * @param string $subtype
-     *   Input type ("plain" or "html")
-     *
-     * @return string
-     */
-    public function bodyToSummary($string, $subtype = 'plain')
-    {
-        // Fallback on something secure
-        $string = $this->bodyFilter($string, 'summary');
-
-        if (!empty($string)) {
-            if (preg_match('/^.{1,200}\b/su', $string, $match)) {
-                return $match[0] . '…';
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Generate clean ready to use markup from the given string
      *
      * @param string $string
      *   Input string
-     * @param string $subtype
-     *   Input type ("plain" or "html")
+     * @param string $type
+     *   Filter type ("plain" or "html")
+     * @param boolean $summary
+     *   Set this to true if you need a summary
+     * @param int $size
+     *   Truncate size if summary
      *
      * @return string
      */
-    public function bodyFilter($string, $subtype = 'plain')
+    public function bodyFilter($string, $type = 'plain', $summary = false, $size = 200)
     {
-        return $this
+        if ($summary) {
+            $type .= '2sum';
+        }
+
+        $string = $this
             ->getContainer()
             ->getFilterFactory()
-            ->getFilter($subtype)
+            ->getFilter($type)
             ->filter($string);
+
+        if ($summary && !empty($string)) {
+            if ($size < strlen($string)) {
+                if (preg_match('/^.{1,' . $size . '}\b/su', $string, $match)) {
+                    return $match[0] . '…';
+                }
+            }
+        }
+
+        return $string;
     }
 
     /**

@@ -19,10 +19,11 @@ return array(
         // Output filtering configuration, you should not modify
         // this in most cases, defaults are fine for basic usage
         'filters' => array(
-            'html' => array('strip'),
+            'html' => array('strip', 'autop', 'urltoa'),
+            'html2sum' => array('strip', 'urltoa'),
             'plain' => array('htmlesc', 'autop', 'urltoa'),
+            'plain2sum' => array('htmlesc', 'urltoa'),
             'secure' => array('strip'),
-            'summary' => array('strip', 'htmlesc', 'urltou'),
         ),
     ),
     // Maybe you want to override those but if you are not

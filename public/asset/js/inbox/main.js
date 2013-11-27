@@ -219,14 +219,16 @@ var Inbox, inboxInstance;
 
   // Run all the things!
   $(document).ready(function () {
-    inboxInstance = new Inbox();
-    inboxInstance.dispatcher.fetchJson(null, {
-      url: 'settings',
-      success: function (data) {
-        inboxInstance.settings = data;
-        inboxInstance.refreshFolderList();
-      }
-    });
+    if ($("#folders").length) {
+      inboxInstance = new Inbox();
+      inboxInstance.dispatcher.fetchJson(null, {
+        url: 'settings',
+        success: function (data) {
+          inboxInstance.settings = data;
+          inboxInstance.refreshFolderList();
+        }
+      });
+    }
   });
 
 }(jQuery, document));

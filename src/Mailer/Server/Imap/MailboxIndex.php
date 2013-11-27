@@ -12,6 +12,7 @@ use Mailer\Model\Mail;
 use Mailer\Model\Thread;
 
 use Doctrine\Common\Cache\Cache;
+use Mailer\Error\LogicError;
 
 /**
  * Mailbox index
@@ -187,30 +188,31 @@ class MailboxIndex
             );
 
             if (!empty($body)) {
-
-                $body = Charset::convert(
+                $updates[$part->getSubtype()][] = Charset::convert(
                     $body,
                     $part->getParameter('charset', "US-ASCII"),
                     $charset
                 );
+            }
+        }
 
-                $part->setContents($body);
-
-                // Also update some shortcuts in the object itself
-                $subtype = $part->getSubtype();
-                if ('plain' === $subtype) {
-                    $updates['bodyPlain'][] = $this->index->bodyFilter($body, $subtype);
-                    if (!isset($updates['summary'])) {
-                        $updates['summary'] = $this->index->bodyToSummary($body, $subtype);
-                    }
-                } else if ('html' === $subtype) { 
-                    $updates['bodyHtml'][] = $this->index->bodyFilter($body, $subtype);
-                    /*
-                    if (!isset($updates['summary'])) {
-                        $updates['summary'] = $body;
-                    }
-                     */
+        // Compute summary
+        foreach (array('plain', 'html') as $type) {
+            if (!empty($updates[$type])) { 
+                foreach ($updates[$type] as $body) {
+                    $updates['summary'] = $this->index->bodyFilter($body, $type, true);
                 }
+                break; // No need to go further (chain of responsability)
+            }
+        }
+
+        foreach (array('plain' => 'bodyPlain', 'html' => 'bodyHtml') as $type => $property) {
+            if (isset($updates[$type])) {
+                foreach ($updates[$type] as $index => $body) {
+                    $updates[$type][$index] = $this->index->bodyFilter($body, $type);
+                }
+                $updates[$property] = $updates[$type];
+                unset($updates[$type]);
             }
         }
 

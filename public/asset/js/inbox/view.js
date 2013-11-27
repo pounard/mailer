@@ -40,7 +40,7 @@ var View;
    */
   View.prototype.render = function () {
 
-    var $element, date = undefined;
+    var $element, date = undefined, body = undefined;
 
     if ("string" === typeof this.date) {
       date = new Date(Date.parse(this.date));
@@ -51,13 +51,24 @@ var View;
       $(this.element).remove();
     }
 
+    // Which body to display: using
+    // this.bodyPlain || this.bodyHtml || this.summary
+    // cannot work because they are arrays
+    if (this.bodyPlain.length) {
+      body = this.bodyPlain;
+    } else if (this.bodyHtml.length) {
+      body = this.bodyHtml;
+    } else {
+      body = this.summary;
+    }
+
     $element = $(Template.render("mail", {
       persons: this.inbox.renderPersonImages([this.from]),
       from:    this.inbox.renderPersonLink(this.from),
       subject: this.subject,
       date:    date,
       classes: this.classes.join(" "),
-      body:    this.bodyPlainFiltered || this.bodyPlain
+      body:    body
     }));
     this.element = $element.get(0);
 
