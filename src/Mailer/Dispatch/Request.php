@@ -25,6 +25,11 @@ final class Request
     const METHOD_DELETE = 3;
 
     /**
+     * PATCH
+     */
+    const METHOD_PATCH = 4;
+
+    /**
      * Convert internal method constant to comprehensible string
      *
      * @param int $method
@@ -46,6 +51,9 @@ final class Request
 
             case self::METHOD_PUT:
                 return 'PUT';
+
+            case self::METHOD_PATCH:
+                return 'PATCH';
 
             default:
                 return (string)$method;

@@ -44,6 +44,7 @@ var Template;
       + '<div class="star {{starred-class}}"><a href="#" title="Star this mail">&nbsp;&nbsp;&nbsp;</a></div>'
       + 'From {{{from}}}'
       + '</div>'
+      + '<a class="delete" href="#">Delete</a>'
       + '<div class="body">{{{body}}}</div>'
       + '</div>';
 

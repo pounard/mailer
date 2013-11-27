@@ -10,13 +10,14 @@ class JsonRenderer implements RendererInterface
 {
     public function render(View $view, RequestInterface $request)
     {
-        $converter = new ArrayConverter();
+        $values = $view->getValues();
 
-        $ret = json_encode(
-            $converter->serialize(
-                $view->getValues()
-            )
-        );
+        if (empty($values)) {
+            $values = array('success' => true);
+        }
+
+        $converter = new ArrayConverter();
+        $ret = json_encode($converter->serialize($values));
 
         if (false === $ret) {
             $code = json_last_error();

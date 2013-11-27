@@ -222,6 +222,30 @@ class MailboxIndex
     }
 
     /**
+     * Flag or unflag a mail
+     *
+     * @param int $uid
+     *   Mail unique identifier
+     * @param string $flag
+     *   Flag name, must be a valid IMAP flag name
+     * @param string $toggle
+     *   Set this to false to unflag
+     */
+    public function flag($uid, $flag, $toggle = true)
+    {
+        switch (strtolower($flag)) {
+
+            case 'seen':
+            case 'flagged':
+                $this->index->getMailReader()->flagMail($this->name, $uid, $flag, $toggle);
+                break;
+
+            default:
+                throw new LogicError(sprintf("Invalid flag '%s", $flag));
+        }
+    }
+
+    /**
      * Get list of mails
      *
      * @param int[] $uidList

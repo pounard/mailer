@@ -90,6 +90,22 @@ class FolderController extends AbstractController
                                 (bool)$request->getOption('refresh')
                             );
 
+                    case 'unseen':
+                        $index->getMailboxIndex($args[0])->flag($args[2], 'seen', false);
+                        return;
+
+                    case 'seen':
+                        $index->getMailboxIndex($args[0])->flag($args[2], 'seen', true);
+                        return;
+
+                    case 'unstar':
+                        $index->getMailboxIndex($args[0])->flag($args[2], 'flagged', false);
+                        return;
+
+                    case 'star':
+                        $index->getMailboxIndex($args[0])->flag($args[2], 'flagged', true);
+                        return;
+
                     default:
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
                 }

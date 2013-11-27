@@ -180,6 +180,15 @@ class RcubeImapMailReader extends AbstractServer implements
         return $folder;
     }
 
+    public function purgeFolder($name, array $uidList = null)
+    {
+        $client = $this->getClient();
+
+        if (false === @$client->expunge($mailbox, $uidList)) {
+            throw new LogicError(sprintf("IMAP error: %d %s", $client->errornum, $client->error));
+        }
+    }
+
     /**
      * Build envelope array from header
      *
@@ -326,6 +335,26 @@ class RcubeImapMailReader extends AbstractServer implements
         }
 
         return $ret;
+    }
+
+    public function flagMail($name, $uid, $flag, $toggle = true)
+    {
+        $client = $this->getClient();
+
+        if ($toggle) {
+            $ret = @$client->flag($name, array($uid), $flag);
+        } else {
+            $ret = @$client->unflag($name, array($uid), $flag);
+        }
+
+        if (false === $ret) {
+            throw new LogicError(sprintf("IMAP error: %d %s", $client->errornum, $client->error));
+        }
+    }
+
+    public function deleteMail($name, $uid)
+    {
+        $this->flagMail($name, $uid, 'deleted', true);
     }
 
     public function getPart($name, $uid, $index, $encoding = null)

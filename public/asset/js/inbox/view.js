@@ -91,10 +91,80 @@ var View;
   };
 
   /**
+   * Move this mail to trash
+   */
+  View.prototype.moveToTrash = function () {
+    var self = this;
+    /*
+    this.inbox.dispatcher.fetchJson(this.element, {
+      url: 'mail/' + this.uid + '/flag',
+      data: {
+        complete: 1,
+        reverse: 1
+      },
+      success: function (data) {
+        $.each(data, function (id, view) {
+          self.inbox.addView(new View(view, self.folder));
+        });
+      }
+    });
+     */
+  };
+
+  /**
+   * Star or unstar this mail
+   */
+  View.prototype.star = function (toggle) {
+    var self = this,
+        action = toggle ? 'star' : 'unstar';
+    this.inbox.dispatcher.fetchJson(this.element, {
+      url: 'folder/' + this.folder.path + '/' + action + '/' + this.uid,
+      success: function (data) {
+        $.each(data, function () {
+          if (toggle) {
+            // Update element
+          } else {
+            // Update element
+          }
+        });
+      }
+    });
+  };
+
+  /**
+   * Mark or unmark this mail as seen
+   */
+  View.prototype.seen = function (toggle) {
+    var self = this,
+    action = toggle ? 'seen' : 'unseen';
+    this.inbox.dispatcher.fetchJson(null, {
+      url: 'folder/' + this.folder.path + '/' + action + '/' + this.uid,
+      success: function (data) {
+        $.each(data, function () {
+          if (toggle) {
+            // Update element
+          } else {
+            // Update element
+          }
+        });
+      }
+    });
+  };
+
+  /**
    * Initialize behaviors
    */
   View.prototype.init = function () {
-    // @todo
+    var self = this;
+    $(this.element).find("a.delete").on("click", function () {
+      self.moveToTrash();
+    });
+    $(this.element).find("a.star").on("click", function () {
+      self.star(!self.flagged);
+    });
+    setTimeout(function () {
+      self.seen(true);
+    }, 1000);
   };
 
 }(jQuery));

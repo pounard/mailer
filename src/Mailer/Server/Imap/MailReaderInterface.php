@@ -86,6 +86,38 @@ interface MailReaderInterface extends ServerInterface
     public function getMails($name, array $uidList);
 
     /**
+     * Flag or unflag a mail
+     *
+     * @param int $uid
+     *   Mail unique identifier
+     * @param string $flag
+     *   Flag name, must be a valid IMAP flag name
+     * @param string $toggle
+     *   Set this to false to unflag
+     */
+    public function flagMail($name, $uid, $flag, $toggle = true);
+
+    /**
+     * Mark a mail for deletion
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int $uid
+     *   Mail unique identifier
+     */
+    public function deleteMail($name, $uid);
+
+    /**
+     * Purge deleted entries from folder
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int[] $uidList
+     *   Message uid list to delete, if non everything will be deleted
+     */
+    public function purgeFolder($name, array $uidList = null);
+
+    /**
      * Get mail part
      *
      * @param string $name
