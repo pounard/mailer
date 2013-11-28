@@ -35,18 +35,29 @@ class DefaultRequest implements RequestInterface
     protected $outputType = array();
 
     /**
+     * @var string
+     */
+    protected $variant;
+
+    /**
      * Default constructor
      *
      * @param string $path
      * @param string $content
      * @param array $options
      */
-    public function __construct($path, $content = null, array $options = array(), $method = Request::METHOD_GET)
+    public function __construct(
+        $path,
+        $content       = null,
+        array $options = array(),
+        $method        = Request::METHOD_GET,
+        $variant       = null)
     {
         $this->path    = $path;
         $this->content = $content;
         $this->options = $options;
         $this->method  = $method;
+        $this->variant = $variant;
     }
 
     public function getBasePath()
@@ -116,6 +127,11 @@ class DefaultRequest implements RequestInterface
 
     public function createResponse()
     {
-        return null;
+        return new DefaultResponse();
+    }
+
+    public function getVariant()
+    {
+        return $this->variant;
     }
 }

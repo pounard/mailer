@@ -31,7 +31,9 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
 
     public function sendContent($output)
     {
-        echo $output;
+        if (!empty($output)) {
+            echo $output;
+        }
     }
 
     public function closeResponse()

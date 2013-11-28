@@ -51,13 +51,17 @@ class HttpRequest extends DefaultRequest
                 throw new \RuntimeException(sprintf("Invalid request method %s", $_SERVER['REQUEST_METHOD']));
         }
 
+        $variant = null;
         if (empty($_GET['resource'])) {
             $_GET['resource'] = null;
+        } else if (false !== ($pos = strpos($_GET['resource'], ';'))) {
+            $variant = substr($_GET['resource'], $pos + 1);
+            $_GET['resource'] = substr($_GET['resource'], 0, $pos);
         }
 
         // @todo Content should be parsed depending on request content type 
 
-        return new self($_GET['resource'], $content, $_GET, $method);
+        return new self($_GET['resource'], $content, $_GET, $method, $variant);
     }
 
     static public function parseAcceptHeader($header)
@@ -95,9 +99,14 @@ class HttpRequest extends DefaultRequest
          return null;
     }
 
-    public function __construct($path, $content = null, array $options = array(), $method = Request::METHOD_GET)
+    public function __construct(
+        $path,
+        $content       = null,
+        array $options = array(),
+        $method        = Request::METHOD_GET,
+        $variant       = null)
     {
-        parent::__construct($path, $content, $options, $method);
+        parent::__construct($path, $content, $options, $method, $variant);
 
         if (isset($_SERVER['CONTENT_TYPE'])) {
             $this->setInputContentType($_SERVER['CONTENT_TYPE']);

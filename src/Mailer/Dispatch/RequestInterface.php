@@ -109,4 +109,16 @@ interface RequestInterface
      * @return ResponseInterface
      */
     public function createResponse();
+
+    /**
+     * Get variant parsed from the URL
+     *
+     * Variable is the string hanging after the first ";" character occurence
+     * https://restful-api-design.readthedocs.org/en/latest/urls.html#variants
+     *
+     * This is a choice of implementation of this application.
+     *
+     * @return string
+     */
+    public function getVariant();
 }

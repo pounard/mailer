@@ -62,7 +62,7 @@ class MailController extends AbstractController
                     ->getMailboxIndex($args[0])
                     ->getMail((int)$args[1]);
                  */
-                throw new NotImplementedError();
+                $contents = $request->getContent();
 
             default:
                 throw new NotFoundError("Identifier must be 'MAILDIR' or 'MAILDIR/UID'");

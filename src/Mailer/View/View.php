@@ -62,4 +62,12 @@ class View
     {
         return $this->values;
     }
+
+    /**
+     * Is the view empty
+     */
+    public function isEmpty()
+    {
+        return empty($this->values);
+    }
 }

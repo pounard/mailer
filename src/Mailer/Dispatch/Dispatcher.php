@@ -11,8 +11,9 @@ use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\LogicError;
 use Mailer\Error\UnauthorizedError;
 use Mailer\Model\ArrayConverter;
-use Mailer\View\View;
 use Mailer\View\HtmlRenderer;
+use Mailer\View\NullRenderer;
+use Mailer\View\View;
 
 /**
  * Front dispatcher (application runner)
@@ -147,6 +148,11 @@ class Dispatcher extends AbstractContainerAware
                 if ($view instanceof ResponseInterface) {
                     $view->send($request, null);
                 } else {
+                    // Where there is nothing to render just switch to a null
+                    // implementation that will put nothing into the payload
+                    if ($view->isEmpty()) {
+                        $renderer = new NullRenderer();
+                    }
                     // Because one liners are too mainstream
                     $response->send($request, $renderer->render($view, $request), $contentType);
                 }
