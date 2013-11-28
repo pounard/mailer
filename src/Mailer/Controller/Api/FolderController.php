@@ -1,7 +1,8 @@
 <?php
 
-namespace Mailer\Controller;
+namespace Mailer\Controller\Api;
 
+use Mailer\Controller\AbstractController;
 use Mailer\Dispatch\Request;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
@@ -78,17 +79,9 @@ class FolderController extends AbstractController
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
               }
 
+              /*
             case 3:
                 switch ($args[1]) {
-
-                    case 'thread':
-                        return $index
-                            ->getMailboxIndex($args[0])
-                            ->getThreadMails(
-                                (int)$args[2],
-                                $this->getQueryFromRequest($request),
-                                (bool)$request->getOption('refresh')
-                            );
 
                     case 'unseen':
                         $index->getMailboxIndex($args[0])->flag($args[2], 'seen', false);
@@ -109,6 +102,7 @@ class FolderController extends AbstractController
                     default:
                         throw new LogicError(sprintf("Invalid argument '%s'", $args[1]));
                 }
+                 */
 
             default:
                 throw new LogicError("Too many arguments");

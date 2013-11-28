@@ -30,6 +30,11 @@ final class Request
     const METHOD_PATCH = 4;
 
     /**
+     * PATCH
+     */
+    const METHOD_OPTIONS = 5;
+
+    /**
      * Convert internal method constant to comprehensible string
      *
      * @param int $method
@@ -54,6 +59,9 @@ final class Request
 
             case self::METHOD_PATCH:
                 return 'PATCH';
+
+            case self::METHOD_OPTIONS:
+                return 'OPTIONS';
 
             default:
                 return (string)$method;

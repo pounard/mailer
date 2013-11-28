@@ -79,7 +79,7 @@ var Folder;
     this.inbox.closePane();
     this.touch = new Date();
     this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
-      url: 'folder/' + this.path + '/list',
+      url: 'api/thread/' + this.path,
       success: function (data) {
         $.each(data, function (id, thread) {
           self.inbox.addThread(new Thread(thread, self));
@@ -102,7 +102,7 @@ var Folder;
     this.touch = new Date();
 
     this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
-      url: 'folder/' + this.path + '/list',
+      url: 'api/thread/' + this.path,
       since: since,
       success: function (data) {
         if (data.threads) {

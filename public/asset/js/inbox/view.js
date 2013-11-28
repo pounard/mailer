@@ -97,7 +97,7 @@ var View;
     var self = this;
     /*
     this.inbox.dispatcher.fetchJson(this.element, {
-      url: 'mail/' + this.uid + '/flag',
+      url: 'api/mail/' + this.uid + '/flag',
       data: {
         complete: 1,
         reverse: 1
@@ -118,7 +118,7 @@ var View;
     var self = this,
         action = toggle ? 'star' : 'unstar';
     this.inbox.dispatcher.fetchJson(this.element, {
-      url: 'folder/' + this.folder.path + '/' + action + '/' + this.uid,
+      url: 'api/folder/' + this.folder.path + '/' + action + '/' + this.uid,
       success: function (data) {
         $.each(data, function () {
           if (toggle) {
@@ -138,7 +138,7 @@ var View;
     var self = this,
     action = toggle ? 'seen' : 'unseen';
     this.inbox.dispatcher.fetchJson(null, {
-      url: 'folder/' + this.folder.path + '/' + action + '/' + this.uid,
+      url: 'api/folder/' + this.folder.path + '/' + action + '/' + this.uid,
       success: function (data) {
         $.each(data, function () {
           if (toggle) {
@@ -163,7 +163,7 @@ var View;
       self.star(!self.flagged);
     });
     setTimeout(function () {
-      self.seen(true);
+      //self.seen(true);
     }, 1000);
   };
 

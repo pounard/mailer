@@ -128,6 +128,12 @@ var Inbox, inboxInstance;
     this.$view.show();
   };
 
+  /**
+   * Get setting value
+   *
+   * This function will first attempt to find it in user configuration then
+   * in global configuration
+   */
   Inbox.prototype.getSetting = function (name, defaultValue) {
     if (this.settings) {
       if (this.settings.user && this.settings.user[name]) {
@@ -162,7 +168,7 @@ var Inbox, inboxInstance;
         folder.classes.push("folder-inbox");
         $container = this.$specialFolders;
       } else {
-        folders = this.getSetting("folders", {});
+        folders = this.getSetting("mailboxes", {});
         // All other must be determined from the server given
         // special folder list
         for (key in folders) {
@@ -208,7 +214,7 @@ var Inbox, inboxInstance;
   Inbox.prototype.refreshFolderList = function () {
     var self = this;
     this.dispatcher.fetchJson(this.$folders, {
-      'url': 'folder',
+      'url': 'api/folder',
       'success': function (data) {
         $.each(data, function (path, data) {
           self.addFolder(new Folder(data, self));
@@ -222,7 +228,7 @@ var Inbox, inboxInstance;
     if ($("#folders").length) {
       inboxInstance = new Inbox();
       inboxInstance.dispatcher.fetchJson(null, {
-        url: 'settings',
+        url: 'api/settings',
         success: function (data) {
           inboxInstance.settings = data;
           inboxInstance.refreshFolderList();

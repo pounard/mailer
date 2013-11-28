@@ -1,7 +1,8 @@
 <?php
 
-namespace Mailer\Controller;
+namespace Mailer\Controller\Api;
 
+use Mailer\Controller\AbstractController;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\View\View;
 

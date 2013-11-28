@@ -49,6 +49,12 @@ abstract class AbstractController extends AbstractContainerAware implements
             case Request::METHOD_PUT:
                 return $this->putAction($request, $args);
 
+            case Request::METHOD_PATCH:
+                return $this->patchAction($request, $args);
+
+            case Request::METHOD_OPTIONS:
+                return $this->optionsAction($request, $args);
+
             default:
                 throw new MethodNotAllowedError();
         }
@@ -78,6 +84,16 @@ abstract class AbstractController extends AbstractContainerAware implements
     }
 
     public function putAction(RequestInterface $request, array $args)
+    {
+        throw new MethodNotAllowedError();
+    }
+
+    public function patchAction(RequestInterface $request, array $args)
+    {
+        throw new MethodNotAllowedError();
+    }
+
+    public function optionsAction(RequestInterface $request, array $args)
     {
         throw new MethodNotAllowedError();
     }

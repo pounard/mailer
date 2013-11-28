@@ -81,7 +81,7 @@ var Thread;
     var self = this;
     this.inbox.openThreadView(true);
     this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
-      url: 'folder/' + this.folder.path + '/thread/' + this.uid,
+      url: 'api/thread/' + this.folder.path + '/' + this.uid + '/mail',
       data: {
         complete: 1,
         reverse: 1
