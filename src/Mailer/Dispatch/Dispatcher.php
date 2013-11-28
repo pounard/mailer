@@ -5,6 +5,7 @@ namespace Mailer\Dispatch;
 use Mailer\Controller\ControllerInterface;
 use Mailer\Core\AbstractContainerAware;
 use Mailer\Core\ContainerAwareInterface;
+use Mailer\Dispatch\Http\HttpResponse;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
@@ -150,7 +151,7 @@ class Dispatcher extends AbstractContainerAware
                 } else {
                     // Where there is nothing to render just switch to a null
                     // implementation that will put nothing into the payload
-                    if ($view->isEmpty()) {
+                    if (!$response instanceof HttpResponse && $view->isEmpty()) {
                         $renderer = new NullRenderer();
                     }
                     // Because one liners are too mainstream
