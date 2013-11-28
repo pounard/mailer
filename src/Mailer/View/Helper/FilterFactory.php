@@ -10,6 +10,8 @@ class FilterFactory extends AbstractContainerAware
     static private $registered = array(
         'autop'   => '\Mailer\View\Helper\Filter\AutoParagraph',
         'htmlesc' => '\Mailer\View\Helper\Filter\HtmlEncode',
+        'lntohr'  => '\Mailer\View\Helper\Filter\StupidLinesToHr',
+        'lntovd'  => '\Mailer\View\Helper\Filter\StupidLinesToVoid',
         'null'    => '\Mailer\View\Helper\Filter\NullFilter',
         'strip'   => '\Mailer\View\Helper\Filter\Strip',
         'urltoa'  => '\Mailer\View\Helper\Filter\UrlToLink',
