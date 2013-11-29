@@ -49,7 +49,7 @@ var Template;
       + '</div>';
 
   Template.thread =
-        '<div class="{{classes}}">'
+        '<div>'
       + '{{#unseen}}'
       + '<div class="unseen">{{{unseen}}}</div>'
       + '{{/unseen}}'

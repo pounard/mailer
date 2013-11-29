@@ -192,7 +192,7 @@ var Inbox, inboxInstance;
    */
   Inbox.prototype.addThread = function (thread) {
     this.threads[thread.id] = thread;
-    this.getInboxContainer().append(thread.render());
+    thread.attach(this.getInboxContainer());
   };
 
   /**

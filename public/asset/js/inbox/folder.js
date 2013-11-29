@@ -20,22 +20,29 @@ var Folder;
     });
   };
 
-  /**
-   * Get the refresh URL
-   */
-  InboxObject.prototype.getUrl = function () {
+  Folder.prototype.getUrl = function () {
     return "api/folder/" + this.path;
   };
 
-  InboxObject.prototype.getDefaultClasses = function () {
+  Folder.prototype.getDefaultClasses = function () {
     return ["folder"];
   };
 
-  InboxObject.prototype.attachEvents = function (context) {
+  Folder.prototype.attachEvents = function (context) {
     var self = this;
     $(context).find("a").on("click", function () {
       self.loadInbox();
     });
+  };
+
+  /**
+   * Create thread instanc from data and attach it
+   */
+  Folder.prototype.createThread = function (data) {
+    var thread = new Thread();
+    data.folder = this;
+    thread.init(data, this.inbox, [this]);
+    this.inbox.addThread(thread);
   };
 
   /**
@@ -49,8 +56,8 @@ var Folder;
     this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
       url: "api/thread/" + this.path,
       success: function (data) {
-        $.each(data, function (id, thread) {
-          self.inbox.addThread(new Thread(thread, self));
+        $.each(data, function (id, child) {
+          self.createThread(child);
         });
       }
     });
@@ -73,8 +80,8 @@ var Folder;
       since: since,
       success: function (data) {
         if (data.threads) {
-          $.each(data.threads, function (id, thread) {
-            this.inbox.addThread(new Thread(thread, self));
+          $.each(data.threads, function (id, child) {
+            self.createThread(child);
           });
         }
       }
