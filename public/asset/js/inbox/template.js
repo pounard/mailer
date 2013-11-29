@@ -21,7 +21,7 @@ var Template;
   };
 
   Template.folder =
-         '<li class="{{classes}}">'
+         '<li>'
        + '<a href="#">'
        + '{{name}}'
        + '{{#unseen}}'

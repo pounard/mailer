@@ -159,13 +159,13 @@ var Inbox, inboxInstance;
     // to the parent folder container
     if (folder.parent && this.folders[folder.parent]) {
       parent = this.folders[folder.parent];
-      parent.classes.push("parent");
+      parent.addClass("parent");
       $container = $(parent.children);
     } else {
       // Check for special folders that need specific placement
       // in the folder pane: start with the obvious INBOX folder
       if ("INBOX" === folder.name) {
-        folder.classes.push("folder-inbox");
+        folder.addClass("folder-inbox");
         $container = this.$specialFolders;
       } else {
         folders = this.getSetting("mailboxes", {});
@@ -173,7 +173,7 @@ var Inbox, inboxInstance;
         // special folder list
         for (key in folders) {
           if (folders[key] === folder.name) {
-            folder.classes.push("folder-" + key);
+            folder.addClass("folder-" + key);
             $container = this.$specialFolders;
             break;
           }
@@ -183,10 +183,8 @@ var Inbox, inboxInstance;
       if (!$container) {
         $container = this.$allFolders;
       }
-      $container.append(folder.render());
+      folder.attach($container);
     }
-
-    // this.getFolderContainer(folder).append(folder.render());
   };
 
   /**
@@ -217,7 +215,9 @@ var Inbox, inboxInstance;
       'url': 'api/folder',
       'success': function (data) {
         $.each(data, function (path, data) {
-          self.addFolder(new Folder(data, self));
+          var folder = new Folder();
+          folder.init(data, self);
+          self.addFolder(folder);
         });
       }
     });
