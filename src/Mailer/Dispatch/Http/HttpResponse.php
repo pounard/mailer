@@ -27,8 +27,10 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
     {
         $this->request = $request;
 
-        foreach ($headers as $name => $value) {
-            $this->addHeader($name, $value);
+        if (null !== $headers) {
+            foreach ($headers as $name => $value) {
+                $this->addHeader($name, $value);
+            }
         }
     }
 
