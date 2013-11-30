@@ -11,7 +11,7 @@ use Mailer\Dispatch\Router\DefaultRouter;
 use Mailer\Dispatch\Router\RouterInterface;
 use Mailer\Error\LogicError;
 use Mailer\Error\UnauthorizedError;
-use Mailer\Model\ArrayConverter;
+use Mailer\View\ErrorView;
 use Mailer\View\HtmlRenderer;
 use Mailer\View\NullRenderer;
 use Mailer\View\View;
@@ -165,7 +165,7 @@ class Dispatcher extends AbstractContainerAware
                     // If HTML is the demanded protocol then redirect to the
                     // login controller whenever the user is not authenticated
                     if ($this->getContainer()->getSession()->isAuthenticated()) {
-                        $response->send($request, $renderer->render(new view(array('e' => $e), 'app/unauth')));
+                        $response->send($request, $renderer->render(new View(array('e' => $e), 'app/unauth')));
                     } else {
                         $response = new RedirectResponse('app/login');
                         $response->send($request, null);
@@ -173,10 +173,10 @@ class Dispatcher extends AbstractContainerAware
                 } else {
                     // Unauthorized error will end up releasing a 403 error in
                     // the client demanded protocol
-                    $response->send($request, $renderer->render(new View(array('e' => $e), 'app/error'), $request));
+                    $response->send($request, $renderer->render(new ErrorView($e), $request));
                 }
             } catch (\Exception $e) {
-                $response->send($request, $renderer->render(new View(array('e' => $e), 'app/error'), $request));
+                $response->send($request, $renderer->render(new ErrorView($e), $request));
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();
