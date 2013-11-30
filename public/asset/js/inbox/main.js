@@ -11,6 +11,7 @@ var Inbox, inboxInstance;
    * Constructor
    */
   Inbox = function (options) {
+    var self = this;
     options = options || {};
     this.dispatcher      = new Dispatcher(options);
     this.$inbox          = $("#inbox");
@@ -24,6 +25,9 @@ var Inbox, inboxInstance;
     this.mails           = {};
     this.settings        = {};
     this.instances       = {};
+    this.$view.find("a.close").on("click", function () {
+      self.closePane();
+    });
   };
 
   /**
