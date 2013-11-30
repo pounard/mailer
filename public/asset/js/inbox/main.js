@@ -20,6 +20,7 @@ var Inbox, inboxInstance;
     this.$view           = $("#viewpane");
     this.folders         = {};
     this.threads         = {};
+    this.currentThread   = undefined;
     this.mails           = {};
     this.settings        = {};
   };
@@ -75,12 +76,13 @@ var Inbox, inboxInstance;
    * Reset current threads
    */
   Inbox.prototype.resetThreads = function () {
-    $.each(this.threads, function (key, thread) {
-      thread.remove();
-      if (thread.element) {
-        $(thread.element).remove();
-      }
-    });
+    var k = 0;
+    this.closePane();
+    this.resetMails();
+    for (k in this.threads) {
+      this.threads[k].detach();
+      delete this.threads[k];
+    }
     $(this.$inbox).find('.content').html("");
   };
 
@@ -88,12 +90,11 @@ var Inbox, inboxInstance;
    * Reset current mail view
    */
   Inbox.prototype.resetMails = function () {
-    $.each(this.mails, function (key, view) {
-      view.remove();
-      if (view.element) {
-        $(view.element).remove();
-      }
-    });
+    var k = 0;
+    for (k in this.mails) {
+      this.mails[k].detach();
+      delete this.mails[k];
+    }
     $(this.$view).find('#thread-view .content').html("");
   };
 
@@ -114,7 +115,6 @@ var Inbox, inboxInstance;
     this.$view.hide();
     this.$view.find("#thread-view").hide();
     this.$view.find("#compose").hide();
-    this.resetMails();
   };
 
   /**
@@ -191,8 +191,67 @@ var Inbox, inboxInstance;
    * Add thread
    */
   Inbox.prototype.addThread = function (thread) {
-    this.threads[thread.id] = thread;
+    this.threads[thread.uid] = thread;
     thread.attach(this.getInboxContainer());
+  };
+
+  /**
+   * Remove thread
+   *
+   * @param int|Thread thread
+   *   Thread instance or uid
+   */
+  Inbox.prototype.removeThread = function (thread, processRelated) {
+    var k = 0, uid = 0;
+
+    if (isNaN(thread)) {
+      uid = thread.uid;
+    } else {
+      uid = thread;
+    }
+
+    if (this.currentThread && uid === this.currentThread.uid) {
+      this.resetMails();
+      this.closePane();
+    }
+    for (k in this.threads) {
+      if (uid === this.threads[k].uid) {
+        if (processRelated) {
+          this.threads[k].change();
+        }
+        this.threads[k].detach();
+        delete this.threads[i];
+      }
+    }
+  };
+
+  /**
+   * Remove mail
+   *
+   * @param int|Mail mail
+   *   Mail instance or uid
+   */
+  Inbox.prototype.removeMail = function (mail, processRelated) {
+    var k = 0, uid = 0;
+
+    if (isNaN(mail)) {
+      uid = mail.uid;
+    } else {
+      uid = mail;
+    }
+
+    for (k in this.mails) {
+      if (uid === this.mails[k].uid) {
+        if (processRelated) {
+          this.mails[k].change();
+          if (this.mails[k].thread) {
+            this.mails[k].thread.refresh();
+          }
+        }
+        this.mails[k].detach();
+        delete this.mails[k];
+      }
+    }
   };
 
   /**
@@ -201,7 +260,7 @@ var Inbox, inboxInstance;
   Inbox.prototype.addMail = function (mail) {
     this.openThreadView();
     if (mail) {
-      this.mail = mail;
+      this.mails[mail.uid] = mail;
       mail.attach(this.$view.find("#thread-view .content"));
     }
   };
@@ -211,7 +270,7 @@ var Inbox, inboxInstance;
    */
   Inbox.prototype.refreshFolderList = function () {
     var self = this;
-    this.dispatcher.fetchJson(this.$folders, {
+    this.dispatcher.get({
       url: "api/folder",
       success: function (data) {
         $.each(data, function (path, data) {
@@ -220,7 +279,7 @@ var Inbox, inboxInstance;
           self.addFolder(folder);
         });
       }
-    });
+    }, this.$folders);
   };
 
   // Run all the things!
@@ -234,7 +293,7 @@ var Inbox, inboxInstance;
         url: "api",
         type: "options"
       });
-      inboxInstance.dispatcher.fetchJson(null, {
+      inboxInstance.dispatcher.get({
         url: "api/settings",
         success: function (data) {
           inboxInstance.settings = data;

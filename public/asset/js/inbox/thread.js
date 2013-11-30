@@ -29,7 +29,7 @@ var Thread;
   };
 
   Thread.prototype.getUrl = function () {
-    return "api/thread/" + this.folder.path + '/' + this.id;
+    return "api/thread/" + this.folder.path + '/' + this.uid;
   };
 
   Thread.prototype.getDefaultClasses = function () {
@@ -49,7 +49,7 @@ var Thread;
   Thread.prototype.loadMails = function () {
     var self = this;
     this.inbox.openThreadView(true);
-    this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
+    this.inbox.dispatcher.get({
       url: 'api/thread/' + this.folder.path + '/' + this.uid + '/mail',
       data: {
         complete: 1 /*,
@@ -59,11 +59,12 @@ var Thread;
         $.each(data, function (id, child) {
           var mail = new Mail();
           child.folder = self.folder;
+          child.thread = self;
           mail.init(child, self.inbox, [self, self.folder]);
           self.inbox.addMail(mail);
         });
       }
-    });
+    }, this.inbox.getViewContainer());
   };
 
 }(jQuery));

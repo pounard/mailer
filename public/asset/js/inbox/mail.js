@@ -48,6 +48,9 @@ var Mail;
     if (this.unseen) {
       classes.push("mail-new");
     }
+    if (this.unseen) {
+      classes.push("mail-deleted");
+    }
     if (this.recent) {
       classes.push("mail-recent");
     }
@@ -78,20 +81,12 @@ var Mail;
    */
   Mail.prototype.moveToTrash = function () {
     var self = this;
-    /*
-    this.inbox.dispatcher.fetchJson(this.element, {
-      url: 'api/mail/' + this.uid + '/flag',
-      data: {
-        complete: 1,
-        reverse: 1
-      },
-      success: function (data) {
-        $.each(data, function (id, view) {
-          self.inbox.addMail(new Mail(view, self.folder));
-        });
+    this.inbox.dispatcher.del({
+      url: this.getUrl(),
+      success: function () {
+        self.inbox.removeMail(self, true);
       }
-    });
-     */
+    }, this.element);
   };
 
   /**
@@ -99,7 +94,7 @@ var Mail;
    */
   Mail.prototype.star = function (toggle) {
     var self = this;
-    this.inbox.dispatcher.patchJson({
+    this.inbox.dispatcher.patch({
       url: this.getUrl(),
       success: function (data) {
         $.each(data, function () {
@@ -121,7 +116,7 @@ var Mail;
    */
   Mail.prototype.seen = function (toggle) {
     var self = this;
-    this.inbox.dispatcher.patchJson({
+    this.inbox.dispatcher.patch({
       url: this.getUrl(),
       success: function (data) {
         $.each(data, function () {

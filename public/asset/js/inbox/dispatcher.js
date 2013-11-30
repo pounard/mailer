@@ -31,31 +31,20 @@ var Dispatcher;
   };
 
   /**
-   * Send comment
+   * Load content from AJAX and do something about it
    *
    * @param options
    *   Options for jQuery.ajax() call
+   * @param element
+   *   DOM element or selector query
    */
-  Dispatcher.prototype.send = function (options) {
-    $.extend(options, this.ajaxOptions);
+  Dispatcher.prototype.send = function (options, element) {
+    var $element = $(element), complete;
+    $.extend(options, this.ajaxOptions, this.jsonOptions);
     // We need at list an URL
     if (!options || !options.url) {
       throw "Options needs at least an URL";
     }
-    options.url = this.basepath + options.url;
-    $.ajax(options);
-  };
-
-  /**
-   * Load content from AJAX and do something about it
-   *
-   * @param element
-   *   DOM element or selector query
-   * @param options
-   *   Options for jQuery.ajax() call
-   */
-  Dispatcher.prototype.fetch = function (element, options) {
-    var $element = $(element), complete;
     $element.show();
     // Complete option will allow us to remove the
     // loader whatever happens good or bad
@@ -69,56 +58,71 @@ var Dispatcher;
       $element.removeClass('loading');
     };
     $element.addClass('loading');
-    this.send(options);
+    options.url = this.basepath + options.url;
+    $.ajax(options);
   };
 
   /**
-   * Load alias tailored for JSON requests
+   * Send a DELETE request
    *
    * @param element
    *   FROM element or selector query
    * @param options
    *   Options for jQuery.ajax() call
    */
-  Dispatcher.prototype.fetchJson = function (element, options) {
+  Dispatcher.prototype.del = function (options, element) {
     $.extend(options, this.jsonOptions);
-    this.fetch(element, options);
+    options.type = "delete";
+    this.send(options, element);
   };
 
   /**
-   * Send a post command
+   * Send a GET request
+   *
+   * @param element
+   *   FROM element or selector query
+   * @param options
+   *   Options for jQuery.ajax() call
+   */
+  Dispatcher.prototype.get = function (options, element) {
+    $.extend(options, this.jsonOptions);
+    this.send(options, element);
+  };
+
+  /**
+   * Send a POST request
    *
    * @param options
    *   Options for jQuery.ajax() call
    * @param content
    *   Content to send
    */
-  Dispatcher.prototype.postJson = function (options, content) {
+  Dispatcher.prototype.post = function (options, content, element) {
     $.extend(options, this.jsonOptions);
     options.type = "post";
     if (!content) {
       throw "Cannot POST without content";
     }
     options.data = content;
-    this.send(options);
+    this.send(options, element);
   };
 
   /**
-   * Send a patch command
+   * Send a PATCH request
    *
    * @param options
    *   Options for jQuery.ajax() call
    * @param content
    *   Content to send
    */
-  Dispatcher.prototype.patchJson = function (options, content) {
+  Dispatcher.prototype.patch = function (options, content, element) {
     $.extend(options, this.jsonOptions);
     options.type = "patch";
     if (!content) {
       throw "Cannot PATCH without content";
     }
     options.data = content;
-    this.send(options);
+    this.send(options, element);
   };
 
 }(jQuery));

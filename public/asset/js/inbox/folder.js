@@ -51,16 +51,15 @@ var Folder;
   Folder.prototype.loadInbox = function () {
     var self = this;
     this.inbox.resetThreads();
-    this.inbox.closePane();
     this.touch = new Date();
-    this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
+    this.inbox.dispatcher.get({
       url: "api/thread/" + this.path,
       success: function (data) {
         $.each(data, function (id, child) {
           self.createThread(child);
         });
       }
-    });
+    }, this.inbox.$inbox);
   };
 
   /**
@@ -75,7 +74,7 @@ var Folder;
       since = 0;
     }
     this.touch = new Date();
-    this.inbox.dispatcher.fetchJson(this.inbox.$inbox, {
+    this.inbox.dispatcher.get({
       url: "api/thread/" + this.path,
       since: since,
       success: function (data) {
@@ -85,7 +84,7 @@ var Folder;
           });
         }
       }
-    });
+    }, this.inbox.$inbox);
   };
 
 }(jQuery));

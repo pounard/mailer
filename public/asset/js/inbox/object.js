@@ -86,20 +86,26 @@ var InboxObject;
         element = this.element;
       }
       // If we have an URL force data refresh
-      this.inbox.dispatcher.fetchJson(this.element, {
+      this.inbox.dispatcher.get({
         url: url,
+        data: {
+          refresh: true
+        },
         success: function (data) {
           if (data) {
             self.init(data);
-            if (this.rendered) {
+            if (self.rendered) {
               // Force rerendering if element is already rendered
-              this.attach();
+              self.attach(undefined, true);
             }
           } else {
             throw "Could not load " + url;
           }
+        },
+        error: function () {
+          console.log("An error happened here, oups");
         }
-      });
+      }, element);
     }
     return false;
   };
@@ -107,9 +113,9 @@ var InboxObject;
   /**
    * The object is being attached to the DOM
    */
-  InboxObject.prototype.attach = function (container) {
+  InboxObject.prototype.attach = function (container, force) {
     var output = "", defClasses = [], k = 0;
-    if (!this.rendered) {
+    if (!this.rendered || force) {
       output = $(this.render());
       // Attach all classes
       defClasses = this.getDefaultClasses();
@@ -153,7 +159,6 @@ var InboxObject;
    *   components
    */
   InboxObject.prototype.detach = function (remove) {
-    this.change();
     $(this.element).remove();
   };
 
