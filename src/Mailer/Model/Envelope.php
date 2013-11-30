@@ -25,11 +25,7 @@ class Envelope extends AbstractItem
 
     protected $isRecent = false;
 
-    protected $isFlagged = false;
-
     protected $isAnswered = false;
-
-    protected $isDeleted = false;
 
     protected $isSeen = true;
 
@@ -111,16 +107,6 @@ class Envelope extends AbstractItem
     }
 
     /**
-     * Is message flagged
-     *
-     * @return bool
-     */
-    public function isFlagged()
-    {
-        return $this->isFlagged;
-    }
-
-    /**
      * Has message been answered
      *
      * @return bool
@@ -128,16 +114,6 @@ class Envelope extends AbstractItem
     public function isAnswered()
     {
         return $this->isAnswered;
-    }
-
-    /**
-     * Is message marked for deletion
-     *
-     * @return bool
-     */
-    public function isDeleted()
-    {
-        return $this->isDeleted;
     }
 
     /**
@@ -187,9 +163,7 @@ class Envelope extends AbstractItem
             'size'       => $this->size,
             'seq'        => $this->seq,
             'isRecent'   => $this->isRecent,
-            'isFlagged'  => $this->isFlagged,
             'isAnswered' => $this->isAnswered,
-            'isDeleted'  => $this->isDeleted,
             'isSeen'     => $this->isSeen,
             'isDraft'    => $this->isDraft,
         );
@@ -210,9 +184,7 @@ class Envelope extends AbstractItem
         $this->size       = (int)$array['size'];
         $this->seq        = (int)$array['seq'];
         $this->isRecent   = (bool)$array['isRecent'];
-        $this->isFlagged  = (bool)$array['isFlagged'];
         $this->isAnswered = (bool)$array['isAnswered'];
-        $this->isDeleted  = (bool)$array['isDeleted'];
         $this->isSeen     = (bool)$array['isSeen'];
         $this->isDraft    = (bool)$array['isDraft'];
     }

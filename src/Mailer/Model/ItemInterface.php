@@ -100,4 +100,18 @@ interface ItemInterface extends ExchangeInterface
      * @return Person[]
      */
     public function getTo();
+
+    /**
+     * Is message flagged
+     *
+     * @return bool
+     */
+    public function isFlagged();
+    
+    /**
+     * Is message marked for deletion
+     *
+     * @return bool
+     */
+    public function isDeleted();
 }

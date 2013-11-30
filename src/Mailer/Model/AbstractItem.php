@@ -16,6 +16,10 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
 
     protected $to = array();
 
+    protected $isFlagged = false;
+
+    protected $isDeleted = false;
+
     public function getMailbox()
     {
         return $this->mailbox;
@@ -46,15 +50,27 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
         return $this->to;
     }
 
+    public function isFlagged()
+    {
+        return $this->isFlagged;
+    }
+
+    public function isDeleted()
+    {
+        return $this->isDeleted;
+    }
+
     public function toArray()
     {
         return parent::toArray() + array(
-            'mailbox' => $this->mailbox,
-            'uid'     => $this->uid,
-            'subject' => $this->subject,
-            'summary' => $this->summary,
-            'from'    => $this->from,
-            'to'      => $this->to,
+            'mailbox'   => $this->mailbox,
+            'uid'       => $this->uid,
+            'subject'   => $this->subject,
+            'summary'   => $this->summary,
+            'from'      => $this->from,
+            'to'        => $this->to,
+            'isFlagged' => $this->isFlagged,
+            'isDeleted' => $this->isDeleted,
         );
     }
 
@@ -64,11 +80,13 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
 
         parent::fromArray($array);
 
-        $this->mailbox = $array['mailbox'];
-        $this->uid     = (int)$array['uid'];
-        $this->subject = $array['subject'];
-        $this->summary = $array['summary'];
-        $this->from    = $array['from'];
-        $this->to      = $array['to'];
+        $this->mailbox   = $array['mailbox'];
+        $this->uid       = (int)$array['uid'];
+        $this->subject   = $array['subject'];
+        $this->summary   = $array['summary'];
+        $this->from      = $array['from'];
+        $this->to        = $array['to'];
+        $this->isFlagged = (bool)$array['isFlagged'];
+        $this->isDeleted = (bool)$array['isDeleted'];
     }
 }
