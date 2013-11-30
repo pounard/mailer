@@ -14,8 +14,7 @@ var Thread;
   Thread.prototype.render = function () {
     var date = this.updated || this.created;
     if ("string" === typeof date) {
-      date = new Date(Date.parse(date));
-      date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/");
+      date = Inbox.formatDate(date);
     }
     return Template.render("thread", {
       persons: this.inbox.renderPersonImages(this.persons),
@@ -56,8 +55,8 @@ var Thread;
     this.inbox.dispatcher.get({
       url: 'api/thread/' + this.folder.path + '/' + this.uid + '/mail',
       data: {
-        complete: 1 /*,
-        reverse: 1 */
+        complete: 1,
+        reverse: 1
       },
       success: function (data) {
         $.each(data, function (id, child) {

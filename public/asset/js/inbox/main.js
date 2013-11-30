@@ -27,6 +27,41 @@ var Inbox, inboxInstance;
   };
 
   /**
+   * Parse ISO8601 date
+   *
+   * @param string dateString
+   *
+   * @return Date
+   */
+  Inbox.parseDate = function (dateString) {
+    return moment(dateString);
+  };
+
+  /**
+   * Format a date using configuration
+   *
+   * @param string|Date date
+   *
+   * @return string
+   */
+  Inbox.formatDate = function (date, withTime) {
+    if (!date) {
+      return "";
+    }
+    if ("string" === typeof date) {
+      date = Inbox.parseDate(date);
+    }
+
+    if (withTime) {
+      return date.format("MM/DD/YYYY HH:mm");
+    }
+    if (moment().diff(date, 'days') < 7) {
+      return date.fromNow();
+    }
+    return date.format("MM/DD/YYYY");
+  };
+
+  /**
    * Tell if the object is an array
    */
   Inbox.isArray = function (value) {

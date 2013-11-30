@@ -98,6 +98,7 @@ a, a:hover {
     background-image: url(../img/loader.gif) !important;
     background-repeat: no-repeat !important;
     background-position: center center !important;
+    background-color: #f1f1f1;
 }
 .loading.inverse {
     background-image: url(../img/loader-inverse.gif) !important;

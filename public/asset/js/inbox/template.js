@@ -38,13 +38,15 @@ var Template;
   Template.mail =
         '<div>'
       + '<div class="date">{{{date}}}</div>'
-      + '<div class="subject">{{subject}}</div>'
+      + '<div class="subject">'
+      + '{{subject}}'
+      + '<a class="delete hover-link" href="#" title="Delete">Delete</a>'
+      + '</div>'
       + '<div class="clear"></div>'
       + '<div class="from">'
       + '<div class="star {{starred-class}}"><a href="#" title="Star this mail">&nbsp;&nbsp;&nbsp;</a></div>'
       + 'From {{{from}}}'
       + '</div>'
-      + '<a class="delete" href="#">Delete</a>'
       + '<div class="body">{{{body}}}</div>'
       + '</div>';
 

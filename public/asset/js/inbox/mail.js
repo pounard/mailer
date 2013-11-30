@@ -14,9 +14,8 @@ var Mail;
 
   Mail.prototype.render = function () {
     var date = undefined, body = undefined;
-    if ("string" === typeof this.date) {
-      date = new Date(Date.parse(this.date));
-      date = [date.getDay(), date.getMonth(), date.getFullYear()].join("/");
+    if ("string" === typeof this.created) {
+      date = Inbox.formatDate(this.created, true);
     }
     // Compute a few classes
 

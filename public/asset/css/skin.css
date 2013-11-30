@@ -74,6 +74,9 @@ form .actions > * {
 
 .reply-form {
     padding: 2em 1em;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background-color: #f1f1f1;
 }
 
 #login {
@@ -289,9 +292,7 @@ form .actions > * {
     background-repeat: no-repeat;
     background-position: center center;
     /* Position */
-    position: absolute;
-    right: 2em;
-    top: 0.5em;
+    top: 1px;
     /* Hide when not hovering */
     display: none;
 }
@@ -312,6 +313,8 @@ form .actions > * {
 
 .mail .date {
     float: right;
+    color: #808080;
+    margin-right: 0.5em;
 }
 
 .mail .from {
@@ -331,6 +334,7 @@ form .actions > * {
 .mail .subject {
     /* line-height: 32px; /* Removed the image */
     font-weight: bold;
+    margin-right: 10em; /* Leaves room for date */
 }
 
 .mail {
