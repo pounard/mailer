@@ -13,7 +13,32 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
      */
     protected $headers = array();
 
-    public function sendHeaders(RequestInterface $request, $contentType = null)
+    /**
+     * Build the response by adding specific headers
+     *
+     * @param array $headers
+     */
+    public function __construct(array $headers = null)
+    {
+        if (null !== $headers) {
+            foreach ($headers as $name => $value) {
+                $this->addHeader($name, $value);
+            }
+        }
+    }
+
+    /**
+     * Add response header
+     *
+     * @param string $name
+     * @param string $value
+     */
+    public function addHeader($name, $value)
+    {
+        $this->headers[$name] = $value;
+    }
+
+    private function sendHeaders(RequestInterface $request, $contentType = null)
     {
         if (null === $contentType) {
             $this->headers["Content-Type"] = $request->getPreferredOutputContentType();
@@ -29,14 +54,14 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
         }
     }
 
-    public function sendContent($output)
+    private function sendContent($output)
     {
         if (!empty($output)) {
             echo $output;
         }
     }
 
-    public function closeResponse()
+    private function closeResponse()
     {
         // Code from Symfony 2.0 HttpFoundation component.
         if (function_exists('fastcgi_finish_request')) {

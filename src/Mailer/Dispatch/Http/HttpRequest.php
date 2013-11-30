@@ -4,6 +4,7 @@ namespace Mailer\Dispatch\Http;
 
 use Mailer\Dispatch\DefaultRequest;
 use Mailer\Dispatch\Request;
+use Mailer\Error\UnsupportedMediaTypeError;
 
 /**
  * HTTP request implementation
@@ -13,9 +14,35 @@ class HttpRequest extends DefaultRequest
     /**
      * Fetch HTTP request body content
      */
-    static public function fetchBodyContent()
+    static public function fetchBodyContent($contentType)
     {
-        return @file_get_contents('php://input');
+        switch ($contentType) {
+
+            case 'application/x-www-form-urlencoded':
+                return $_POST;
+
+            default:
+                // FIXME: PATCH command with jQuery always sends url encoded
+                $content = array();
+                parse_str(@file_get_contents('php://input'), $content);
+                return $content;
+
+                /*
+            default:
+                // FIXME Only supports JSON right now
+                if (false !== strpos($contentType, 'json')) {
+                    $content = @file_get_contents('php://input');
+                    if (!empty($content)) {
+                        if (!$content = json_decode($content)) {
+                            // FIXME Find the right error code for invalid content
+                            throw new UnsupportedMediaTypeError();
+                        }
+                        return $content;
+                    }
+                }
+                throw new UnsupportedMediaTypeError();
+                */
+        }
     }
 
     /**
@@ -27,6 +54,13 @@ class HttpRequest extends DefaultRequest
     {
         $content = null;
 
+        if (isset($_SERVER['CONTENT_TYPE'])) {
+            $contentType = $_SERVER['CONTENT_TYPE'];
+        } else { // Be liberal in what you accept
+            // FIXME attempt to determine content automatically
+            $contentType = 'application/x-www-form-urlencoded';
+        }
+
         switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'GET':
@@ -35,16 +69,25 @@ class HttpRequest extends DefaultRequest
 
             case 'POST':
                 $method  = Request::METHOD_POST;
-                $content = self::fetchBodyContent();
+                $content = self::fetchBodyContent($contentType);
                 break;
 
             case 'PUT':
                 $method  = Request::METHOD_PUT;
-                $content = self::fetchBodyContent();
+                $content = self::fetchBodyContent($contentType);
                 break;
 
             case 'DELETE':
                 $method  = Request::METHOD_DELETE;
+                break;
+
+            case 'PATCH':
+                $method  = Request::METHOD_PATCH;
+                $content = self::fetchBodyContent($contentType);
+                break;
+
+            case 'OPTIONS':
+                $method  = Request::METHOD_OPTIONS;
                 break;
 
             default:
@@ -59,9 +102,10 @@ class HttpRequest extends DefaultRequest
             $_GET['resource'] = substr($_GET['resource'], 0, $pos);
         }
 
-        // @todo Content should be parsed depending on request content type 
+        $request = new self($_GET['resource'], $content, $_GET, $method, $variant);
+        $request->setInputContentType($contentType);
 
-        return new self($_GET['resource'], $content, $_GET, $method, $variant);
+        return $request;
     }
 
     static public function parseAcceptHeader($header)
@@ -108,12 +152,6 @@ class HttpRequest extends DefaultRequest
     {
         parent::__construct($path, $content, $options, $method, $variant);
 
-        if (isset($_SERVER['CONTENT_TYPE'])) {
-            $this->setInputContentType($_SERVER['CONTENT_TYPE']);
-        } else {
-            $this->setInputContentType('application/x-www-form-urlencoded');
-        }
-
         if (isset($_SERVER['HTTP_ACCEPT'])) {
             if ($values = self::parseAcceptHeader($_SERVER['HTTP_ACCEPT'])) {
                 $this->setOutputContentTypes($values);
@@ -133,6 +171,6 @@ class HttpRequest extends DefaultRequest
 
     public function createResponse()
     {
-        return new HttpResponse($this);
+        return new HttpResponse();
     }
 }

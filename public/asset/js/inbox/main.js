@@ -212,8 +212,8 @@ var Inbox, inboxInstance;
   Inbox.prototype.refreshFolderList = function () {
     var self = this;
     this.dispatcher.fetchJson(this.$folders, {
-      'url': 'api/folder',
-      'success': function (data) {
+      url: "api/folder",
+      success: function (data) {
         $.each(data, function (path, data) {
           var folder = new Folder();
           folder.init(data, self);
@@ -227,8 +227,15 @@ var Inbox, inboxInstance;
   $(document).ready(function () {
     if ($("#folders").length) {
       inboxInstance = new Inbox();
+      // Do a preflight request for fetching server capabilities, see:
+      // http://stackoverflow.com/questions/13642044/does-the-jquery-ajax-call-support-patch
+      // http://www.w3.org/TR/cors/#resource-preflight-requests
+      inboxInstance.dispatcher.send({
+        url: "api",
+        type: "options"
+      });
       inboxInstance.dispatcher.fetchJson(null, {
-        url: 'api/settings',
+        url: "api/settings",
         success: function (data) {
           inboxInstance.settings = data;
           inboxInstance.refreshFolderList();

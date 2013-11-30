@@ -40,7 +40,7 @@ var Mail;
   };
 
   Mail.prototype.getUrl = function () {
-    return "api/mail/" + this.folder.path + '/' + this.id;
+    return "api/mail/" + this.folder.path + '/' + this.uid;
   };
 
   Mail.prototype.getDefaultClasses = function () {
@@ -69,7 +69,7 @@ var Mail;
       self.star(!self.flagged);
     });
     setTimeout(function () {
-      //self.seen(true);
+      self.seen(true);
     }, 1000);
   };
 
@@ -98,19 +98,21 @@ var Mail;
    * Star or unstar this mail
    */
   Mail.prototype.star = function (toggle) {
-    var self = this,
-        action = toggle ? 'star' : 'unstar';
-    this.inbox.dispatcher.fetchJson(this.element, {
-      url: 'api/folder/' + this.folder.path + '/' + action + '/' + this.uid,
+    var self = this;
+    this.inbox.dispatcher.patchJson({
+      url: this.getUrl(),
       success: function (data) {
         $.each(data, function () {
           if (toggle) {
-            // Update element
+            self.removeClass("mail-flagged");
           } else {
-            // Update element
+            self.addClass("mail-flagged");
           }
+          self.change();
         });
       }
+    }, {
+      flagged: toggle
     });
   };
 
@@ -118,19 +120,23 @@ var Mail;
    * Mark or unmark this mail as seen
    */
   Mail.prototype.seen = function (toggle) {
-    var self = this,
-    action = toggle ? 'seen' : 'unseen';
-    this.inbox.dispatcher.fetchJson(null, {
-      url: 'api/folder/' + this.folder.path + '/' + action + '/' + this.uid,
+    var self = this;
+    this.inbox.dispatcher.patchJson({
+      url: this.getUrl(),
       success: function (data) {
         $.each(data, function () {
           if (toggle) {
-            // Update element
+            self.removeClass("mail-new");
+            self.removeClass("mail-recent");
           } else {
-            // Update element
+            self.addClass("mail-new");
+            self.addClass("mail-recent");
           }
+          self.change(false);
         });
       }
+    }, {
+      seen: toggle
     });
   };
 

@@ -79,11 +79,14 @@ var InboxObject;
   /**
    * Force the object refresh
    */
-  InboxObject.prototype.refresh = function () {
-    var self = this, url = this.getUrl();
+  InboxObject.prototype.refresh = function (overlay) {
+    var self = this, url = this.getUrl(), element = undefined;
     if (url) {
+      if (overlay) {
+        element = this.element;
+      }
       // If we have an URL force data refresh
-      this.inbox.dispatcher.loadJson(this.element, {
+      this.inbox.dispatcher.fetchJson(this.element, {
         url: url,
         success: function (data) {
           if (data) {
@@ -159,11 +162,11 @@ var InboxObject;
    *
    * This will refresh all related components
    */
-  InboxObject.prototype.change = function () {
+  InboxObject.prototype.change = function (overlay) {
     var k = 0;
     for (k in this.related) {
       if ("function" === typeof this.related[k].refresh) {
-        this.related[k].refresh();
+        this.related[k].refresh(overlay);
       }
     }
   };

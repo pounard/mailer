@@ -95,6 +95,7 @@ abstract class AbstractController extends AbstractContainerAware implements
 
     public function optionsAction(RequestInterface $request, array $args)
     {
-        throw new MethodNotAllowedError();
+        // FIXME
+        
     }
 }

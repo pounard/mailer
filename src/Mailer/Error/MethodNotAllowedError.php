@@ -11,4 +11,9 @@ class MethodNotAllowedError extends LogicError
     {
         return 405;
     }
+
+    public function getDefaultMessage()
+    {
+        return "Method Not Allowed";
+    }
 }

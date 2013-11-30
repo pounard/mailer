@@ -12,17 +12,20 @@ class LogicError extends \RuntimeException implements Error
         return 500;
     }
 
+    public function getDefaultMessage()
+    {
+        return "Error";
+    }
+
     public function __construct($message = null, $code = null, $previous = null)
     {
         if (null === $code) {
             $code = $this->getStatusCode();
         }
-
-        if ($message !== null) {
-            sprintf("(%d) %s", $code, $message);
-        } else {
-            sprintf("(%d) Error", $code);
+        if (null === $message) {
+            $message = $this->getDefaultMessage();
         }
+        $message = sprintf("(%d) %s", $code, $message);
 
         parent::__construct($message, $code, $previous);
     }

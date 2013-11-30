@@ -55,14 +55,16 @@ class MailController extends AbstractController
         switch (count($args)) {
 
             case 2:
-                /*
-                return $this
+                $mailbox = $this
                     ->getContainer()
                     ->getIndex()
-                    ->getMailboxIndex($args[0])
-                    ->getMail((int)$args[1]);
-                 */
-                $contents = $request->getContent();
+                    ->getMailboxIndex($args[0]);
+
+                $updates = array();
+                foreach ($request->getContent() as $flag => $toggle) {
+                    $mailbox->flag($args[1], $flag, (bool)$toggle);
+                }
+                break;
 
             default:
                 throw new NotFoundError("Identifier must be 'MAILDIR' or 'MAILDIR/UID'");

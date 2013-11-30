@@ -31,6 +31,22 @@ var Dispatcher;
   };
 
   /**
+   * Send comment
+   *
+   * @param options
+   *   Options for jQuery.ajax() call
+   */
+  Dispatcher.prototype.send = function (options) {
+    $.extend(options, this.ajaxOptions);
+    // We need at list an URL
+    if (!options || !options.url) {
+      throw "Options needs at least an URL";
+    }
+    options.url = this.basepath + options.url;
+    $.ajax(options);
+  };
+
+  /**
    * Load content from AJAX and do something about it
    *
    * @param element
@@ -41,12 +57,6 @@ var Dispatcher;
   Dispatcher.prototype.fetch = function (element, options) {
     var $element = $(element), complete;
     $element.show();
-    $.extend(options, this.ajaxOptions);
-    // We need at list an URL
-    if (!options || !options.url) {
-      throw "Options needs at least an URL";
-    }
-    options.url = this.basepath + options.url;
     // Complete option will allow us to remove the
     // loader whatever happens good or bad
     if (options.complete) {
@@ -59,7 +69,7 @@ var Dispatcher;
       $element.removeClass('loading');
     };
     $element.addClass('loading');
-    $.ajax(options);
+    this.send(options);
   };
 
   /**
@@ -73,6 +83,42 @@ var Dispatcher;
   Dispatcher.prototype.fetchJson = function (element, options) {
     $.extend(options, this.jsonOptions);
     this.fetch(element, options);
+  };
+
+  /**
+   * Send a post command
+   *
+   * @param options
+   *   Options for jQuery.ajax() call
+   * @param content
+   *   Content to send
+   */
+  Dispatcher.prototype.postJson = function (options, content) {
+    $.extend(options, this.jsonOptions);
+    options.type = "post";
+    if (!content) {
+      throw "Cannot POST without content";
+    }
+    options.data = content;
+    this.send(options);
+  };
+
+  /**
+   * Send a patch command
+   *
+   * @param options
+   *   Options for jQuery.ajax() call
+   * @param content
+   *   Content to send
+   */
+  Dispatcher.prototype.patchJson = function (options, content) {
+    $.extend(options, this.jsonOptions);
+    options.type = "patch";
+    if (!content) {
+      throw "Cannot PATCH without content";
+    }
+    options.data = content;
+    this.send(options);
   };
 
 }(jQuery));
