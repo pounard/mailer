@@ -200,6 +200,7 @@ form .actions > * {
 .thread .summary {
     color: #808080;
     font-size: 0.95em;
+    overflow-x: hidden;
 }
 .thread .date, .mail .date {
     position: absolute;

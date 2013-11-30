@@ -23,6 +23,7 @@ var Inbox, inboxInstance;
     this.currentThread   = undefined;
     this.mails           = {};
     this.settings        = {};
+    this.instances       = {};
   };
 
   /**
@@ -153,7 +154,7 @@ var Inbox, inboxInstance;
     var key = 0, parent, $container = undefined, folders;
 
     // Register new folder
-    this.folders[folder.path] = folder;
+    this.register(folder);
 
     // Check for parent case in which the folder must belong
     // to the parent folder container
@@ -191,65 +192,60 @@ var Inbox, inboxInstance;
    * Add thread
    */
   Inbox.prototype.addThread = function (thread) {
-    this.threads[thread.uid] = thread;
+    this.register(thread);
     thread.attach(this.getInboxContainer());
   };
 
   /**
-   * Remove thread
+   * Register item
    *
-   * @param int|Thread thread
-   *   Thread instance or uid
+   * @param InboxObject object
    */
-  Inbox.prototype.removeThread = function (thread, processRelated) {
-    var k = 0, uid = 0;
-
-    if (isNaN(thread)) {
-      uid = thread.uid;
-    } else {
-      uid = thread;
+  Inbox.prototype.register = function (object) {
+    var type = object.constructor.name, id = object.getId();
+    if (!this.instances[type]) {
+      this.instances[type] = {};
     }
-
-    if (this.currentThread && uid === this.currentThread.uid) {
-      this.resetMails();
-      this.closePane();
-    }
-    for (k in this.threads) {
-      if (uid === this.threads[k].uid) {
-        if (processRelated) {
-          this.threads[k].change();
-        }
-        this.threads[k].detach();
-        delete this.threads[i];
-      }
-    }
+    this.instances[type][id] = object;
   };
 
   /**
-   * Remove mail
+   * Unregister object
    *
-   * @param int|Mail mail
-   *   Mail instance or uid
+   * @param InboxObject object
+   * @param boolean refresh
+   *   If set to true register related items
    */
-  Inbox.prototype.removeMail = function (mail, processRelated) {
-    var k = 0, uid = 0;
-
-    if (isNaN(mail)) {
-      uid = mail.uid;
-    } else {
-      uid = mail;
-    }
-
-    for (k in this.mails) {
-      if (uid === this.mails[k].uid) {
-        if (processRelated) {
-          this.mails[k].change();
-          if (this.mails[k].thread) {
-            this.mails[k].thread.refresh();
-          }
+  Inbox.prototype.unregister = function (object, refresh) {
+    var type = object.constructor.name, id = object.getId();
+    if (this.instances[type]) {
+      if (this.instances[type][id]) {
+        if (refresh) {
+          this.instances[type][id].change();
         }
-        this.mails[k].detach();
-        delete this.mails[k];
+        delete this.instances[type][id];
+      }
+    }
+    object.detach();
+  };
+
+  /**
+   * Unregister all objects of the given type
+   *
+   * @param string type
+   *   Object constructor name
+   * @param boolean refresh
+   *   If set to true register related items
+   */
+  Inbox.prototype.unregisterAll = function (type, refresh) {
+    var k = 0;
+    if (this.instances[type]) {
+      for (k in this.instances[type]) {
+        this.instances[type].detach();
+        if (refresh) {
+          this.instances[type][k].change();
+        }
+        delete this.instances[type][k];
       }
     }
   };
@@ -260,7 +256,7 @@ var Inbox, inboxInstance;
   Inbox.prototype.addMail = function (mail) {
     this.openThreadView();
     if (mail) {
-      this.mails[mail.uid] = mail;
+      this.register(mail);
       mail.attach(this.$view.find("#thread-view .content"));
     }
   };

@@ -43,6 +43,14 @@ var InboxObject;
   };
 
   /**
+   * Get the object identifier
+   */
+  InboxObject.prototype.getId = function () {
+    // Override me.
+    return false;
+  };
+
+  /**
    * Object should attach its own events from there
    *
    * @param selector|element context
@@ -102,8 +110,14 @@ var InboxObject;
             throw "Could not load " + url;
           }
         },
-        error: function () {
-          self.detach();
+        error: function (jqXHR) {
+          // In case of 404 Not Found the object does not exist
+          // on server anymore, remove it from the UI
+          switch (jqXHR.status) {
+              case 404:
+                  self.detach();
+                  break;
+          }
         }
       }, element);
     }

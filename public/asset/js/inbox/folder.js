@@ -7,7 +7,7 @@ var Folder;
 (function ($) {
   "use strict";
 
-  Folder = function () {};
+  Folder = function Folder () {};
   Folder.prototype = new InboxObject();
   Folder.prototype.constructor = Folder;
 
@@ -21,7 +21,11 @@ var Folder;
   };
 
   Folder.prototype.getUrl = function () {
-    return "api/folder/" + this.path;
+    return "api/folder/" + this.getId();
+  };
+
+  Folder.prototype.getId = function () {
+    return this.path;
   };
 
   Folder.prototype.getDefaultClasses = function () {

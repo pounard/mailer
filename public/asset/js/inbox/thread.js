@@ -7,7 +7,7 @@ var Thread;
 (function ($) {
   "use strict";
 
-  Thread = function () {};
+  Thread = function Thread () {};
   Thread.prototype = new InboxObject();
   Thread.prototype.constructor = Thread;
 
@@ -29,7 +29,11 @@ var Thread;
   };
 
   Thread.prototype.getUrl = function () {
-    return "api/thread/" + this.folder.path + '/' + this.uid;
+    return "api/thread/" + this.folder.path + '/' + this.getId();
+  };
+
+  Thread.prototype.getId = function () {
+    return this.uid;
   };
 
   Thread.prototype.getDefaultClasses = function () {
@@ -60,7 +64,7 @@ var Thread;
           var mail = new Mail();
           child.folder = self.folder;
           child.thread = self;
-          mail.init(child, self.inbox, [self, self.folder]);
+          mail.init(child, self.inbox, [self]);
           self.inbox.addMail(mail);
         });
       }

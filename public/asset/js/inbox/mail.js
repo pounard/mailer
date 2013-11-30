@@ -7,9 +7,10 @@ var Mail;
 (function ($) {
   "use strict";
 
-  Mail = function () {};
+  Mail = function Mail () {};
   Mail.prototype = new InboxObject();
   Mail.prototype.constructor = Mail;
+  Mail.prototype.parent = InboxObject.prototype;
 
   Mail.prototype.render = function () {
     var date = undefined, body = undefined;
@@ -40,7 +41,11 @@ var Mail;
   };
 
   Mail.prototype.getUrl = function () {
-    return "api/mail/" + this.folder.path + '/' + this.uid;
+    return "api/mail/" + this.folder.path + '/' + this.getId();
+  };
+
+  Mail.prototype.getId = function () {
+    return this.uid;
   };
 
   Mail.prototype.getDefaultClasses = function () {
@@ -71,9 +76,11 @@ var Mail;
     $(context).find("a.star").on("click", function () {
       self.star(!self.flagged);
     });
-    setTimeout(function () {
-      self.seen(true);
-    }, 1000);
+    if (!this.isSeen) {
+      setTimeout(function () {
+        self.seen(true);
+      }, 1000);
+    }
   };
 
   /**
@@ -84,7 +91,7 @@ var Mail;
     this.inbox.dispatcher.del({
       url: this.getUrl(),
       success: function () {
-        self.inbox.removeMail(self, true);
+        self.inbox.unregister(self, true);
       }
     }, this.element);
   };
