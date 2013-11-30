@@ -103,7 +103,7 @@ var InboxObject;
           }
         },
         error: function () {
-          console.log("An error happened here, oups");
+          self.detach();
         }
       }, element);
     }
