@@ -100,6 +100,16 @@ class RcubeImapMailReader extends AbstractServer implements
     }
 
     /**
+     * Get folder delimiter
+     *
+     * @return string
+     */
+    public function getFolderDelimiter()
+    {
+        return @$this->getClient()->getHierarchyDelimiter();
+    }
+
+    /**
      * Get folder flat map
      *
      * @param string $parent
@@ -109,12 +119,9 @@ class RcubeImapMailReader extends AbstractServer implements
      */
     public function getFolderMap($parent = null, $onlySubscribed = true)
     {
-        $map = array();
-
         $client = $this->getClient();
-        $delim  = @$this->client->getHierarchyDelimiter();
-        $ref    = $parent ? $parent : '';
-        $name   = '';
+
+        $ref = $parent ? $parent : '';
 
         if ($onlySubscribed) {
             $data = @$client->listSubscribed($ref, name);
@@ -122,33 +129,7 @@ class RcubeImapMailReader extends AbstractServer implements
             $data = @$client->listMailboxes($ref, $name);
         }
 
-        // Sorting ensures that direct parents will always be processed
-        // before their child, and thus allow us having a fail-safe
-        // tree creation algorithm
-        sort($data);
-
-        foreach ($data as $name) {
-            $map[$name] = $this->getFolder($name);
-            // If parent does not exists create a pseudo folder instance that
-            // does not belong to IMAP server but will help the client
-            // materialize the non existing yet folder
-            if ($parent = $map[$name]->getParentKey()) {
-                while (!isset($map[$parent])) {
-                    $map[$parent] = new Folder();
-                    $map[$parent]->fromArray(array(
-                        'path'      => $parent,
-                        'parent'    => null, // @todo
-                        'delimiter' => $delim,
-                        'unseen'    => 0,
-                        'recent'    => 0,
-                        'total'     => 0,
-                    ));
-                    $parent = $map[$parent]->getParentKey();
-                }
-            }
-        }
-
-        return $map;
+        return $data;
     }
 
     /**
@@ -352,6 +333,11 @@ class RcubeImapMailReader extends AbstractServer implements
         }
     }
 
+    public function moveMail($name, $uid, $destName)
+    {
+        $this->getClient()->move(array($uid), $name, $destName);
+    }
+
     public function deleteMail($name, $uid)
     {
         $this->flagMail($name, $uid, 'deleted', true);
@@ -409,7 +395,7 @@ class RcubeImapMailReader extends AbstractServer implements
             return $threads[$uid];
         }
 
-        throw new NotFoundError("Thread '%d' does not exist in folder '%s'", $uid);
+        throw new NotFoundError(sprintf("Thread '%d' does not exist in folder '%s'", $uid, $name));
     }
 
     /**

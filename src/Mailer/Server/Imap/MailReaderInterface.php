@@ -19,12 +19,20 @@ interface MailReaderInterface extends ServerInterface
     const DEFAULT_DELIMITER = '.';
 
     /**
+     * Get folder delimiter
+     *
+     * @return string
+     */
+    public function getFolderDelimiter();
+
+    /**
      * Get folder flat map
      *
      * @param string $parent
      * @param boolean $onlySubscribed
      *
-     * @return Folder[]
+     * @return string[]
+     *   Folder pathes
      */
     public function getFolderMap($parent = null, $onlySubscribed = true);
 
@@ -96,6 +104,18 @@ interface MailReaderInterface extends ServerInterface
      *   Set this to false to unflag
      */
     public function flagMail($name, $uid, $flag, $toggle = true);
+
+    /**
+     * Move mail
+     *
+     * @param string $name
+     *   Folder name
+     * @param int $uid
+     *   Mail unique identifier
+     * @param string $destName
+     *   Destination folder name
+     */
+    public function moveMail($name, $uid, $destName);
 
     /**
      * Mark a mail for deletion

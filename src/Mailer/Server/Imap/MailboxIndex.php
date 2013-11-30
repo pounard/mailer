@@ -74,14 +74,22 @@ class MailboxIndex
      */
     public function getInstance($refresh = false)
     {
-        if (null === $this->instance) {
-            $this->instance = $this
-                ->index
-                ->getMailReader()
-                ->getFolder($this->name);
+        if (null !== $this->instance) {
+            return $this->instance;
         }
 
-        return $this->instance;
+        $cid = $this->index->getCacheKey('f', $this->name);
+        $cache = $this->index->getCache();
+
+        if (!$refresh && ($ret = $cache->fetch($cid))) {
+            return $this->instance = $ret;
+        }
+
+        $ret = $this->index->getMailReader()->getFolder($this->name);
+
+        $cache->save($cid, $ret);
+
+        return $this->instance = $ret;
     }
 
     /**
@@ -296,17 +304,19 @@ class MailboxIndex
      * @param int $uidMap
      *   Full uid list as returned by MailReaderInterface::getThread()
      */
-    private function buildThread($uid, array $uidMap)
+    private function buildThread($uid, array $uidMap, $refresh = true)
     {
         $first       = null;
         $last        = null;
         $firstUnread = null;
         $lastUnread  = null;
+        $isFlagged   = false;
+        $isDeleted   = true;
         $recent      = 0;
         $unseen      = 0;
         $persons     = array();
 
-        foreach ($this->getEnvelopes(array_keys($uidMap)) as $envelope) {
+        foreach ($this->getEnvelopes(array_keys($uidMap), $refresh) as $envelope) {
 
             // @todo Make comparaison (using date or arrival) configurable
             if (null === $first || $envelope->isBefore($first)) {
@@ -335,6 +345,13 @@ class MailboxIndex
             if ($envelope->isRecent()) {
                 ++$recent;
             }
+
+            if (!$isFlagged && $envelope->isFlagged()) {
+              $isFlagged = true;
+            }
+            if ($isDeleted && !$envelope->isDeleted()) {
+              $isDeleted = false;
+            }
         }
 
         if (null === $firstUnread) {
@@ -350,18 +367,20 @@ class MailboxIndex
 
         $thread = new Thread();
         $thread->fromArray(array(
-            'uid'     => $first->getUid(),
-            'subject' => $first->getSubject(),
-            'summary' => $firstUnread->getSummary(),
-            'created' => $first->getCreationDate(),
-            'updated' => $last->getCreationDate(),
-            'total'   => count($uidMap),
-            'recent'  => $recent,
-            'unseen'  => $unseen,
-            'uidMap'  => $uidMap,
-            'persons' => $persons,
-            'from'    => $first->getFrom(),
-            'to'      => $first->getTo(),
+            'uid'       => $first->getUid(),
+            'subject'   => $first->getSubject(),
+            'summary'   => $firstUnread->getSummary(),
+            'created'   => $first->getCreationDate(),
+            'updated'   => $last->getCreationDate(),
+            'total'     => count($uidMap),
+            'recent'    => $recent,
+            'unseen'    => $unseen,
+            'uidMap'    => $uidMap,
+            'persons'   => $persons,
+            'from'      => $first->getFrom(),
+            'to'        => $first->getTo(),
+            'isFlagged' => $isFlagged,
+            'isDeleted' => $isDeleted,
         ));
 
         return $thread;
@@ -450,6 +469,41 @@ class MailboxIndex
         // Apply query to what has been fetched
 
         return $mailList;
+    }
+
+    /**
+     * Delete mail
+     *
+     * @param int $uid
+     */
+    public function deleteMail($uid)
+    {
+        $config = $this
+            ->index
+            ->getContainer()
+            ->getConfig();
+
+        $this->index->getMailReader()->deleteMail($this->name, $uid);
+
+        if (isset($config['mailboxes']['trash'])) {
+            // Move the mail into the selected existing Trash folder
+            $this->moveMail($uid, $config['mailboxes']['trash']);
+        }
+    }
+
+    /**
+     * Move mail to another folder
+     *
+     * @param int $uid
+     * @param string $name
+     */
+    public function moveMail($uid, $name)
+    {
+        $this->index->getMailReader()->moveMail($this->name, $uid, $name);
+
+        $this->index->getCache()->delete($this->index->getCacheKey('f', $this->name));
+        $this->index->getCache()->delete($this->index->getCacheKey('f', $name));
+        $this->index->getCache()->delete($this->index->getCacheKey('m', $uid));
     }
 
     /**

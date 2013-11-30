@@ -30,7 +30,10 @@ class ThreadController extends AbstractController
                     ->getContainer()
                     ->getIndex()
                     ->getMailboxIndex($args[0])
-                    ->getThread((int)$args[1]);
+                    ->getThread(
+                        (int)$args[1],
+                        (bool)$request->getOption('refresh')
+                    );
 
             case 3:
                 switch ($args[2]) {

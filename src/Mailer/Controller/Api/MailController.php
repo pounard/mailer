@@ -50,6 +50,23 @@ class MailController extends AbstractController
         }
     }
 
+    public function deleteAction($request, $args)
+    {
+        switch (count($args)) {
+
+            case 2:
+                $mailbox = $this
+                    ->getContainer()
+                    ->getIndex()
+                    ->getMailboxIndex($args[0])
+                    ->deleteMail($args[1]);
+                break;
+
+            default:
+                throw new NotFoundError("Identifier must be 'MAILDIR' or 'MAILDIR/UID'");
+        }
+    }
+
     public function patchAction(RequestInterface $request, array $args)
     {
         switch (count($args)) {

@@ -116,7 +116,7 @@ class Index extends AbstractContainerAware
      */
     public function getMailbox($name, $refresh = true)
     {
-        $this->getMailboxIndex($name)->getInstance();
+        return $this->getMailboxIndex($name)->getInstance();
     }
 
     /**
@@ -129,14 +129,41 @@ class Index extends AbstractContainerAware
      */
     public function getMailboxMap($onlySubscribed = true, $refresh = true)
     {
-        $key = $this->getCacheKey('fm', (int)$onlySubscribed);
+        $map    = array();
+        $key    = $this->getCacheKey('fm', (int)$onlySubscribed);
+        $reader = $this->getMailReader();
+        $delim  = $reader->getFolderDelimiter();
 
-        if (!$refresh && ($ret = $this->cache->fetch($key))) {
-            return $ret;
+        if ($refresh || !($list = $this->cache->fetch($key))) {
+            $list = $reader->getFolderMap(null, $onlySubscribed);
+            $this->cache->save($key, $list);
         }
 
-        $map = $this->getMailReader()->getFolderMap(null, $onlySubscribed);
-        $this->cache->save($key, $map);
+        // Sorting ensures that direct parents will always be processed
+        // before their child, and thus allow us having a fail-safe
+        // tree creation algorithm
+        sort($list);
+
+        foreach ($list as $name) {
+          $map[$name] = $this->getMailbox($name, $refresh);
+          // If parent does not exists create a pseudo folder instance that
+          // does not belong to IMAP server but will help the client
+          // materialize the non existing yet folder
+          if ($parent = $map[$name]->getParentKey()) {
+            while (!isset($map[$parent])) {
+              $map[$parent] = new Folder();
+              $map[$parent]->fromArray(array(
+                  'path'      => $parent,
+                  'parent'    => null, // @todo
+                  'delimiter' => $delim,
+                  'unseen'    => 0,
+                  'recent'    => 0,
+                  'total'     => 0,
+              ));
+              $parent = $map[$parent]->getParentKey();
+            }
+          }
+        }
 
         return $map;
     }
