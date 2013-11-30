@@ -197,10 +197,10 @@ var InboxObject;
     var k = 0;
     for (k in this.classes) {
       if (this.classes[k] === name) {
-        if (this.element) {
-          $(this.element).addClass(name);
-        }
         return;
+      }
+      if (this.element) {
+        $(this.element).addClass(name);
       }
     }
     this.classes.push(name);

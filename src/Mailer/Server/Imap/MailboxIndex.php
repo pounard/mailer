@@ -251,6 +251,9 @@ class MailboxIndex
             default:
                 throw new LogicError(sprintf("Invalid flag '%s", $flag));
         }
+
+        $this->index->getCache()->delete($this->index->getCacheKey('f', $this->name));
+        $this->index->getCache()->delete($this->index->getCacheKey('m', $uid));
     }
 
     /**
@@ -484,6 +487,9 @@ class MailboxIndex
             ->getConfig();
 
         $this->index->getMailReader()->deleteMail($this->name, $uid);
+
+        $this->index->getCache()->delete($this->index->getCacheKey('f', $this->name));
+        $this->index->getCache()->delete($this->index->getCacheKey('m', $uid));
 
         if (isset($config['mailboxes']['trash'])) {
             // Move the mail into the selected existing Trash folder

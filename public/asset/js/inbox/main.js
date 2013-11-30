@@ -158,8 +158,8 @@ var Inbox, inboxInstance;
 
     // Check for parent case in which the folder must belong
     // to the parent folder container
-    if (folder.parent && this.folders[folder.parent]) {
-      parent = this.folders[folder.parent];
+    if (folder.parent && this.instances.Folder[folder.parent]) {
+      parent = this.instances.Folder[folder.parent];
       parent.addClass("parent");
       $container = $(parent.children);
     } else {

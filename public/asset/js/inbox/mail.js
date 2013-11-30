@@ -50,19 +50,19 @@ var Mail;
 
   Mail.prototype.getDefaultClasses = function () {
     var classes = ["mail"];
-    if (this.unseen) {
+    if (!this.isSeen) {
       classes.push("mail-new");
     }
-    if (this.unseen) {
+    if (this.isDeleted) {
       classes.push("mail-deleted");
     }
-    if (this.recent) {
+    if (this.isRecent) {
       classes.push("mail-recent");
     }
-    if (this.flagged) {
+    if (this.isFlagged) {
       classes.push("mail-flagged");
     }
-    if (this.answered) {
+    if (this.isAnswered) {
       classes.push("mail-answered");
     }
     return classes;
@@ -73,8 +73,8 @@ var Mail;
     $(context).find("a.delete").on("click", function () {
       self.moveToTrash();
     });
-    $(context).find("a.star").on("click", function () {
-      self.star(!self.flagged);
+    $(context).find(".star > a").on("click", function () {
+      self.star(!self.isFlagged);
     });
     if (!this.isSeen) {
       setTimeout(function () {
@@ -105,10 +105,11 @@ var Mail;
       url: this.getUrl(),
       success: function (data) {
         $.each(data, function () {
+          self.isFlagged = toggle;
           if (toggle) {
-            self.removeClass("mail-flagged");
-          } else {
             self.addClass("mail-flagged");
+          } else {
+            self.removeClass("mail-flagged");
           }
           self.change();
         });
