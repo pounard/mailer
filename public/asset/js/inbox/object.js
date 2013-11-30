@@ -105,7 +105,7 @@ var InboxObject;
    * The object is being attached to the DOM
    */
   InboxObject.prototype.attach = function (container) {
-    var output = "", classes = [], defClasses = [], k = 0;
+    var output = "", defClasses = [], k = 0;
     if (!this.rendered) {
       output = $(this.render());
       // Attach all classes

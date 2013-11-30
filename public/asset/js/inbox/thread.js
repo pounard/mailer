@@ -1,6 +1,6 @@
 /** Integration for INBOX logic. */
 /*jslint browser: true, devel: true, todo: true, indent: 2 */
-/*global jQuery, Template, Inbox, inboxInstance, InboxObject, View */
+/*global jQuery, Template, Inbox, inboxInstance, InboxObject, Mail */
 
 var Thread;
 
@@ -52,12 +52,15 @@ var Thread;
     this.inbox.dispatcher.fetchJson(this.inbox.getViewContainer(), {
       url: 'api/thread/' + this.folder.path + '/' + this.uid + '/mail',
       data: {
-        complete: 1,
-        reverse: 1
+        complete: 1 /*,
+        reverse: 1 */
       },
       success: function (data) {
-        $.each(data, function (id, view) {
-          self.inbox.addView(new View(view, self.folder));
+        $.each(data, function (id, child) {
+          var mail = new Mail();
+          child.folder = self.folder;
+          mail.init(child, self.inbox, [self, self.folder]);
+          self.inbox.addMail(mail);
         });
       }
     });

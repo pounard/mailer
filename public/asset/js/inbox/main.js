@@ -198,11 +198,11 @@ var Inbox, inboxInstance;
   /**
    * Add view
    */
-  Inbox.prototype.addView = function (view) {
+  Inbox.prototype.addMail = function (mail) {
     this.openThreadView();
-    if (view) {
-      this.view = view;
-      this.$view.find("#thread-view .content").append(view.render());
+    if (mail) {
+      this.mail = mail;
+      mail.attach(this.$view.find("#thread-view .content"));
     }
   };
 

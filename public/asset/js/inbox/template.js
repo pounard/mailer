@@ -36,7 +36,7 @@ var Template;
        + '</li>';
 
   Template.mail =
-        '<div class="{{classes}}">'
+        '<div>'
       + '<div class="date">{{{date}}}</div>'
       + '<div class="subject">{{subject}}</div>'
       + '<div class="clear"></div>'

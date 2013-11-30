@@ -10,7 +10,7 @@ return array(
         'charset' => "UTF-8",
         // Default folders config
         // @todo Make this configurable per user
-        'folders' => array(
+        'mailboxes' => array(
             'draft' => 'Drafts',
             'sent' => 'Sent',
             'trash' => 'Trash',
