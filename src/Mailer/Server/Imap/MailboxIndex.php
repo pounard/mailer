@@ -441,7 +441,15 @@ class MailboxIndex
             ->getThreads($this->name, $query);
 
         foreach ($map as $uid => $uidMap) {
-            $map[$uid] = $this->buildThread($uid, $uidMap);
+            $thread = $this->getThread($uid);
+            if (count($thread->getUidMap()) !== count($uidMap)) {
+                // Allow caching of threads, note that will give false positive
+                // when a mail has been deleted an new one arrived, we should
+                // compare the full thread map uid per uid to be sure
+                $thread = $this->buildThread($uid, $uidMap);
+            }
+
+            $map[$uid] = $thread;
         }
 
         return $map;
