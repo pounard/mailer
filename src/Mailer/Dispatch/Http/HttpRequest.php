@@ -171,6 +171,6 @@ class HttpRequest extends DefaultRequest
 
     public function createResponse()
     {
-        return new HttpResponse();
+        return new HttpResponse($this);
     }
 }

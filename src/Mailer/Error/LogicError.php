@@ -25,7 +25,6 @@ class LogicError extends \RuntimeException implements Error
         if (null === $message) {
             $message = $this->getDefaultMessage();
         }
-        $message = sprintf("(%d) %s", $code, $message);
 
         parent::__construct($message, $code, $previous);
     }

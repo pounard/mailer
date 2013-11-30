@@ -33,7 +33,11 @@ class RedirectResponse extends AbstractContainerAware implements
         $this->code = $code;
     }
 
-    public function send(RequestInterface $request, $output, $contentType = null)
+    public function send(
+        $output,
+        $contentType   = null,
+        $statusCode    = null, 
+        $statusMessage = null)
     {
         $url = $this->url;
         if (false === strpos($url, '://')) {
@@ -45,7 +49,7 @@ class RedirectResponse extends AbstractContainerAware implements
             }
         } // Else this is a full URL
 
-        header(sprintf('HTTP/1.0 %s %s', $this->code, "Moved"), true, $this->code);
+        header(sprintf('HTTP/1.1 %s %s', $this->code, "Moved"), true, $this->code);
         header(sprintf('Location: %s', $url));
     }
 }

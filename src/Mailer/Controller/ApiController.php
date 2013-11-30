@@ -13,7 +13,7 @@ class ApiController extends AbstractController
     public function optionsAction($request, $args)
     {
         if ($request instanceof HttpRequest) {
-            return new HttpResponse(array(
+            return new HttpResponse($request, array(
                 "Access-Control-Request-Method" => "GET, POST, PATCH, PUT, DELETE, OPTIONS",
                 "Access-Control-Allow-Origin"   => "*",
             ));

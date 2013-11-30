@@ -5,18 +5,15 @@ namespace Mailer\Error;
 /**
  * 403
  */
-class UnauthorizedError extends \RuntimeException implements Error
+class UnauthorizedError extends LogicError
 {
-    public function __construct($message = null, $code = null, $previous = null)
+    public function getStatusCode()
     {
-        if ($message === null) {
-            $message = "Forbidden";
-        }
+        return 403;
+    }
 
-        if (null === $code) {
-            $code = 403;
-        }
-
-        parent::__construct($message, $code, $previous);
+    public function getDefaultMessage()
+    {
+        return "Forbidden";
     }
 }

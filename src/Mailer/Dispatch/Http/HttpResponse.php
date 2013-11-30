@@ -14,40 +14,62 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
     protected $headers = array();
 
     /**
+     * @var HttpRequest
+     */
+    protected $request;
+
+    /**
      * Build the response by adding specific headers
      *
      * @param array $headers
      */
-    public function __construct(array $headers = null)
+    public function __construct(HttpRequest $request, array $headers = null)
     {
-        if (null !== $headers) {
-            foreach ($headers as $name => $value) {
-                $this->addHeader($name, $value);
-            }
+        $this->request = $request;
+
+        foreach ($headers as $name => $value) {
+            $this->addHeader($name, $value);
         }
     }
 
     /**
      * Add response header
      *
-     * @param string $name
-     * @param string $value
+     * @param string $contentType
+     *   If specific the content type the response must set in headers
+     * @param int $statusCode
+     *   Return status code
+     * @param string $statusMessage
+     *   Status message if any
      */
     public function addHeader($name, $value)
     {
         $this->headers[$name] = $value;
     }
 
-    private function sendHeaders(RequestInterface $request, $contentType = null)
+    private function sendHeaders($contentType = null, $statusCode = null, $statusMessage = null)
     {
-        if (null === $contentType) {
-            $this->headers["Content-Type"] = $request->getPreferredOutputContentType();
-        } else {
-            $this->headers["Content-Type"] = $contentType;
+        if (null === $statusCode) {
+            $statusCode = 200;
+        }
+        if (null === $statusMessage) {
+            switch ($statusCode) { // @todo
+                case 200:
+                    $statusMessage = "OK";
+                    break;
+                default:
+                    $statusMessage = "Oups";
+                    break;
+            }
         }
 
-        // @todo Request should drive charset
-        $this->headers["Content-Type"] .= '; charset=' . $this->getContainer()->getDefaultCharset();
+        header(sprintf('HTTP/1.1 %s %s', $statusCode, $statusMessage), true, $statusCode);
+
+        if (null !== $contentType) {
+            $this->headers["Content-Type"] = $contentType;
+            // @todo Charset should be incomming request driven
+            $this->headers["Content-Type"] .= '; charset=' . $this->getContainer()->getDefaultCharset();
+        }
 
         foreach ($this->headers as $name => $value) {
             header($name . ':' . $value);
@@ -90,9 +112,13 @@ class HttpResponse extends AbstractContainerAware implements ResponseInterface
         }
     }
 
-    public function send(RequestInterface $request, $output, $contentType = null)
+    public function send(
+        $output,
+        $contentType   = null,
+        $statusCode    = null, 
+        $statusMessage = null)
     {
-        $this->sendHeaders($request, $contentType);
+        $this->sendHeaders($contentType, $statusCode, $statusMessage);
         $this->sendContent($output);
         $this->closeResponse();
     }

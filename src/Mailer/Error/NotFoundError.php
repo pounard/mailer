@@ -11,4 +11,9 @@ class NotFoundError extends LogicError
     {
         return 404;
     }
+
+    public function getDefaultMessage()
+    {
+       return "Not Found";
+    }
 }

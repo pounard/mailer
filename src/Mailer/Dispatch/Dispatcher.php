@@ -147,7 +147,7 @@ class Dispatcher extends AbstractContainerAware
                 $contentType = $renderer->getContentType();
 
                 if ($view instanceof ResponseInterface) {
-                    $view->send($request, null);
+                    $view->send(null);
                 } else {
                     // Where there is nothing to render just switch to a null
                     // implementation that will put nothing into the payload
@@ -155,7 +155,7 @@ class Dispatcher extends AbstractContainerAware
                         $renderer = new NullRenderer();
                     }
                     // Because one liners are too mainstream
-                    $response->send($request, $renderer->render($view, $request), $contentType);
+                    $response->send($renderer->render($view, $request), $contentType);
                 }
 
             // Within exception handling the dispatcher will act as a controller
@@ -165,22 +165,42 @@ class Dispatcher extends AbstractContainerAware
                     // If HTML is the demanded protocol then redirect to the
                     // login controller whenever the user is not authenticated
                     if ($this->getContainer()->getSession()->isAuthenticated()) {
-                        $response->send($request, $renderer->render(new View(array('e' => $e), 'app/unauth')));
+                        $response->send(
+                            $renderer->render(new View(array('e' => $e), 'app/unauth')),
+                            null,
+                            $e->getCode(),
+                            $e->getMessage()
+                        );
                     } else {
                         $response = new RedirectResponse('app/login');
-                        $response->send($request, null);
+                        $response->send(null, null, $e->getCode(), $e->getMessage());
                     }
                 } else {
                     // Unauthorized error will end up releasing a 403 error in
                     // the client demanded protocol
-                    $response->send($request, $renderer->render(new ErrorView($e), $request));
+                    $response->send(
+                        $renderer->render(new ErrorView($e), $request),
+                        null,
+                        $e->getCode(),
+                        $e->getMessage()
+                    );
                 }
             } catch (\Exception $e) {
-                $response->send($request, $renderer->render(new ErrorView($e), $request));
+                $response->send(
+                    $renderer->render(new ErrorView($e), $request),
+                    null,
+                    $e->getCode(),
+                    $e->getMessage()
+                );
             }
         } catch (\Exception $e) {
             $response = new DefaultResponse();
-            $response->send($request, $e->getMessage() . "\n" . $e->getTraceAsString());
+            $response->send(
+                $e->getMessage() . "\n" . $e->getTraceAsString(),
+                null,
+                $e->getCode(),
+                $e->getMessage()
+            );
         }
     }
 }
