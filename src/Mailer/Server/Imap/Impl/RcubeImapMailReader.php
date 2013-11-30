@@ -416,11 +416,33 @@ class RcubeImapMailReader extends AbstractServer implements
         $map = array();
 
         $client  = @$this->getClient();
-        $threads = @$client->thread($name, 'REFERENCES', '', true);
+        $threads = @$client->thread($name, 'REFS', '', true);
+
+        if ($threads->is_empty()) {
+            return $map;
+        }
 
         if (null === $query) {
             $query = new Query();
         }
+
+        // THREAD=ORDEREDSUBJECT: sorting by sent date of root message
+        // THREAD=REFERENCES:     sorting by sent date of root message
+        // THREAD=REFS:           sorting by the most recent date in each thread
+/*
+        if ($this->threading != 'REFS' || ($this->sort_field && $this->sort_field != 'date')) {
+          $sortby = $this->sort_field ? $this->sort_field : 'date';
+          $index  = $this->index($this->folder, $sortby, $this->sort_order, true, true);
+        
+          if (!$index->is_empty()) {
+            $threads->sort($index);
+          }
+        }
+        else if ($this->sort_order != $threads->get_parameters('ORDER')) {
+          $threads->revert();
+        }
+         */
+
         if (Query::ORDER_DESC === $query->getOrder()) {
             $threads->revert();
         }
