@@ -7,6 +7,7 @@ use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Error\NotImplementedError;
 use Mailer\Model\Folder;
+use Mailer\Model\Person;
 use Mailer\Model\SentMail;
 use Mailer\Server\Smtp\MailSenderInterface;
 
@@ -235,9 +236,24 @@ class Index extends AbstractContainerAware
      */
     public function sendMail(SentMail $mail, $name = null)
     {
+        $config = $this->getContainer()->getConfig();
+
         if (null === $name) {
-            $config = $this->getContainer()->getConfig();
             $name = $config['mailboxes/sent'];
+        }
+
+        if (!$mail->getFrom()) {
+            if (!$fromMail = $config['identity/mail']) {
+                $fromMail = $this
+                    ->getContainer()
+                    ->getInternalContainer()
+                    ->offsetGet('defaultAddress');
+            }
+            $mail->fromArray(array(
+                'from' => Person::fromMailAddress(
+                    $config['identity/displayName'] . ' <' . $fromMail . '>'
+                ),
+            ));
         }
 
         $mailbox = $this->getMailboxIndex($name);

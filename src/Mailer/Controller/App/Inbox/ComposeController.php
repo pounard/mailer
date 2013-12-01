@@ -57,7 +57,6 @@ class ComposeController extends AbstractController
 
             $mail = new SentMail();
             $mail->fromArray(array(
-                'from' => Person::fromMailAddress("Pierre Rineau <pounard@processus.org>"), // FIXME
                 'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
                 'subject' => $values['subject'],
                 'bodyPlain' => $values['body'],
