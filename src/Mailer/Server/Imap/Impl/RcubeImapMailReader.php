@@ -19,20 +19,13 @@ class RcubeImapMailReader extends AbstractServer implements
     MailReaderInterface
 {
     /**
-     * Default IMAP port
-     */
-    const PORT = 143;
-
-    /**
-     * Default IMAPS port
-     */
-    const PORT_SECURE = 993;
-
-    /**
      * @var \rcube_imap_generic
      */
     private $client;
 
+    /**
+     * Default destructor
+     */
     public function __destruct()
     {
         if (null !== $this->client && $this->client->connected()) {
@@ -80,7 +73,7 @@ class RcubeImapMailReader extends AbstractServer implements
 
     public function getDefaultPort($isSecure)
     {
-        return $isSecure ? self::PORT_SECURE : self::PORT;
+        return $isSecure ? MailReaderInterface::PORT_SECURE : MailReaderInterface::PORT;
     }
 
     public function isConnected()
@@ -436,24 +429,6 @@ class RcubeImapMailReader extends AbstractServer implements
         if (null === $query) {
             $query = new Query();
         }
-
-        // THREAD=ORDEREDSUBJECT: sorting by sent date of root message
-        // THREAD=REFERENCES:     sorting by sent date of root message
-        // THREAD=REFS:           sorting by the most recent date in each thread
-/*
-        if ($this->threading != 'REFS' || ($this->sort_field && $this->sort_field != 'date')) {
-          $sortby = $this->sort_field ? $this->sort_field : 'date';
-          $index  = $this->index($this->folder, $sortby, $this->sort_order, true, true);
-        
-          if (!$index->is_empty()) {
-            $threads->sort($index);
-          }
-        }
-        else if ($this->sort_order != $threads->get_parameters('ORDER')) {
-          $threads->revert();
-        }
-         */
-
         if (Query::ORDER_DESC === $query->getOrder()) {
             $threads->revert();
         }

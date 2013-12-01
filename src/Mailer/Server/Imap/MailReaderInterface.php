@@ -14,6 +14,16 @@ use Mailer\Server\ServerInterface;
 interface MailReaderInterface extends ServerInterface
 {
     /**
+     * Default IMAP port
+     */
+    const PORT = 143;
+
+    /**
+     * Default IMAPS port
+     */
+    const PORT_SECURE = 993;
+
+    /**
      * Should be the standard for most UNIX Maildir and such
      */
     const DEFAULT_DELIMITER = '.';
