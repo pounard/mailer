@@ -99,8 +99,9 @@ class FilterFactory extends AbstractContainerAware
 
         // Fetch type configuration
         $config = $this->getContainer()->getConfig();
-        if (isset($config['filters'][$type])) {
-            $types = $config['filters'][$type];
+        $key = 'filters/' . $type;
+        if (isset($config[$key])) {
+            $types = $config[$key];
         } else {
             $types = array('strip'); // Default must be secure
         }

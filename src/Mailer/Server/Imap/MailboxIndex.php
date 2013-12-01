@@ -533,9 +533,9 @@ class MailboxIndex
         $this->index->getCache()->delete($this->index->getCacheKey('f', $this->name));
         $this->index->getCache()->delete($this->index->getCacheKey('m', $uid));
 
-        if (isset($config['mailboxes']['trash'])) {
+        if (isset($config['mailboxes/trash'])) {
             // Move the mail into the selected existing Trash folder
-            $this->moveMail($uid, $config['mailboxes']['trash']);
+            $this->moveMail($uid, $config['mailboxes/trash']);
         }
     }
 

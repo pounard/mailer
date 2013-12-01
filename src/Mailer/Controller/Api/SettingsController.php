@@ -12,9 +12,6 @@ class SettingsController extends AbstractController
     {
         $container = $this->getContainer();
 
-        return new View(array(
-            'global' => $container->getConfig(),
-            'user'   => $container->getUserConfig(),
-        ));
+        return new View($container->getConfig()->toArray());
     }
 }

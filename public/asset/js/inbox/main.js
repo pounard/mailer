@@ -176,11 +176,8 @@ var Inbox, inboxInstance;
    */
   Inbox.prototype.getSetting = function (name, defaultValue) {
     if (this.settings) {
-      if (this.settings.user && this.settings.user[name]) {
-        return this.settings.user[name];
-      }
-      if (this.settings.global && this.settings.global[name]) {
-        return this.settings.global[name];
+      if (this.settings && this.settings[name]) {
+        return this.settings[name];
       }
     }
     return defaultValue;

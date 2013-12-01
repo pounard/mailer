@@ -34,7 +34,7 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         $session = $container->getSession();
         $config = $container->getConfig();
 
-        $ret['title'] = $config['html']['title'];
+        $ret['title'] = $config['html/title'];
         $ret['basepath'] = $request->getBasePath();
         $ret['url'] = $ret['basepath'] . $request->getResource();
         $ret['session'] = $session;

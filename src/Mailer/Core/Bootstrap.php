@@ -71,20 +71,25 @@ class Bootstrap
 
         $pimple['session']->start();
 
-        // Server wide configuration
-        /*
-        $pimple['config'] = function () use ($config) {
-            return new MemoryBackend($config['config']);
-        };
-         */
-        $pimple['config'] = $config['config'];
-        if (!isset($config['config']['charset'])) {
-          $config['config']['charset'] = "UTF-8";
+        // @todo Rewrite this
+        $cache = null;
+        if (isset($config['redis'])) {
+            $redis = new \Redis();
+            $redis->connect($config['redis']['host']);
+            $cache = new RedisCache();
+            $cache->setNamespace('mailer/user');
+            $cache->setRedis($redis);
         }
-        mb_internal_encoding($config['config']['charset']);
+        $pimple['config'] = $prefs = new ConfigObject(
+            $config['config'],
+            $cache,
+            $container->getSession()->getAccount()->getId()
+        );
 
-        // @todo
-        $pimple['userconfig'] = array();
+        if (!isset($prefs['charset'])) {
+            $prefs['charset'] = "UTF-8";
+        }
+        mb_internal_encoding($prefs['charset']);
 
         // Services
         $pimple['index'] = function () use ($container, $config) {
@@ -95,6 +100,7 @@ class Bootstrap
                 $redis = new \Redis();
                 $redis->connect($config['redis']['host']);
                 $cache = new RedisCache();
+                $cache->setNamespace('mailer/index');
                 $cache->setRedis($redis);
             }
 

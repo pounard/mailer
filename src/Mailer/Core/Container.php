@@ -39,21 +39,11 @@ class Container
     /**
      * Get configuration
      *
-     * @return array
+     * @return \ArrayAccess
      */
     public function getConfig()
     {
         return $this->container['config'];
-    }
-
-    /**
-     * Get logged in user configuration
-     *
-     * @return array
-     */
-    public function getUserConfig()
-    {
-        return $this->container['userconfig'];
     }
 
     /**

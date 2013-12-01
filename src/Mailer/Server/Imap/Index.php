@@ -237,7 +237,7 @@ class Index extends AbstractContainerAware
     {
         if (null === $name) {
             $config = $this->getContainer()->getConfig();
-            $name = $config['mailboxes']['sent'];
+            $name = $config['mailboxes/sent'];
         }
 
         $mailbox = $this->getMailboxIndex($name);
