@@ -71,6 +71,19 @@ class Bootstrap
 
         $pimple['session']->start();
 
+        if (!isset($config['config']['domain'])) {
+            // Find domain from IMAP server address
+            $config['config']['domain'] = $config['servers']['imap']['host'];
+        }
+
+        // From that point we need at least to compute a default
+        // email address from the default domain
+        if ($name = $container->getSession()->getAccount()->getUsername()) {
+            $pimple['defaultAddress'] = $name . '@' .  $config['config']['domain'];
+        } else {
+            $pimple['defaultAddress'] = '';
+        }
+
         // @todo Rewrite this
         $cache = null;
         if (isset($config['redis'])) {

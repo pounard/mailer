@@ -156,7 +156,7 @@ class Element implements ElementInterface
 
     public function validate($value)
     {
-        if ($this->isRequired && empty($value)) {
+        if ($this->isRequired() && empty($value)) {
             return false; // @todo Add message
         } else if (empty($value)) {
             return true;

@@ -156,6 +156,35 @@ form .actions > * {
     margin-left: 1.5em;
 }
 
+form .field {
+    margin: 0.9em 0;
+}
+
+form .field label {
+    width: 10em;
+    text-align: right;
+    float: left;
+    vertical-align: middle;
+    line-height: 34px;
+    font-weight: bold;
+}
+
+form .field .control {
+    margin-left: 10em;
+    padding: 0 2em;
+}
+
+fieldset[disabled] input,
+fieldset[disabled] button, 
+fieldset[disabled] textarea,
+input[disabled],
+button[readonly],
+textarea[disabled]
+{
+    background-color: #EEEEEE;
+    cursor: not-allowed;
+}
+
 /*****************************************************************************
  *
  * Login page
@@ -207,6 +236,18 @@ form .actions > * {
 
 /*****************************************************************************
  *
+ * Preferences
+ *
+ *****************************************************************************/
+
+#settings {
+    margin: 0 auto;
+    width: 70%;
+    min-width: 600px;
+}
+
+/*****************************************************************************
+ *
  * Inbox: compose page form
  *
  *****************************************************************************/
@@ -215,24 +256,6 @@ form .actions > * {
     margin: 0 auto;
     width: 70%;
     min-width: 600px;
-}
-
-#compose-full .field {
-    margin: 0.9em 0;
-}
-
-#compose-full .field label {
-    width: 10em;
-    text-align: right;
-    float: left;
-    vertical-align: middle;
-    line-height: 34px;
-    font-weight: bold;
-}
-
-#compose-full .field .control {
-    margin-left: 10em;
-    padding: 0 2em;
 }
 
 /*****************************************************************************

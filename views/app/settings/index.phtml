@@ -1,2 +1,53 @@
 <h1>Preferences</h1>
-<p>More to come...</p>
+<form  action="<?php echo $url; ?>" method="POST" id="settings">
+  <fieldset>
+    <legend>Identity</legend>
+    <div class="field">
+      <label for="to">Login</label>
+      <div class="control">
+        <input disabled="disabled" type="text" name="login" value="<?php echo $account->getUsername(); ?>"/>
+      </div>
+    </div>
+    <div class="field">
+      <label for="displayName">Full name</label>
+      <div class="control">
+        <input
+          type="text"
+          name="displayName"
+          placeholder="<?php echo $placeholders['displayName']; ?>"
+          value="<?php echo $defaults['displayName']; ?>"
+        />
+      </div>
+    </div>
+    <div class="field">
+      <label for="mail">Your email address</label>
+      <div class="control">
+        <input
+          type="text"
+          name="mail"
+          placeholder="<?php echo $placeholders['mail']; ?>"
+          value="<?php echo $defaults['mail']; ?>"
+        />
+      </div>
+    </div>
+    <div class="field">
+      <label for="replyTo">Reply-to address</label>
+      <div class="control">
+        <input
+          type="text"
+          name="replyTo"
+          placeholder="<?php echo $placeholders['replyTo']; ?>"
+          value="<?php echo $defaults['replyTo']; ?>"
+        />
+      </div>
+    </div>
+  </fieldset>
+  <div class="field">
+    <div class="control">
+      <div class="actions">
+        <input type="submit" value="Save"/>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </div>
+</form>

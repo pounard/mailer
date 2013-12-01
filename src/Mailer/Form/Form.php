@@ -15,6 +15,21 @@ class Form implements ElementInterface
     protected $elements = array();
 
     /**
+     * @var array
+     */
+    protected $values = array();
+
+    /**
+     * @var array
+     */
+    protected $defaultValues = array();
+
+    /**
+     * @var array
+     */
+    protected $placeholders = array();
+
+    /**
      * Create and attach new element
      *
      * @param string $name
@@ -55,10 +70,24 @@ class Form implements ElementInterface
         $element = $this->createElement($array['name'], $multiple, $required);
 
         if (!empty($array['validators'])) {
+            if (!is_array($array['validators'])) {
+                $array['validators'] = array($array['validators']);
+            }
             $element->addValidators($array['validators']);
         }
         if (!empty($array['filters'])) {
+            if (!is_array($array['filters'])) {
+                $array['filters'] = array($array['filters']);
+            }
             $element->addFilters($array['filters']);
+        }
+
+        if (isset($array['default'])) {
+            $this->defaultValues[$array['name']] = $array['default'];
+        }
+
+        if (isset($array['placeholder'])) {
+            $this->placeholders[$array['name']] = $array['placeholder'];
         }
     }
 
@@ -88,6 +117,81 @@ class Form implements ElementInterface
         } else {
             throw new \InvalidArgumentException();
         }
+    }
+
+    /**
+     * Set form default values
+     *
+     * @param array $values
+     */
+    public function setDefaultValues(array $values)
+    {
+        $this->defaultValues = array();
+        foreach ($values as $key => $value) {
+            if (isset($this->elements[$key])) {
+                $this->defaultValues[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Get form default values
+     *
+     * @return array
+     */
+    public function getDefaultValues()
+    {
+        return $this->defaultValues;
+    }
+
+    /**
+     * Set form values
+     *
+     * @param array $values
+     */
+    public function setValues(array $values)
+    {
+        $this->values = array();
+        foreach ($values as $key => $value) {
+            if (isset($this->elements[$key])) {
+                $this->values[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Get form default values
+     *
+     * @return array
+     */
+    public function getPlaceholders()
+    {
+        return $this->placeholders;
+    }
+
+    /**
+     * Set form values
+     *
+     * @param array $values
+     */
+    public function setPlaceholders(array $values)
+    {
+        $this->placeholders = array();
+        foreach ($values as $key => $value) {
+            if (isset($this->elements[$key])) {
+                $this->placeholders[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Get form values
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
     }
 
     public function validate($value)
