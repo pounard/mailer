@@ -77,6 +77,16 @@ class Container
     }
 
     /**
+     * Get mail reader
+     *
+     * @return \Mailer\Core\Messager
+     */
+    public function getMessager()
+    {
+      return $this->container['messager'];
+    }
+
+    /**
      * Get model object factory
      *
      * @return \Mailer\Model\Factory\DefaultFactory
