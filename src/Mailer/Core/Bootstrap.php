@@ -5,11 +5,11 @@ namespace Mailer\Core;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\ConfigError;
 use Mailer\Server\Imap\Impl\RcubeImapMailReader;
-use Mailer\Server\Native\PhpSmtpServer;
+use Mailer\Server\Imap\Index;
+use Mailer\Server\Smtp\Impl\PhpMailerMailSender;
 
 use Config\Impl\Memory\MemoryBackend;
 use Doctrine\Common\Cache\RedisCache;
-use Mailer\Server\Imap\Index;
 
 /**
  * OK this is far from ideal nevertheless it works
@@ -101,18 +101,13 @@ class Bootstrap
             $reader = new RcubeImapMailReader();
             $reader->setOptions($config['servers']['imap']);
 
-            $index = new Index($reader, $cache);
+            $sender = new PhpMailerMailSender();
+            $sender->setOptions($config['servers']['smtp']);
+
+            $index = new Index($reader, $sender, $cache);
             $index->setContainer($container);
 
             return $index;
-        };
-        $pimple['smtp'] = function () use ($container, $config) {
-            $service = new PhpSmtpServer();
-            $service->setOptions($config['servers']['stmp']);
-            if ($service instanceof ContainerAwareInterface) {
-                $service->setContainer($container);
-            }
-            return $service;
         };
     }
 }

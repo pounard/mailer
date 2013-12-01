@@ -31,6 +31,8 @@ return array(
     'services' => array(
         'auth' => '\Mailer\Security\Auth\ImapAuthProvider',
         'filterfactory' => '\Mailer\View\Helper\FilterFactory',
+        /*'mailreader' => '\Mailer\Server\Imap\Impl\RcubeImapMailReader',
+        'mailsender' => '\Mailer\Server\Smtp\Impl\PhpMailerMailSender',*/
         'messager' => '\Mailer\Core\Messager',
         'session' => '\Mailer\Core\Session',
         'templatefactory' => '\Mailer\View\Helper\TemplateFactory',

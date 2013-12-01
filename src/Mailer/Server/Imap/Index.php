@@ -7,6 +7,8 @@ use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Error\NotImplementedError;
 use Mailer\Model\Folder;
+use Mailer\Model\SentMail;
+use Mailer\Server\Smtp\MailSenderInterface;
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
@@ -28,6 +30,11 @@ class Index extends AbstractContainerAware
     private $reader;
 
     /**
+     * @var MailSenderInterface
+     */
+    private $sender;
+
+    /**
      * @var Cache
      */
     private $cache;
@@ -42,9 +49,13 @@ class Index extends AbstractContainerAware
      *
      * @param MailReaderInterface $reader
      */
-    public function __construct(MailReaderInterface $reader, Cache $cache = null)
+    public function __construct(
+        MailReaderInterface $reader,
+        MailSenderInterface $sender,
+        Cache $cache = null)
     {
         $this->reader = $reader;
+        $this->sender = $sender;
 
         if (null === $cache) {
             $this->cache = new ArrayCache();
@@ -211,6 +222,29 @@ class Index extends AbstractContainerAware
     public function flush()
     {
         // @todo Doctrine cache cannot flush?
+        // The only one on packagist is 1.x and 2.x knows how to flush...
+    }
+
+    /**
+     * Send mail
+     *
+     * @param SentMail $mail
+     *   Mail to send
+     * @param string $name
+     *   Where to copy the mail, defaults to configured sent mailbox
+     */
+    public function sendMail(SentMail $mail, $name = null)
+    {
+        if (null === $name) {
+            $config = $this->getContainer()->getConfig();
+            $name = $config['mailboxes']['sent'];
+        }
+
+        $mailbox = $this->getMailboxIndex($name);
+
+        $this->sender->sendMail($mail);
+
+        // Then, copy it.
     }
 
     public function setContainer(Container $container)
@@ -224,8 +258,15 @@ class Index extends AbstractContainerAware
         if ($this->reader instanceof ContainerAwareInterface) {
             $this->reader->setContainer($container);
         }
+        if ($this->sender instanceof ContainerAwareInterface) {
+            $this->sender->setContainer($container);
+        }
 
         $this->reader->setCredentials(
+            $account->getUsername(),
+            $account->getPassword()
+        );
+        $this->sender->setCredentials(
             $account->getUsername(),
             $account->getPassword()
         );
