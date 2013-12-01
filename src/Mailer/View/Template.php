@@ -11,12 +11,12 @@ class Template
     /**
      * @var View
      */
-    private $view;
+    protected $view;
 
     /**
      * @var TemplateFactory
      */
-    private $helpers;
+    protected $helpers;
 
     /**
      * Default constructor

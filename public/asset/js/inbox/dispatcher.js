@@ -39,7 +39,7 @@ var Dispatcher;
    *   DOM element or selector query
    */
   Dispatcher.prototype.send = function (options, element) {
-    var $element = $(element), complete;
+    var $element = $(element), complete, success;
     $.extend(options, this.ajaxOptions, this.jsonOptions);
     // We need at list an URL
     if (!options || !options.url) {
@@ -55,6 +55,18 @@ var Dispatcher;
       if ("function" === typeof complete) {
         complete(jqXhr, textStatus);
       }
+      $element.removeClass('loading');
+    };
+    if (options.success) {
+      success = options.success;
+    }
+    options.success = function (data) {
+      if ("function" === typeof success) {
+        if (data.data) {
+          success(data.data);
+        }
+      }
+      // @todo Check for message and add them.
       $element.removeClass('loading');
     };
     $element.addClass('loading');

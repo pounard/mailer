@@ -2,19 +2,20 @@
 
 namespace Mailer\View;
 
+use Mailer\Core\AbstractContainerAware;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Error\LogicError;
 use Mailer\Model\ArrayConverter;
 
-class JsonRenderer implements RendererInterface
+class JsonRenderer extends AbstractContainerAware implements RendererInterface
 {
     public function render(View $view, RequestInterface $request)
     {
-        $values = $view->getValues();
-
-        if (empty($values)) {
-            $values = array('success' => true);
-        }
+        $values = array(
+            'data'     => $view->getValues(),
+            'status'   => "success",
+            'messages' => $this->getContainer()->getMessager()->getMessages(),
+        );
 
         $converter = new ArrayConverter();
         $ret = json_encode($converter->serialize($values));
