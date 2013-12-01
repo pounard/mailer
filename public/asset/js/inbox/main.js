@@ -19,10 +19,7 @@ var Inbox, inboxInstance;
     this.$specialFolders = $("#special-folders");
     this.$allFolders     = $("#all-folders > li > ul");
     this.$view           = $("#viewpane");
-    this.folders         = {};
-    this.threads         = {};
     this.currentThread   = undefined;
-    this.mails           = {};
     this.settings        = {};
     this.instances       = {};
     this.$view.find("a.close").on("click", function () {
@@ -119,10 +116,13 @@ var Inbox, inboxInstance;
     var k = 0;
     this.closePane();
     this.resetMails();
-    for (k in this.threads) {
-      this.threads[k].detach();
-      delete this.threads[k];
+    if (this.instances.Thread) {
+      for (k in this.instances.Thread) {
+        this.instances.Thread[k].detach();
+        delete this.instances.Thread[k];
+      }
     }
+    this.currentThread = undefined;
     $(this.$inbox).find('.content').html("");
   };
 
@@ -131,9 +131,9 @@ var Inbox, inboxInstance;
    */
   Inbox.prototype.resetMails = function () {
     var k = 0;
-    for (k in this.mails) {
-      this.mails[k].detach();
-      delete this.mails[k];
+    for (k in this.instances.Mail) {
+      this.instances.Mail[k].detach();
+      delete this.instances.Mail[k];
     }
     $(this.$view).find('#thread-view .content').html("");
   };

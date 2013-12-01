@@ -47,6 +47,7 @@ var Folder;
     data.folder = this;
     thread.init(data, this.inbox, [this]);
     this.inbox.addThread(thread);
+    this.inbox.currentThread = thread;
   };
 
   /**
