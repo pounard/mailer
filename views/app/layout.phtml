@@ -32,14 +32,14 @@
     <?php endif; ?>
   </ul>
 </nav>
+<div id="main">
 <ul id="messages" role="alertdialog">
   <?php foreach ($this->messages() as $message): ?>
-  <li role="alert">
+  <li role="alert" class="<?php echo $message->getTypeString(); ?>">
     <?php echo $message->getMessage(); ?>
   </li>
   <?php endforeach; ?>
 </ul>
-<div id="main">
 <?php echo $content; ?>
 </div>
 <script type="text/javascript">

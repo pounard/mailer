@@ -28,7 +28,7 @@ class NativeSessionStorage implements \ArrayAccess
 
     public function offsetSet($offset, $value)
     {
-        return $_SESSION[$this->namespace][$offset] = $value;
+        $_SESSION[$this->namespace][$offset] = $value;
     }
 
     public function offsetUnset($offset)

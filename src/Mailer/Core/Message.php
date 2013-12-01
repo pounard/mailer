@@ -66,6 +66,30 @@ class Message
     }
 
     /**
+     * Get a textual representation (machine name) for the type
+     *
+     * @return string
+     */
+    public function getTypeString()
+    {
+        switch ($this->type) {
+
+            case self::TYPE_ERROR:
+                return 'error';
+
+            case self::TYPE_WARNING:
+                return 'warning';
+
+            case self::TYPE_SUCCESS:
+                return 'success';
+
+            case self::TYPE_INFO:
+            default:
+                return 'info';
+        }
+    }
+
+    /**
      * Get message
      *
      * @return string

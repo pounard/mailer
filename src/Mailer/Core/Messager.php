@@ -18,7 +18,9 @@ class Messager extends AbstractContainerAware
             ->getSession()
             ->getStorage();
 
-        $storage['messages'][] = new Message($message, $type, $date);
+        $messages = $storage['messages'];
+        $messages[] = new Message($message, $type, $date);
+        $storage['messages'] = $messages;
     }
 
     /**
