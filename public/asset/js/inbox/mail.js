@@ -102,16 +102,14 @@ var Mail;
     var self = this;
     this.inbox.dispatcher.patch({
       url: this.getUrl(),
-      success: function (data) {
-        $.each(data, function () {
-          self.isFlagged = toggle;
-          if (toggle) {
-            self.addClass("mail-flagged");
-          } else {
-            self.removeClass("mail-flagged");
-          }
-          self.change();
-        });
+      success: function () {
+        self.isFlagged = toggle;
+        if (toggle) {
+          self.addClass("mail-flagged");
+        } else {
+          self.removeClass("mail-flagged");
+        }
+        self.change();
       }
     }, {
       flagged: toggle
@@ -125,17 +123,15 @@ var Mail;
     var self = this;
     this.inbox.dispatcher.patch({
       url: this.getUrl(),
-      success: function (data) {
-        $.each(data, function () {
-          if (toggle) {
-            self.removeClass("mail-new");
-            self.removeClass("mail-recent");
-          } else {
-            self.addClass("mail-new");
-            self.addClass("mail-recent");
-          }
-          self.change(false);
-        });
+      success: function () {
+        if (toggle) {
+          self.removeClass("mail-new");
+          self.removeClass("mail-recent");
+        } else {
+          self.addClass("mail-new");
+          self.addClass("mail-recent");
+        }
+        self.change(false);
       }
     }, {
       seen: toggle

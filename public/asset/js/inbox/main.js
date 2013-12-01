@@ -19,6 +19,13 @@ var Inbox, inboxInstance;
     this.$specialFolders = $("#special-folders");
     this.$allFolders     = $("#all-folders > li > ul");
     this.$view           = $("#viewpane");
+    this.$replyForm      = $("#reply-form");
+    this.$replyForm.ajaxForm({
+      resetForm: true,
+      success: function (data) {
+        self.replyPosted();
+      }
+    });
     this.currentThread   = undefined;
     this.settings        = {};
     this.instances       = {};
@@ -283,6 +290,45 @@ var Inbox, inboxInstance;
         }
         delete this.instances[type][k];
       }
+    }
+  };
+
+  /**
+   * Enable the reply form
+   *
+   * @param Thread|Mail target
+   */
+  Inbox.prototype.replyEnable = function (target) {
+    var types = ["submit", "button", "input", "textarea"], k = 0;
+    if (!target.uid) {
+      throw "Invalid target for reply form";
+    }
+    for (k in types) {
+      this.$replyForm.find(types[k]).removeAttr("disabled");
+    }
+    this.$replyForm.find("input[name=inReplyToUid]").val(target.uid);
+    this.$replyForm.find("input[name=subject]").val("Re: " + target.subject);
+    this.$replyForm.find("input[name=to]").val(target.from.name + " <" + target.from.mail + ">");
+  };
+
+  /**
+   * Disable the reply form
+   */
+  Inbox.prototype.replyDisable = function () {
+    var types = ["submit", "button", "input", "textarea"], k = 0;
+    this.$replyForm.find("input[type=hidden]").val();
+    for (k in types) {
+      this.$replyForm.find(types[k]).attr({disabled: "disabled"});
+    }
+  };
+
+  /**
+   * Reply posted
+   */
+  Inbox.prototype.replyPosted = function (data) {
+    if (this.currentThread) {
+      this.currentThread.refresh();
+      this.currentThread.loadMails();
     }
   };
 

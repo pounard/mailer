@@ -24,11 +24,14 @@
         </div>
       </div>
       <div class="reply-form">
-        <form id="reply-form">
-          <textarea name="body"></textarea>
+        <form id="reply-form" action="<?php echo $this->url('app/inbox/compose'); ?>" method="POST">
+          <textarea name="body" disabled="disabled"></textarea>
+          <input type="hidden" name="inReplyToUid"/>
+          <input type="hidden" name="subject"/>
+          <input type="hidden" name="to"/>
           <br/>
           <div class="actions">
-            <input type="submit" value="Send"/>
+            <input type="submit" disabled="disabled" value="Send"/>
           </div>
           <div class="clear"></div>
         </form>

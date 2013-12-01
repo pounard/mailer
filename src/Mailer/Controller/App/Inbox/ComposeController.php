@@ -4,14 +4,15 @@ namespace Mailer\Controller\App\Inbox;
 
 use Mailer\Controller\AbstractController;
 use Mailer\Core\Message;
+use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Form\Form;
 use Mailer\Model\Person;
 use Mailer\Model\SentMail;
+use Mailer\Validator\EmailAddress;
 use Mailer\View\View;
 
-use Zend\Validator\EmailAddress;
-use Mailer\Dispatch\Http\RedirectResponse;
+use Zend\Validator\Digits as DigitsValidator;
 
 class ComposeController extends AbstractController
 {
@@ -21,16 +22,16 @@ class ComposeController extends AbstractController
         $form->addElement(array(
             'name' => 'to',
             'required' => true,
-            'validators' => array(new EmailAddress()),
+            'validators' => new EmailAddress(),
         ));
         /*
         $form->addElement(array(
             'name' => 'cc',
-            'validators' => array(new EmailAddress()),
+            'validators' => new EmailAddress(),
         ));
         $form->addElement(array(
             'name' => 'bcc',
-            'validators' => array(new EmailAddress()),
+            'validators' => new EmailAddress(),
         ));
          */
         $form->addElement(array(
@@ -38,6 +39,10 @@ class ComposeController extends AbstractController
         ));
         $form->addElement(array(
             'name' => 'body',
+        ));
+        $form->addElement(array(
+            'name' => 'inReplyToUid',
+            'validators' => new DigitsValidator(),
         ));
 
         return $form;

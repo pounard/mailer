@@ -31,6 +31,16 @@ var Dispatcher;
   };
 
   /**
+   * Get options for ajax queries
+   *
+   * @param options
+   */
+  Dispatcher.prototype.getOptions = function (options) {
+    options = options || {};
+    return $.extend(options, this.ajaxOptions, this.jsonOptions);
+  };
+
+  /**
    * Load content from AJAX and do something about it
    *
    * @param options
@@ -40,7 +50,7 @@ var Dispatcher;
    */
   Dispatcher.prototype.send = function (options, element) {
     var $element = $(element), complete, success;
-    $.extend(options, this.ajaxOptions, this.jsonOptions);
+    options = this.getOptions(options);
     // We need at list an URL
     if (!options || !options.url) {
       throw "Options needs at least an URL";
@@ -64,6 +74,8 @@ var Dispatcher;
       if ("function" === typeof success) {
         if (data.data) {
           success(data.data);
+        } else {
+          success();
         }
       }
       // @todo Check for message and add them.
@@ -83,7 +95,7 @@ var Dispatcher;
    *   Options for jQuery.ajax() call
    */
   Dispatcher.prototype.del = function (options, element) {
-    $.extend(options, this.jsonOptions);
+    options = this.getOptions(options);
     options.type = "delete";
     this.send(options, element);
   };
@@ -97,7 +109,7 @@ var Dispatcher;
    *   Options for jQuery.ajax() call
    */
   Dispatcher.prototype.get = function (options, element) {
-    $.extend(options, this.jsonOptions);
+    options = this.getOptions(options);
     this.send(options, element);
   };
 
@@ -110,7 +122,7 @@ var Dispatcher;
    *   Content to send
    */
   Dispatcher.prototype.post = function (options, content, element) {
-    $.extend(options, this.jsonOptions);
+    options = this.getOptions(options);
     options.type = "post";
     if (!content) {
       throw "Cannot POST without content";
@@ -128,7 +140,7 @@ var Dispatcher;
    *   Content to send
    */
   Dispatcher.prototype.patch = function (options, content, element) {
-    $.extend(options, this.jsonOptions);
+    options = this.getOptions(options);
     options.type = "patch";
     if (!content) {
       throw "Cannot PATCH without content";

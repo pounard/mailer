@@ -65,6 +65,9 @@ var Thread;
           child.thread = self;
           mail.init(child, self.inbox, [self]);
           self.inbox.addMail(mail);
+          // Update the reply form
+          self.inbox.currentThread = self;
+          self.inbox.replyEnable(self);
         });
       }
     }, this.inbox.getViewContainer());

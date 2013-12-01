@@ -28,6 +28,12 @@ class SettingsController extends AbstractController
             'placeholder' => $account->getUsername(),
         ));
         $form->addElement(array(
+            'name'        => 'organization',
+            'validators'  => new EmailAddress(),
+            'default'     => $config['identity/organization'],
+            'placeholder' => "No organization",
+        ));
+        $form->addElement(array(
             'name'        => 'mail',
             'validators'  => new EmailAddress(),
             'default'     => $config['identity/mail'],
