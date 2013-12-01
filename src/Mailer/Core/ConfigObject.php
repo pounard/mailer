@@ -87,7 +87,7 @@ class ConfigObject implements \ArrayAccess
     {
         $r = array();
         foreach ($a1 as $k => $v) {
-            $r[$k] = $a1;
+            $r[$k] = $v;
         }
         foreach ($a2 as $k => $v) {
             if (!array_key_exists($k, $r)) {
