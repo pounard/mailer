@@ -26,6 +26,7 @@
   </span>
   <ul class="nav-right">
     <?php if ($isAuthenticated): ?>
+    <li><a class="compose" href="/app/inbox/compose">Compose</a></li>
     <li><a href="/app/logout">Logout</a></li>
     <li><a href="/app/settings">Preferences</a></li>
     <li><a href="/app/inbox">Inbox</a></li>
@@ -33,19 +34,25 @@
   </ul>
 </nav>
 <div id="main">
-<ul id="messages" role="alertdialog">
-  <?php foreach ($this->messages() as $message): ?>
-  <li role="alert" class="<?php echo $message->getTypeString(); ?>">
-    <?php echo $message->getMessage(); ?>
-  </li>
-  <?php endforeach; ?>
+<div id="messages" role="alertdialog">
+<!-- <a href="#" class="close">Close</a> -->
+<ul>
+<?php foreach ($this->messages() as $message): ?>
+<li role="alert" class="<?php echo $message->getTypeString(); ?>">
+<?php echo $message->getMessage(); ?>
+</li>
+<?php endforeach; ?>
 </ul>
+</div>
 <?php echo $content; ?>
 </div>
 <script type="text/javascript">
 //<![CDATA[
 $(document).ready(function() {
-  $('textarea').autosize();
+  $("textarea").autosize();
+  $("#messages").on("click", function () {
+    $("#messages").slideUp();
+  });
 });
 //]]>
 </script>

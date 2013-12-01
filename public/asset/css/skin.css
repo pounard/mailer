@@ -28,12 +28,29 @@ hr {
 
 /*****************************************************************************
  *
+ * Menu styling
+ *
+ *****************************************************************************/
+
+/*
+#nav .compose {
+    background-image: url(../img/icons/sent-14.png);
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding-left: 20px;
+}
+ */
+
+/*****************************************************************************
+ *
  * Messages styling
  *
  *****************************************************************************/
 
 #messages {
     background-color: #ffffcc;
+    z-index: 10000;
+    box-shadow: 0px 1px 8px #555; /* Does not show up when empty yay! */
 }
 
 #messages li {
@@ -42,16 +59,16 @@ hr {
     font-weight: bold;
 }
 
+#messages li.success {
+    color: #228B22;
+}
+
 #messages li.warning {
     color: #cc0000;
 }
 
 #messages li.error {
     color: #cc0000;
-}
-
-#messages li:last-child {
-    box-shadow: 0 1px 8px #555;
 }
 
 /*****************************************************************************

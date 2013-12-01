@@ -11,6 +11,7 @@ use Mailer\Model\SentMail;
 use Mailer\View\View;
 
 use Zend\Validator\EmailAddress;
+use Mailer\Dispatch\Http\RedirectResponse;
 
 class ComposeController extends AbstractController
 {
@@ -66,6 +67,13 @@ class ComposeController extends AbstractController
                 ->getContainer()
                 ->getIndex()
                 ->sendMail($mail);
+
+            $messager = $this
+                ->getContainer()
+                ->getMessager()
+                ->addMessage("Your message has been sent", Message::TYPE_SUCCESS);
+
+            return new RedirectResponse('app/inbox');
 
         } else {
             $messager = $this->getContainer()->getMessager();
