@@ -201,6 +201,10 @@ form .actions > * {
     background-color: #f1f1f1;
 }
 
+.reply-form .actions {
+    margin-top: 0;
+}
+
 /*****************************************************************************
  *
  * Inbox: compose page form

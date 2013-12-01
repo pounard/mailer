@@ -16,22 +16,6 @@
 </div>
 <div id="views">
   <div id="viewpane">
-    <div id="compose">
-      <form id="compose-form">
-        <label for="to">To</label>
-        <input name="to" type="text"/>
-        <br/>
-        <label for="cc">CC</label>
-        <input name="cc" type="text"/>
-        <br/>
-        <label for="bcc">BCC</label>
-        <input name="bcc" type="text"/>
-        <br/>
-        <textarea name="body"></textarea>
-        <br/>
-        <input type="submit" value="Send"/>
-      </form>
-    </div>
     <div id="thread-view">
       <div class="header">
         <div class="title">
@@ -43,7 +27,10 @@
         <form id="reply-form">
           <textarea name="body"></textarea>
           <br/>
-          <input type="submit" value="Send"/>
+          <div class="actions">
+            <input type="submit" value="Send"/>
+          </div>
+          <div class="clear"></div>
         </form>
       </div>
       <div class="content"></div>
