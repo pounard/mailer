@@ -41,6 +41,26 @@ class Envelope extends AbstractItem
     }
 
     /**
+     * Get CC
+     *
+     * @return Person[]
+     */
+    public function getCc()
+    {
+        return $this->cc;
+    }
+
+    /**
+     * Get BCC
+     *
+     * @return Person[]
+     */
+    public function getBcc()
+    {
+        return $this->bcc;
+    }
+
+    /**
      * Get header set encoding if any
      *
      * @return string
