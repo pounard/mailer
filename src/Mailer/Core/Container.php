@@ -83,7 +83,17 @@ class Container
      */
     public function getMessager()
     {
-      return $this->container['messager'];
+        return $this->container['messager'];
+    }
+
+    /**
+     * Get mail reader
+     *
+     * @return \Mailer\View\Helper\TemplateFactory
+     */
+    public function getTemplateFactory()
+    {
+       return $this->container['templatefactory'];
     }
 
     /**

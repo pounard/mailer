@@ -13,15 +13,6 @@ use Mailer\Error\TechnicalError;
  */
 class HtmlRenderer extends AbstractContainerAware implements RendererInterface
 {
-    public function findTemplate($template = null)
-    {
-        if (empty($template)) {
-            $template = 'app/debug';
-        }
-
-        return 'views/' . $template . '.phtml';
-    }
-
     /**
      * Prepare variables from the view
      *
@@ -49,48 +40,34 @@ class HtmlRenderer extends AbstractContainerAware implements RendererInterface
         $ret['session'] = $session;
         $ret['account'] = $session->getAccount();
         $ret['isAuthenticated'] = $session->isAuthenticated();
-        $ret['pagetitle'] = isset($values['pagetitle']) ? $values['pagetitle'] : null;
+        $ret['pagetitle'] = isset($ret['pagetitle']) ? $ret['pagetitle'] : null;
 
         return $ret;
     }
 
-    /**
-     * Render template and fetch output
-     *
-     * @param mixed $values
-     * @param string $template
-     */
-    protected function renderTemplate($values, $template = null)
-    {
-        if (!$file = $this->findTemplate($template)) {
-            throw new TechnicalError(sprintf("Could not find any template to use"));
-        }
-
-        ob_start();
-        extract($values);
-
-        if (!(bool)include $file) {
-            ob_flush(); // Never leave an opened resource
-
-            throw new LogicError(sprintf("Could not find template '%s'", $template));
-        }
-
-        return ob_get_clean();
-    }
-
     public function render(View $view, RequestInterface $request)
     {
-        // Render the content template
-        $partial = $this->renderTemplate(
-            $this->prepareVariables($request, $view->getValues()),
-            $view->getTemplate()
+        $templateFactory = $this->getContainer()->getTemplateFactory();
+
+        // Current controller return
+        $template = new Template(
+            new View(
+                $this->prepareVariables($request, $view->getValues()),
+                $view->getTemplate()
+            ),
+            $templateFactory
         );
 
-        // Wrap the rendering into an full HTML page
-        return $this->renderTemplate(
-            $this->prepareVariables($request, array('content' => $partial)),
-            'app/layout'
+        // Main layout
+        $layout = new Template(
+            new View(
+                $this->prepareVariables($request, $template),
+                'app/layout'
+            ),
+            $templateFactory
         );
+
+        return $layout;
     }
 
     public function getContentType()

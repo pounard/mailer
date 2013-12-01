@@ -33,6 +33,7 @@ return array(
         'filterfactory' => '\Mailer\View\Helper\FilterFactory',
         'messager' => '\Mailer\Core\Messager',
         'session' => '\Mailer\Core\Session',
+        'templatefactory' => '\Mailer\View\Helper\TemplateFactory',
     ),
     // Just remove the 'redis' part to disable caching
     // Note: this is a very bad idea

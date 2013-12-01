@@ -32,8 +32,22 @@
     <?php endif; ?>
   </ul>
 </nav>
+<ul id="messages" role="alertdialog">
+  <?php foreach ($this->messages() as $message): ?>
+  <li role="alert">
+    <?php echo $message->getMessage(); ?>
+  </li>
+  <?php endforeach; ?>
+</ul>
 <div id="main">
 <?php echo $content; ?>
 </div>
+<script type="text/javascript">
+//<![CDATA[
+$(document).ready(function() {
+  $('textarea').autosize();
+});
+//]]>
+</script>
 </body>
 </html>
