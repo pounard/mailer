@@ -11,6 +11,10 @@ class Envelope extends AbstractItem
 
     protected $bcc = array();
 
+    protected $charset = null;
+
+    protected $encoding = null;
+
     protected $messageId = '';
 
     protected $references = '';
@@ -34,6 +38,26 @@ class Envelope extends AbstractItem
     public function getType()
     {
         return ItemInterface::TYPE_MAIL;
+    }
+
+    /**
+     * Get header set encoding if any
+     *
+     * @return string
+     */
+    public function getEncoding()
+    {
+        return $this->encoding;
+    }
+
+    /**
+     * Get header set charset if any
+     *
+     * @return string
+     */
+    public function getCharset()
+    {
+        return $this->charset;
     }
 
     /**
@@ -156,6 +180,8 @@ class Envelope extends AbstractItem
         return parent::toArray() + array(
             'cc'         => $this->cc,
             'bcc'        => $this->bcc,
+            'encoding'   => $this->encoding,
+            'charset'    => $this->charset,
             'messageId'  => $this->messageId,
             'references' => $this->references,
             'replyTo'    => $this->replyTo,
@@ -177,6 +203,8 @@ class Envelope extends AbstractItem
 
         $this->cc         = $array['cc'];
         $this->bcc        = $array['bcc'];
+        $this->encoding   = $array['encoding'];
+        $this->charset    = $array['charset'];
         $this->messageId  = $array['messageId'];
         $this->references = $array['references'];
         $this->replyTo    = $array['replyTo'];
