@@ -4,12 +4,12 @@ namespace Mailer\Controller\App;
 
 use Mailer\Controller\AbstractController;
 use Mailer\Core\Message;
+use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Form\Form;
 use Mailer\View\View;
 
 use Zend\Validator\EmailAddress;
-use Mailer\Dispatch\Http\RedirectResponse;
 
 class SettingsController extends AbstractController
 {

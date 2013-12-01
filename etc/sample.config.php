@@ -8,6 +8,10 @@ return array(
             'title' => "My webmail",
         ),
         'charset' => "UTF-8",
+        // This is your default mail domain from which will give default
+        // mail address for your users which did not configure their own
+        // address
+        'domain' => 'mydomain.tld',
         // Default folders config
         // @todo Make this configurable per user
         'mailboxes' => array(
