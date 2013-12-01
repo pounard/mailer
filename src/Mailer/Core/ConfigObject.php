@@ -90,7 +90,7 @@ class ConfigObject implements \ArrayAccess
             $r[$k] = $a1;
         }
         foreach ($a2 as $k => $v) {
-            if (!array_key_exists($r, $k)) {
+            if (!array_key_exists($k, $r)) {
                 $r[$k] = $v;
             } else if (is_array($r[$k]) && is_array($v)) {
                 $r[$k] = self::arrayMergeRecursive($r[$k], $v);
