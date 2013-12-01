@@ -3,6 +3,7 @@
 namespace Mailer\View\Helper;
 
 use Mailer\Core\AbstractContainerAware;
+use Mailer\Core\ContainerAwareInterface;
 use Mailer\View\Helper\Filter\NullFilter;
 
 class FilterFactory extends AbstractContainerAware
@@ -56,6 +57,9 @@ class FilterFactory extends AbstractContainerAware
                 $instance = new NullFilter();
             } else {
                 $instance = new self::$registered[$name]();
+            }
+            if ($instance instanceof ContainerAwareInterface) {
+               $instance->setContainer($container);
             }
             $this->instances[$name] = $instance;
         }
