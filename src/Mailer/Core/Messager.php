@@ -7,7 +7,7 @@ class Messager extends AbstractContainerAware
     /**
      * Add message
      *
-     * @param string $message
+     * @param string|string[] $message
      * @param int $type
      * @param \DateTime
      */
@@ -19,7 +19,15 @@ class Messager extends AbstractContainerAware
             ->getStorage();
 
         $messages = $storage['messages'];
-        $messages[] = new Message($message, $type, $date);
+
+        if (is_array($message)) {
+            foreach ($message as $string) {
+                $messages[] = new Message($string, $type, $date);
+            }
+        } else {
+            $messages[] = new Message($message, $type, $date);
+        }
+
         $storage['messages'] = $messages;
     }
 
