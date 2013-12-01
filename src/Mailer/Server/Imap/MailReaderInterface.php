@@ -75,7 +75,7 @@ interface MailReaderInterface extends ServerInterface
      * @param string $name
      *   Mailbox name
      * @param int $uid
-     *   Mail unique identifiers
+     *   Mail unique identifier
      *
      * @return Mail
      */
@@ -92,6 +92,22 @@ interface MailReaderInterface extends ServerInterface
      * @return Mail[]
      */
     public function getMails($name, array $uidList);
+
+    /**
+     * Get mail source as plain text
+     *
+     * @param string $name
+     *   Mailbox name
+     * @param int $uid
+     *   Mail unique identifier
+     * @param string $charset
+     *   Output charset
+     * @param int $maxBytes
+     *   Maximum size fetched
+     *
+     * @return string
+     */
+    public function getMailSource($name, $uid, $charset = null, $maxBytes = 0);
 
     /**
      * Flag or unflag a mail

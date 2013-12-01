@@ -230,6 +230,34 @@ class MailboxIndex
     }
 
     /**
+     * Get mail source
+     *
+     * This is a non cached method
+     *
+     * @param int $uid
+     *   Mail unique identifier
+     * @param int $maxBytes
+     *   Maximum size fetched, defaults to 1M
+     *
+     * @return string
+     */
+    public function getMailSource($uid, $maxBytes = 1048576)
+    {
+        return $this
+            ->index
+            ->getMailReader()
+            ->getMailSource(
+                $this->name,
+                $uid,
+                $this
+                    ->index
+                    ->getContainer()
+                    ->getDefaultCharset(),
+                $maxBytes
+            );
+    }
+
+    /**
      * Flag or unflag a mail
      *
      * @param int $uid

@@ -186,8 +186,12 @@ class RcubeImapMailReader extends AbstractServer implements
             'mailbox'    => $name,
             'subject'    => @$header->get('subject'),
             'from'       => Person::fromMailAddress(@$header->get('from')),
-            'to'         => Person::fromMailAddress(@$header->get('to')),
+            'to'         => Person::fromMailAddress(@$header->get('to')), // FIXME
+            'cc'         => Person::fromMailAddress(@$header->get('cc')), // FIXME
+            'bcc'        => Person::fromMailAddress(@$header->get('bcc')), // FIXME
             'created'    => DateHelper::fromRfc2822(@$header->get('date')),
+            'encoding'   => @$header->encoding,
+            'charset'    => @$header->charset,
             'id'         => @$header->messageID,
             'references' => @$header->get('references'),
             'replyTo'    => @$header->get('replyto'),
@@ -316,6 +320,13 @@ class RcubeImapMailReader extends AbstractServer implements
         }
 
         return $ret;
+    }
+
+    public function getMailSource($name, $uid, $charset = null, $maxBytes = 0)
+    {
+        return @$this
+            ->getClient()
+            ->handlePartBody($name, $uid, true, null, null, null, null, true, $maxBytes);
     }
 
     public function flagMail($name, $uid, $flag, $toggle = true)
