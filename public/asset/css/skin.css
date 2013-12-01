@@ -39,11 +39,15 @@ hr {
 #messages li {
     color: black;
     padding: 0.5em 1em;
-    font-size: strong;
+    font-weight: bold;
 }
 
 #messages li.warning {
-    color: red;
+    color: #cc0000;
+}
+
+#messages li.error {
+    color: #cc0000;
 }
 
 #messages li:last-child {
