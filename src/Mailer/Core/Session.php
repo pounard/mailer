@@ -33,6 +33,19 @@ class Session
     private $regenerated = false;
 
     /**
+     * @var \ArrayAccess
+     */
+    private $storage;
+
+    /**
+     * Default constructor
+     */
+    public function __construct()
+    {
+        $this->storage = new NativeSessionStorage();
+    }
+
+    /**
      * Is the session started
      *
      * @return boolean
@@ -103,6 +116,16 @@ class Session
     }
 
     /**
+     * Get storage
+     *
+     * @return \ArrayAccess
+     */
+    public function getStorage()
+    {
+        return $this->storage;
+    }
+
+    /**
      * Set logged in account
      *
      * @param Account $account
@@ -110,7 +133,7 @@ class Session
     public function setAccount(Account $account = null)
     {
         $this->account = $account;
-        $_SESSION['account'] = $account;
+        $this->storage['account'] = $account;
     }
 
     /**
@@ -121,8 +144,8 @@ class Session
     public function getAccount()
     {
         if (null === $this->account) {
-            if (isset($_SESSION['account'])) {
-                $this->account = $_SESSION['account'];
+            if (isset($this->storage['account'])) {
+                $this->account = $this->storage['account'];
             } else {
                 $this->account = new Account(0, "anonymous", null);
             }
