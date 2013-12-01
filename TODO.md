@@ -7,7 +7,8 @@
  *  Implement search
      *  Message indexing (Solr?)
  *  Better caching
-     *  Threads handling
+     *  <strike>Threads handling</strike>
+     *  General bettter caching
  *  UI updates
      *  Polling for new mails
          *  Updates folders
@@ -27,7 +28,14 @@
              * Enable/disable typography fixer
      *  Content escaping
  *  Output filtering
-     *  Factory for filters
-     *  Configuration for factory
+     *  <strike>Factory for filters</strike>
+     *  <strike>Configuration for factory</strike>
      *  HTML security fixer
- 
+ *  Basic features
+     * 	Copy mail
+     *  Move mail
+     *  Draft save and compose
+     *  Thread deletion
+     *  Confirmation dialogs upon delete
+ *  Unit tests!
+
