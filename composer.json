@@ -18,6 +18,8 @@
     "require": {
         "php-config/php-config": "dev-master",
         "pimple/pimple": "2.*@dev",
+        "zendframework/zend-validator": "2.*",
+        "zendframework/zend-filter": "2.*",
         "doctrine/cache": "1.3.*",
         "phpmailer/phpmailer": "5.2.*"
     }
