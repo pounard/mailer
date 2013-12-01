@@ -3,11 +3,12 @@
 namespace Mailer\Controller\App;
 
 use Mailer\Controller\AbstractController;
+use Mailer\Core\Message;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
+use Mailer\Error\LogicError;
 use Mailer\Security\Account;
 use Mailer\View\View;
-use Mailer\Error\LogicError;
 
 class LoginController extends AbstractController
 {
@@ -26,25 +27,22 @@ class LoginController extends AbstractController
 
     public function postAction(RequestInterface $request, array $args)
     {
-        /*
-        // @todo Test login and password
-        $posted = $request->getContent();
-        $account = new Account(-1, $posted['username'], $posted['username']);
-        $_SESSION['account'] = $account;
-        //return new RedirectResponse(null);
-         */
-
-        // FIXME Very very bad (using globals).
+        $content = $request->getContent();
         $container = $this->getContainer();
         $pimple = $container->getInternalContainer();
-        if ($pimple['auth']->authenticate($_POST['username'], $_POST['password'])) {
+
+        if ($pimple['auth']->authenticate($content['username'], $content['password'])) {
             // Yeah! Success.
-            if (!$container->getSession()->regenerate(new Account(-1, $_POST['username'], $_POST['password']))) {
+            if (!$container->getSession()->regenerate(new Account(-1, $content['username'], $content['password']))) {
+                $container->getMessager()->addMessage("Could not create your session", Message::TYPE_ERROR);
                 throw new LogicError("Could not create session");
             }
+            $container->getMessager()->addMessage("Welcome back!", Message::TYPE_SUCCESS);
             return new RedirectResponse('');
         } else {
             // Bouh! Wrong credentials.
+            $container->getMessager()->addMessage("Unable to login, please check your account name and password", Message::TYPE_ERROR);
+
             // Redirect to the very same page but using GET
             return new RedirectResponse($request->getResource());
         }
