@@ -463,12 +463,18 @@ class MailboxIndex
             $query = new Query();
         }
 
-        $map = $this
+        // Return a non indexed map so that various browsers will keep
+        // JSON Array ordering instead of messing up with object keys
+        // ordering. See:
+        // http://stackoverflow.com/questions/5020699/how-do-you-stop-chrome-and-opera-sorting-json-objects-by-index-asc
+        $map = array();
+
+        $list = $this
             ->getIndex()
             ->getMailReader()
             ->getThreads($this->name, $query);
 
-        foreach ($map as $uid => $uidMap) {
+        foreach ($list as $uid => $uidMap) {
             $thread = $this->getThread($uid);
             if (count($thread->getUidMap()) !== count($uidMap)) {
                 // Allow caching of threads, note that will give false positive
@@ -477,7 +483,7 @@ class MailboxIndex
                 $thread = $this->buildThread($uid, $uidMap);
             }
 
-            $map[$uid] = $thread;
+            $map[] = $thread;
         }
 
         return $map;
