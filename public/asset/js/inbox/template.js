@@ -41,6 +41,7 @@ var Template;
       + '<div class="subject">'
       + '{{subject}}'
       + '<a class="delete hover-link" href="#" title="Delete">Delete</a>'
+      // + '<div class="source hover-link"><a href="#" title="View source">View source</a></div>'
       + '</div>'
       + '<div class="clear"></div>'
       + '<div class="from">'

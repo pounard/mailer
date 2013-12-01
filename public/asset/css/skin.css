@@ -8,6 +8,18 @@
  * we not bother takign them while they have a very good looking?
  */
 
+h1 {
+    text-align: center;
+}
+
+hr {
+    color: #ddd; /* Others */
+    background-color: #ddd; /* Opera, Mozilla */
+    margin: 1em 0;
+    height: 1px;
+    border: 0 none;
+}
+
 input[type=text], input[type=password], textarea {
     background-color: #FFFFFF;
     background-image: none;
@@ -70,6 +82,21 @@ form .actions {
 
 form .actions > * {
     /* float: right; */
+}
+
+/* Mail source formatter */
+#source {
+    display: block;
+    width: 80em;
+    margin: 0 auto;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 1em 2em;
+    word-wrap: break-word;
+    width: 52em; /* Sounds stupid but this actually fits the 80 chars. */
 }
 
 .reply-form {
@@ -305,7 +332,7 @@ form .actions > * {
     background-image: url(../img/icons/starred-off-14.png);
 }
 
-.mail .delete {
+.mail .delete, .mail .source {
     /* Move out text */
     color: transparent;
     height: 14px;
@@ -321,7 +348,14 @@ form .actions > * {
     /* Hide when not hovering */
     display: none;
 }
-.mail:hover .delete {
+.mail:hover .delete, .mail:hover .source {
+    display: inline;
+}
+
+.mail .source {
+    background-image: url(../img/icons/file-14.png);
+}
+
     display: inline;
 }
 
