@@ -34,29 +34,5 @@ class SourceController extends AbstractController
             ),
             'app/inbox/source'
         );
-
-        /*
-        $headers = $RCMAIL->storage->get_message_headers($uid);
-        $charset = $headers->charset ? $headers->charset : $CONFIG['default_charset'];
-        header("Content-Type: text/plain; charset={$charset}");
-        
-        if (!empty($_GET['_save'])) {
-          $subject = rcube_mime::decode_header($headers->subject, $headers->charset);
-          $filename = ($subject ? $subject : $RCMAIL->config->get('product_name', 'email')) . '.eml';
-          $browser = $RCMAIL->output->browser;
-        
-          if ($browser->ie && $browser->ver < 7)
-            $filename = rawurlencode(abbreviate_string($filename, 55));
-          else if ($browser->ie)
-            $filename = rawurlencode($filename);
-          else
-            $filename = addcslashes($filename, '"');
-        
-          header("Content-Length: {$headers->size}");
-          header("Content-Disposition: attachment; filename=\"$filename\"");
-        }
-        
-        $RCMAIL->storage->print_raw_body($uid, empty($_GET['_save']));
-         */
     }
 }
