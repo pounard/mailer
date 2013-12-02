@@ -7,8 +7,8 @@ use Mailer\Core\Message;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Form\Form;
+use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\SentMail;
 use Mailer\Validator\EmailAddress;
 use Mailer\View\View;
 
@@ -60,7 +60,7 @@ class ComposeController extends AbstractController
 
         if ($form->validate($values)) {
 
-            $mail = new SentMail();
+            $mail = new Mail();
             $mail->fromArray(array(
                 'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
                 'subject' => $values['subject'],

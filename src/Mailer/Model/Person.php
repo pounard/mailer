@@ -82,6 +82,20 @@ class Person implements ExchangeInterface
     }
 
     /**
+     * Get "name" <address> complete string
+     *
+     * @return string
+     */
+    public function getCompleteMail()
+    {
+        if ($this->name) {
+            return $this->name . " <" . $this->mail . ">";
+        } else {
+            return $this->mail;
+        }
+    }
+
+    /**
      * Get picture to display URL
      *
      * @return string
@@ -110,6 +124,11 @@ class Person implements ExchangeInterface
             'image' => $this->image,
             'id'    => $this->id,
         );
+    }
+
+    public function __toString()
+    {
+        return $this->getCompleteMail();
     }
 
     public function fromArray(array $array)

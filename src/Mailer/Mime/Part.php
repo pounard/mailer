@@ -5,9 +5,10 @@ namespace Mailer\Mime;
 class Part extends AbstractPart
 {
     /**
-     * When message is not multipart fetch content won't be the same
-     * command, this contanst indicates to the fetch callback it should
-     * not trust the index but fetch the root part instead
+     * If the parsed content was not valid multipart data, the index will be
+     * set to this constant. Use this when trying to fetch content from the
+     * IMAP server as index and it will return you the full content string
+     * instead of a single part.
      */
     const INDEX_ROOT = '';
 
@@ -134,20 +135,6 @@ class Part extends AbstractPart
 
         return $instance;
     }
-
-    /**
-     * In most cases we will never fetch content directly when getting the
-     * body structure in order to avoid inneficient and useless large files
-     * download from the server.
-     *
-     * In order to solve this problem and leave this implementation server
-     * agnostic it leaves the choice of the user of setting or not the body
-     * content, and set a fetch callback if necessary. The first argument
-     * passed to this callback will be this instance
-     *
-     * @var callable
-     */
-    protected $fetchCallback;
 
     /**
      * @var array
@@ -363,26 +350,27 @@ class Part extends AbstractPart
     /**
      * Set contents
      *
-     * @param callback|string $contents
+     * @param resource|callback|string $contents
      */
     public function setContents($contents)
     {
         if (null === $contents) {
             $this->contents = null;
         } else if (is_callable($contents)) {
-            $this->fetchCallback = $contents;
+            $this->contents = $contents;
+        } else if (is_resource($contents)) {
+            $this->contents = $contents;
+        } else if (is_string($contents)) {
+            $this->contents = $contents;
         } else {
-            $this->contents = (string)$contents;
+            throw new \InvalidArgumentException("Contents must be either null, callable, string or resource");
         }
     }
 
     /**
      * Get contents
      *
-     * Beware when calling this method, the content will be fetched and set
-     * into the class properties: never fetch big files using this
-     *
-     * @return string
+     * @return resource|callback|string
      *   Content value, empty string is a valid value, null must be treated
      *   as a valid empty string while false means there was an error while
      *   fetching content
@@ -396,38 +384,29 @@ class Part extends AbstractPart
         if (false === $this->contents) {
             return false;
         }
-
-        if (null === $this->contents) {
-            if (null === $this->fetchCallback) {
-                throw new \LogicError("Cannot fetch content if there is no callback set");
-            } else {
-                $ret = call_user_func($this->fetchCallback, $this);
-                if (false === $ret || null === $ret) { // Error
-                    $this->contents = false;
-                } else {
-                    $this->contents = Charset::convert(
-                        $ret,
-                        $this->getParameter('charset', 'US-ASCII')
-                    );
-                }
-            }
-        }
-
         return $this->contents;
     }
 
     /**
-     * Get contents as a stream
+     * Use the given content information and return the real content
      *
-     * For huge content or files this is the appropriate way of handling the
-     * data flow: it avois polluting PHP memory and will allow you to proceed
-     * to a direct stream send to the browser.
-     *
-     * @return resource
-     *   Opened stream resource
+     * @return string
+     *   If false then an error happened, if null there is no content
      */
-    public function getContentsStream()
+    public function getContentsReal()
     {
-        throw new \NotImplementedError();
+        if (false === $this->contents) {
+            return false;
+        } else if (null === $this->contents) {
+            return null;
+        } else if (is_callable($this->contents)) {
+            return call_user_func($this->contents);
+        } else if (is_resource($this->contents)) {
+            return stream_get_contents($this->contents);
+        } else if (is_string($this->contents)) {
+            return $contents;
+        } else {
+            return false;
+       }
     }
 }

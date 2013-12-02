@@ -12,8 +12,14 @@ abstract class AbstractItem extends AbstractContainer implements ItemInterface
 
     protected $summary = '';
 
+    /**
+     * @var Person
+     */
     protected $from;
 
+    /**
+     * @var Person[]
+     */
     protected $to = array();
 
     protected $isFlagged = false;

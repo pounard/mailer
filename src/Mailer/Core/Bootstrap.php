@@ -71,6 +71,9 @@ class Bootstrap
 
         $pimple['session']->start();
 
+        // Ouhhh magic
+        $config['useragent'] = "pounard-mailer/dev";
+
         if (!isset($config['config']['domain'])) {
             // Find domain from IMAP server address
             $config['config']['domain'] = $config['servers']['imap']['host'];

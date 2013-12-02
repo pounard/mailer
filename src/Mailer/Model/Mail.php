@@ -34,6 +34,10 @@ class Mail extends Envelope
     /**
      * Get plain text version of body if any
      *
+     * This will given you an escaped and processed content; It is not real
+     * from the mail; For being able to fetch the original data use the
+     * structure property instead
+     *
      * @return string[]
      */
     public function getBodyPlain()
@@ -43,6 +47,10 @@ class Mail extends Envelope
 
     /**
      * Get HTML version of body if any
+     *
+     * This will given you an escaped and processed content; It is not real
+     * from the mail; For being able to fetch the original data use the
+     * structure property instead
      *
      * @return string[]
      */

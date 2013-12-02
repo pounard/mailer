@@ -6,9 +6,10 @@ use Mailer\Core\AbstractContainerAware;
 use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Error\NotImplementedError;
+use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
+use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\SentMail;
 use Mailer\Server\Smtp\MailSenderInterface;
 
 use Doctrine\Common\Cache\ArrayCache;
@@ -231,12 +232,12 @@ class Index extends AbstractContainerAware
     /**
      * Send mail
      *
-     * @param SentMail $mail
+     * @param Mail $mail
      *   Mail to send
      * @param string $name
      *   Where to copy the mail, defaults to configured sent mailbox
      */
-    public function sendMail(SentMail $mail, $name = null)
+    public function sendMail(Mail $mail, $name = null)
     {
         $config = $this->getContainer()->getConfig();
 
@@ -259,10 +260,125 @@ class Index extends AbstractContainerAware
         }
 
         $mailbox = $this->getMailboxIndex($name);
+        $headers = $this->buildMailHeaders($mail);
 
-        $this->sender->sendMail($mail);
+        // @todo There is some work to do here...
+        // Handling HTML mails etc...
+        $body = str_replace("\r\n", "\n", $mail->getBodyPlain());
 
-        // Then, copy it.
+        $this->sender->sendMail($mail, $headers);
+        // No exception happened up there? Yay, copy it.
+        $this->reader->saveMail($mail, $headers);
+    }
+
+    /**
+     * Build mail headers from what's inside and add missing considering
+     * we are supposdly sending or editing this mail ourselves
+     *
+     * @param Envelope $mail
+     *
+     * @return string[]
+     */
+    public function buildMailHeaders(Envelope $mail)
+    {
+        $container = $this->getContainer();
+        $config    = $container->getConfig();
+        $headers   = array();
+        $updates   = array();
+
+        if (!$messageId = $mail->getMessageId()) { // Mail could already exist (Draft)
+            $messageId = $this->generateMessageId();
+            $updates['messageId'] = $messageId;
+        }
+        if (!$charset = $mail->getCharset()) {
+            $charset = $container->getDefaultCharset();
+            $updates['charset'] = $charset;
+        }
+
+        // if configured, the Received headers goes to top, for good measure
+        // @todo Received header
+
+        try {
+            $date = new \DateTime(null, new \DateTimeZone($config['timezone']));
+        } catch (\Exception $e) {
+            $date = new \DateTime();
+        }
+
+        $headers['Date'] = $date->format('r');
+        $headers['From'] = $mail->getFrom()->getCompleteMail();
+
+        if ($to = $mail->getTo()) {
+            $headers['To'] = implode(", ", $mail->getTo());
+        } else {
+            $headers['To'] = "undisclosed-recipients:;";
+        }
+        if ($cc = $mail->getCc()) {
+            $headers['Cc'] = implode(", ", $cc);
+        }
+        if ($bcc = $mail->getBcc()) {
+            $headers['Bcc'] = implode(", ", $bcc);
+        }
+
+        $headers['Subject'] = trim($mail->getSubject());
+
+        /*
+        if (!empty($identity_arr['organization'])) {
+          $headers['Organization'] = $identity_arr['organization'];
+        }
+        if (!empty($_POST['_replyto'])) {
+          $headers['Reply-To'] = rcmail_email_input_format(get_input_value('_replyto', RCUBE_INPUT_POST, TRUE, $message_charset));
+        }
+        if (!empty($headers['Reply-To'])) {
+          $headers['Mail-Reply-To'] = $headers['Reply-To'];
+        }
+        if (!empty($_POST['_followupto'])) {
+          $headers['Mail-Followup-To'] = rcmail_email_input_format(get_input_value('_followupto', RCUBE_INPUT_POST, TRUE, $message_charset));
+        }
+
+        /*
+        // remember reply/forward UIDs in special headers
+        if (!empty($COMPOSE['reply_uid']) && $savedraft) {
+          $headers['X-Draft-Info'] = array('type' => 'reply', 'uid' => $COMPOSE['reply_uid']);
+        }
+        else if (!empty($COMPOSE['forward_uid']) && $savedraft) {
+          $headers['X-Draft-Info'] = array('type' => 'forward', 'uid' => $COMPOSE['forward_uid']);
+        }
+         */
+
+        if ($inReplyTo = $mail->getInReplyto()) {
+            $headers['In-Reply-To'] = $inReplyTo;
+        }
+        if ($references = $mail->isReferenceTo()) {
+            $headers['References'] = $references;
+        }
+        if ($priority = $mail->getPriorityHeaderString()) {
+            $headers['X-Priority'] = $priority;
+        }
+
+        /*
+        if (!empty($_POST['_receipt'])) {
+          $headers['Return-Receipt-To'] = $from_string;
+          $headers['Disposition-Notification-To'] = $from_string;
+        }
+         */
+
+        $headers['Message-ID'] = $messageId;
+        $headers['X-Sender']   = $mail->getFrom()->getCompleteMail();
+
+        /*
+        if (is_array($headers['X-Draft-Info'])) {
+          $headers['X-Draft-Info'] = rcmail_draftinfo_encode($headers['X-Draft-Info'] + array('folder' => $COMPOSE['mailbox']));
+        }
+         */
+        if ($config['displayUserAgent']) {
+            $headers['User-Agent'] = $config['useragent'];
+        }
+
+        if (!empty($updates)) {
+            $mail->fromArray($updates);
+        }
+
+        return $headers;
     }
 
     public function setContainer(Container $container)

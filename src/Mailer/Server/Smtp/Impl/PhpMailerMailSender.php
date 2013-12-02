@@ -2,7 +2,7 @@
 
 namespace Mailer\Server\Smtp\Impl;
 
-use Mailer\Model\SentMail;
+use Mailer\Model\Mail;
 use Mailer\Server\AbstractServer;
 use Mailer\Server\Smtp\MailSenderInterface;
 
@@ -50,7 +50,7 @@ class PhpMailerMailSender extends AbstractServer implements
         return $client;
     }
 
-    public function sendMail(SentMail $mail)
+    public function sendMail(Mail $mail, array $headers)
     {
         $client = $this->getClient();
 

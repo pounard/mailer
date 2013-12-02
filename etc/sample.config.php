@@ -7,7 +7,15 @@ return array(
             // Your site title
             'title' => "My webmail",
         ),
+        // Internal charset this software works from: you should never
+        // change this; But hey, do what the heck you want! I'm not your
+        // mother...
         'charset' => "UTF-8",
+        // Default timezone if there is no user override
+        'timezone' => 'Europe/Paris',
+        // If this is set to false the Useragent header won't be sent
+        // into new mails
+        'displayUserAgent' => true,
         // This is your default mail domain from which will give default
         // mail address for your users which did not configure their own
         // address
