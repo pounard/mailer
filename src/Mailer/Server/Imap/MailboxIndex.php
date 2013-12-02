@@ -185,22 +185,46 @@ class MailboxIndex
         $parts   = $mail->getStructure()->findPartAll('text');
         $charset = $this->index->getContainer()->getDefaultCharset();
         $updates = array();
+        $matches = array();
 
         foreach ($parts as $index => $part) {
 
-            $body = $this->index->getMailReader()->getPart(
-                $this->name,
-                $uid,
-                $index,
-                $part->getEncoding()
-            );
+            $body = $this
+                ->index
+                ->getMailReader()
+                ->getPart($this->name, $uid, $index, $part->getEncoding());
 
             if (!empty($body)) {
-                $updates[$part->getSubtype()][] = Charset::convert(
-                    $body,
-                    $part->getParameter('charset', "US-ASCII"),
-                    $charset
-                );
+
+                // Catch HTML documents internal encoding and switch it with
+                // the real one while we're converting it
+                if (preg_match('/charset=([^\s"]+)"/', $body, $matches)) {
+                    $from = $matches[1];
+                    // If we happen to change the encoding of an HTML document
+                    // we also need to change it into the document itself in
+                    // order for later document alterations using libxml to use
+                    // the correct encoding. I know the following is ugly like
+                    // hell and might case false positives, but until it does
+                    // not why the hell bother about it...
+                    if (strtolower($from) !== strtolower($charset)) {
+                        $body = str_replace(
+                            "charset=" . $from . "\"",
+                            "charset=" . $charset . "\"",
+                            $body
+                        );
+                    }
+                } else {
+                    $from = $part->getParameter('charset', null);
+                }
+                if (null === $from) {
+                    $from = "US-ASCII"; // Fallback to stupid
+                }
+
+                if (strtolower($charset) !== strtolower($from)) {
+                    $updates[$part->getSubtype()][] = Charset::convert($body, $from, $charset);
+                } else { // Avoid useless conversion
+                    $updates[$part->getSubtype()][] = $body;
+                }
             }
         }
 
@@ -208,7 +232,7 @@ class MailboxIndex
         foreach (array('plain', 'html') as $type) {
             if (!empty($updates[$type])) { 
                 foreach ($updates[$type] as $body) {
-                    $updates['summary'] = $this->index->bodyFilter($body, $type, true);
+                    $updates['summary'] = $this->index->bodyFilter($body, $type, $charset, true);
                 }
                 break; // No need to go further (chain of responsability)
             }
@@ -217,7 +241,7 @@ class MailboxIndex
         foreach (array('plain' => 'bodyPlain', 'html' => 'bodyHtml') as $type => $property) {
             if (isset($updates[$type])) {
                 foreach ($updates[$type] as $index => $body) {
-                    $updates[$type][$index] = $this->index->bodyFilter($body, $type);
+                    $updates[$type][$index] = $this->index->bodyFilter($body, $type, $charset);
                 }
                 $updates[$property] = $updates[$type];
                 unset($updates[$type]);

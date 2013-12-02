@@ -35,10 +35,10 @@ class FilterCollection implements FilterInterface
         $this->filters[] = $filter;
     }
 
-    public function filter($text)
+    public function filter($text, $charset = null)
     {
         foreach ($this->filters as $filter) {
-            $text = $filter->filter($text);
+            $text = $filter->filter($text, $charset);
         }
 
         return $text;

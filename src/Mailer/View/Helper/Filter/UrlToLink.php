@@ -12,7 +12,7 @@ use Mailer\View\Helper\FilterInterface;
  */
 class UrlToLink implements FilterInterface
 {
-    public function filter($text)
+    public function filter($text, $charset = null)
     {
         return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/[^()<>\s]+)#i', '\\1<a href="\\2">\\2</a>', $text);
     }

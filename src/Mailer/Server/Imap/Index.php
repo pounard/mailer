@@ -187,6 +187,8 @@ class Index extends AbstractContainerAware
      *   Input string
      * @param string $type
      *   Filter type ("plain" or "html")
+     * @param string $charset
+     *   Input charset
      * @param boolean $summary
      *   Set this to true if you need a summary
      * @param int $size
@@ -194,7 +196,7 @@ class Index extends AbstractContainerAware
      *
      * @return string
      */
-    public function bodyFilter($string, $type = 'plain', $summary = false, $size = 200)
+    public function bodyFilter($string, $type = 'plain', $charset = null, $summary = false, $size = 200)
     {
         if ($summary) {
             $type .= '2sum';
@@ -204,7 +206,7 @@ class Index extends AbstractContainerAware
             ->getContainer()
             ->getFilterFactory()
             ->getFilter($type)
-            ->filter($string);
+            ->filter($string, $charset);
 
         if ($summary && !empty($string)) {
             if ($size < strlen($string)) {

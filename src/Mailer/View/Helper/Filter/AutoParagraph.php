@@ -12,7 +12,7 @@ use Mailer\View\Helper\FilterInterface;
  */
 class AutoParagraph implements FilterInterface
 {
-    public function filter($text)
+    public function filter($text, $charset = null)
     {
         // All block level tags
         $block = '(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|p|h[1-6]|hr)';

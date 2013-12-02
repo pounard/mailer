@@ -17,7 +17,7 @@ if (!defined('ENT_DISALLOWED')) {
  */
 class HtmlEncode implements FilterInterface
 {
-    public function filter($text)
+    public function filter($text, $charset = null)
     {
         return htmlspecialchars(
             $text,

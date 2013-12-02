@@ -6,7 +6,7 @@ use Mailer\View\Helper\FilterInterface;
 
 class NullFilter implements FilterInterface
 {
-    public function filter($text)
+    public function filter($text, $charset = null)
     {
         return $text;
     }
