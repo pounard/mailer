@@ -322,34 +322,6 @@ class RcubeImapMailReader extends AbstractServer implements
             ->handlePartBody($name, $uid, true, null, null, null, null, true, $maxBytes);
     }
 
-    /**
-     * Generate a new message identifier
-     *
-     * @return string
-     */
-    private function generateMessageId()
-    {
-        $config = $this->getContainer()->getConfig();
-        $domain = $config['domain'];
-        $local  = md5(uniqid('rcube'.mt_rand(), true));
-
-        // This comment comes from Roundcube. Basically the whole algorithm
-        // in this function does: Try to find FQDN some spamfilters doesn't
-        // like 'localhost' (#1486924)
-        if (!preg_match('/\.[a-z]+$/i', $domain)) {
-            // Note from Mailer: this should hopefully never happen, domain
-            // should be configured in the config.php file
-            foreach (array($_SERVER['HTTP_HOST'], $_SERVER['SERVER_NAME']) as $host) {
-                $host = preg_replace('/:[0-9]+$/', '', $host);
-                if ($host && preg_match('/\.[a-z]+$/i', $host)) {
-                    $domain = $host;
-                }
-            }
-        }
-
-        return sprintf('<%s@%s>', $local, $domain);
-    }
-
     public function saveMail(Mail $mail, array $headers)
     {
         throw new \Mailer\Error\NotImplementedError();

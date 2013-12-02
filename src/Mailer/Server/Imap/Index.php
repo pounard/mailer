@@ -232,6 +232,13 @@ class Index extends AbstractContainerAware
     /**
      * Send mail
      *
+     * If no identity is set into the mail (from and organization fields)
+     * they will be added from the current logged in account. Note that
+     * organization will not be set if from is already set.
+     *
+     * The mail structure will be modified by adding all missing headers
+     * including user identity.
+     *
      * @param Mail $mail
      *   Mail to send
      * @param string $name
@@ -239,7 +246,8 @@ class Index extends AbstractContainerAware
      */
     public function sendMail(Mail $mail, $name = null)
     {
-        $config = $this->getContainer()->getConfig();
+        $config  = $this->getContainer()->getConfig();
+        $updates = array();
 
         if (null === $name) {
             $name = $config['mailboxes/sent'];
@@ -252,23 +260,57 @@ class Index extends AbstractContainerAware
                     ->getInternalContainer()
                     ->offsetGet('defaultAddress');
             }
-            $mail->fromArray(array(
-                'from' => Person::fromMailAddress(
-                    $config['identity/displayName'] . ' <' . $fromMail . '>'
-                ),
+            $account = new Person();
+            $account->fromArray(array(
+                'mail' => $fromMail,
+                'name' => $config['identity/displayName'],
             ));
+            $updates['from'] = $account;
+
+            if (!$mail->getOrganization()) {
+                if ($organization = $config['identity/organization']) {
+                    $updates['organization'] = $organization;
+                }
+            }
+        }
+
+        if (!empty($updates)) {
+            $mail->fromArray($updates);
         }
 
         $mailbox = $this->getMailboxIndex($name);
         $headers = $this->buildMailHeaders($mail);
 
-        // @todo There is some work to do here...
-        // Handling HTML mails etc...
-        $body = str_replace("\r\n", "\n", $mail->getBodyPlain());
-
         $this->sender->sendMail($mail, $headers);
-        // No exception happened up there? Yay, copy it.
         $this->reader->saveMail($mail, $headers);
+    }
+
+    /**
+     * Generate a new message identifier
+     *
+     * @return string
+     */
+    public function generateMessageId()
+    {
+        $config = $this->getContainer()->getConfig();
+        $domain = $config['domain'];
+        $local  = md5(uniqid('rcube'.mt_rand(), true));
+
+        // This comment comes from Roundcube. Basically the whole algorithm
+        // in this function does: Try to find FQDN some spamfilters doesn't
+        // like 'localhost' (#1486924)
+        if (!preg_match('/\.[a-z]+$/i', $domain)) {
+            // Note from Mailer: this should hopefully never happen, domain
+            // should be configured in the config.php file
+            foreach (array($_SERVER['HTTP_HOST'], $_SERVER['SERVER_NAME']) as $host) {
+                $host = preg_replace('/:[0-9]+$/', '', $host);
+                if ($host && preg_match('/\.[a-z]+$/i', $host)) {
+                    $domain = $host;
+                }
+            }
+        }
+
+        return sprintf('<%s@%s>', $local, $domain);
     }
 
     /**

@@ -13,6 +13,8 @@ use Mailer\Validator\EmailAddress;
 use Mailer\View\View;
 
 use Zend\Validator\Digits as DigitsValidator;
+use Mailer\Mime\Part;
+use Mailer\Mime\Multipart;
 
 class ComposeController extends AbstractController
 {
@@ -60,11 +62,20 @@ class ComposeController extends AbstractController
 
         if ($form->validate($values)) {
 
+            $multipart = new Multipart();
+
+            $part = new Part();
+            $part->setType('text');
+            $part->setSubtype('plain');
+            $part->setParameters(array('charset' => $request->getCharset()));
+            $part->setContents($values['body']);
+            $multipart->appendPart($part);
+
             $mail = new Mail();
             $mail->fromArray(array(
                 'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
                 'subject' => $values['subject'],
-                'bodyPlain' => $values['body'],
+                'structure' => $multipart,
             ));
 
             $this
