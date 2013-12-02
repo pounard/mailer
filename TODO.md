@@ -7,7 +7,7 @@
  *  Implement search
      *  Message indexing (Solr?)
  *  Better caching
-     *  <strike>Threads handling</strike>
+     *  <del>Threads handling</del>
      *  General bettter caching
  *  UI updates
      *  Polling for new mails
@@ -19,17 +19,22 @@
      *  Folders sorting (user choice)
  *  Mail sending
      *  SMTP connector
+         *  <del>Find a connector</del>
+         *  Copy the mail into IMAP while sending
      *  UI
-         *  Compose new mail
+         *  <del>Compose new mail</del>
+             *  Missing headers
+             *  Exposed encoding is wrong
          *  Answer to thread
+             *  Reply to
          *  Intelligent textarea
-             * Drag'n'drop files
-             * Formatting (markdown, custom?)
-             * Enable/disable typography fixer
+             *  Drag'n'drop files
+             *  Formatting (markdown, custom?)
+             *  Enable/disable typography fixer
      *  Content escaping
  *  Output filtering
-     *  <strike>Factory for filters</strike>
-     *  <strike>Configuration for factory</strike>
+     *  <del>Factory for filters</del>
+     *  <del>Configuration for factory</del>
      *  HTML security fixer
  *  Basic features
      * 	Copy mail
