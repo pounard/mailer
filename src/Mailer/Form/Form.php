@@ -82,11 +82,11 @@ class Form implements ElementInterface
             $element->addFilters($array['filters']);
         }
 
-        if (isset($array['default'])) {
+        if (array_key_exists('default', $array)) {
             $this->defaultValues[$array['name']] = $array['default'];
         }
 
-        if (isset($array['placeholder'])) {
+        if (array_key_exists('placeholder', $array)) {
             $this->placeholders[$array['name']] = $array['placeholder'];
         }
     }

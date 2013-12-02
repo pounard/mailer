@@ -29,7 +29,6 @@ class SettingsController extends AbstractController
         ));
         $form->addElement(array(
             'name'        => 'organization',
-            'validators'  => new EmailAddress(),
             'default'     => $config['identity/organization'],
             'placeholder' => "No organization",
         ));
