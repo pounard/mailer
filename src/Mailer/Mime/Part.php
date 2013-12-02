@@ -404,7 +404,7 @@ class Part extends AbstractPart
         } else if (is_resource($this->contents)) {
             return stream_get_contents($this->contents);
         } else if (is_string($this->contents)) {
-            return $contents;
+            return $this->contents;
         } else {
             return false;
        }
