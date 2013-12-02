@@ -121,4 +121,11 @@ interface RequestInterface
      * @return string
      */
     public function getVariant();
+
+    /**
+     * Get input charset
+     *
+     * @return string
+     */
+    public function getCharset();
 }
