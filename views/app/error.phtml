@@ -1,7 +1,4 @@
 <h1>Error</h1>
-<?php if (isset($e) && $e instanceof \Exception): ?>
-<h2>Message was: <?php echo $e->getMessage(); ?></h2>
-<pre class="error"><?php echo $e->getTraceAsString(); ?></pre>
-<?php else: ?>
-<pre class="debug"><?php echo print_r($content); ?></pre>
-<?php endif; ?>
+<h2>Message was: <?php echo $message; ?></h2>
+<h3>Code was <?php echo $code; ?></h3>
+<pre class="error"><?php echo $trace; ?></pre>

@@ -20,6 +20,11 @@ class ErrorView extends View
     private $code;
 
     /**
+     * @var string
+     */
+    private $trace;
+
+    /**
      * Default constructor
      *
      * @param int|string|Exception $exception
@@ -35,12 +40,14 @@ class ErrorView extends View
         } else if ($exception instanceof \Exception) {
             $this->code = $exception->getCode();
             $this->message = $exception->getMessage();
+            $this->trace = $exception->getTraceAsString(); // @todo Only in debug mode
         }
 
         parent::__construct(array(
             'code' => $this->code,
             'message' => $this->message,
             'exception' => $this->exception,
+            'trace' => $this->trace,
         ), 'app/error');
     }
 }
