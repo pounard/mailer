@@ -277,7 +277,7 @@ class Envelope extends AbstractItem
         $this->bcc          = $array['bcc'];
         $this->encoding     = $array['encoding'];
         $this->charset      = $array['charset'];
-        $this->priority     = (int)$priority;
+        $this->priority     = (int)$array['priority'];
         $this->organization = $array['organization'];
         $this->messageId    = $array['messageId'];
         $this->references   = $array['references'];
