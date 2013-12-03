@@ -45,6 +45,7 @@ class Multipart extends AbstractPart implements
                 // i.e. MIXED, DIGEST, PARALLEL, ALTERNATIVE, ...
                 // @todo But it could be not present (is that valid?)
                 if (isset($part)) {
+                    $this->setType("multipart");
                     $instance->setSubtype(strtolower((string)$part));
                 }
 
@@ -104,6 +105,11 @@ class Multipart extends AbstractPart implements
     }
 
     /**
+     * @var string
+     */
+    protected $boundary;
+
+    /**
      * @var boolean
      */
     protected $multipart = true;
@@ -129,15 +135,30 @@ class Multipart extends AbstractPart implements
     protected $bodyDispositionAttributes = array();
 
     /**
-     * Get type
+     * Set boundary
      *
-     * Pass-throught to PassInterface::getType() method
+     * @param string $boundary
+     */
+    public function setBoundary($boundary)
+    {
+        $this->boundary = $boundary;
+    }
+
+    /**
+     * Generate boundary string
      *
      * @return string
      */
-    public function getType()
+    public function getBoundary()
     {
-        return 'multipart';
+        if (null === $this->boundary) {
+            // Let's generate something time based and random
+            // This is stupid enought to be usable I guess
+            // NextPart string is a tribute to Materiel.net
+            $this->boundary = "----=_NextPart_" . str_replace(".", "_", $this->getIndex()) . "_" . microtime(true);
+        }
+
+        return $this->boundary;
     }
 
     /**
@@ -345,5 +366,74 @@ class Multipart extends AbstractPart implements
     public function getIterator()
     {
         return new \ArrayIterator($this->parts);
+    }
+
+    public function writeEncodedMime($output, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
+    {
+        $opened = false;
+
+        if (!is_resource($output)) {
+            if (false === ($output = fopen($output, "w"))) {
+                throw new \RuntimeException(sprintf("Could not open '%s' for writing", $output));
+            }
+            $opened = true;
+        }
+
+        try {
+            if ($setMimeVersion) {
+                $this->writeLineToStream($output, "MIME-Version: 1.0", $lf);
+            } else {
+                // This means we actually are a recursive part; Case in which
+                // we will add an empty line between previous boundary close
+                // and the new one
+                $this->writeLineToStream($output, "", $lf);
+            }
+
+            if ($this->isMultipart()) {
+
+                if (null === $this->type) {
+                    $this->setType("multipart");
+                }
+                if (null === $this->subtype) {
+                    $this->setSubtype("mixed");
+                }
+
+                foreach ($this->buildHeaders($setMimeVersion) as $name => $value) {
+                    $this->writeLineToStream($output, $name . ": " . $value, $lf);
+                }
+
+                // Means we are first; Do not write this when not multipart
+                if ($setMimeVersion) {
+                    $this->writeLineToStream($output, "", $lf);
+                    $this->writeLineToStream($output, "This is a multi-part message in MIME format.", $lf);
+                    $this->writeLineToStream($output, "", $lf);
+                }
+            }
+
+            // If not multipart there should be only part but let's write
+            // all anyway (we are not responsible for dumb users)
+            foreach ($this->parts as $part) {
+                $this->writeLineToStream($output, "--" . $this->getBoundary(), $lf);
+                $part->writeEncodedMime($output, $lf, false);
+            }
+
+            if (!empty($this->parts)) {
+                // Rewrite the boundary one last time prefixed with -- with
+                // no line ending (this would be both invalid and useless)
+                $this->writeToStream($output, "--" . $this->getBoundary() . "--");
+            }
+
+            if ($opened) {
+                return fclose($output);
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            if ($opened) { 
+                fclose($output);
+            }
+            throw $e;
+        }
     }
 }

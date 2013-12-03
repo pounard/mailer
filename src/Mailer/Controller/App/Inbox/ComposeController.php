@@ -83,6 +83,14 @@ class ComposeController extends AbstractController
                 ->getIndex()
                 ->sendMail($mail);
 
+            $part->setEncoding(Part::ENCODING_BASE64);
+            $multipart->writeEncodedMime("/tmp/testmail");
+
+            $messager = $this
+                ->getContainer()
+                ->getMessager()
+                ->addMessage("Mail write into " . $name, Message::TYPE_SUCCESS);
+
             $messager = $this
                 ->getContainer()
                 ->getMessager()

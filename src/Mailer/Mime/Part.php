@@ -18,6 +18,26 @@ class Part extends AbstractPart
     const INDEX_SEPARATOR = '.';
 
     /**
+     * Default line ending
+     */
+    const DEFAULT_LINE_ENDING = "\r\n";
+
+    /**
+     * Base 64
+     */
+    const ENCODING_BASE64 = "base64";
+
+    /**
+     * Quoted printable
+     */
+    const ENCODING_QUOTEDPRINTABLE = "quoted-printable";
+
+    /**
+     * UUEncode
+     */
+    const ENCODING_UUENCODE = "uuencode";
+
+    /**
      * Parse parameters list as an hashmap
      *
      * @param array $list
@@ -160,6 +180,29 @@ class Part extends AbstractPart
      * @var int
      */
     protected $size;
+
+    /**
+     * If content is a string we need to desambiguate if it is raw
+     * contents or an URI; All other cases this won't be used
+     *
+     * @var boolean
+     */
+    protected $isUri = false;
+
+    /**
+     * Tell if the source data is encoded
+     *
+     * @var boolean
+     */
+    protected $isEncoded = false;
+
+    /**
+     * Content line feed if known; This useful only when
+     * content is already encoded in source
+     *
+     * @var string
+     */
+    protected $contentLf = null;
 
     /**
      * @var string
@@ -348,12 +391,49 @@ class Part extends AbstractPart
     }
 
     /**
+     * Tell if the given content is an URI
+     *
+     * @return boolean
+     */
+    public function contentIsUri()
+    {
+        return $this->isUri;
+    }
+
+    /**
+     * Tell if the given content is encoded
+     *
+     * @return boolean
+     */
+    public function contentIsEncoded()
+    {
+        return $this->isEncoded;
+    }
+
+    /**
      * Set contents
      *
      * @param resource|callback|string $contents
+     * @param boolean $isEncoded
+     *   If the source data is encoded set this to true
+     * @param boolean $isUri
+     *   If the given content is a string it will be used as an URI; In all
+     *   other cases this parameter will be ignored
+     * @param string $lf
+     *   If you already know by advance the encoded content line feed char(s)
+     *   then write it here, it might save us time by not adding an additional
+     *   stream filter when writing back the encoded content
      */
-    public function setContents($contents)
+    public function setContents($contents, $isEncoded = false, $isUri = false, $lf = null)
     {
+        $this->isUri = false;
+
+        if ($this->isEncoded = $isEncoded) {
+            $this->contentLf = $lf;
+        } else {
+            $this->contentLf = null;
+        }
+
         if (null === $contents) {
             $this->contents = null;
         } else if (is_callable($contents)) {
@@ -361,6 +441,7 @@ class Part extends AbstractPart
         } else if (is_resource($contents)) {
             $this->contents = $contents;
         } else if (is_string($contents)) {
+            $this->isUri = $isUri;
             $this->contents = $contents;
         } else {
             throw new \InvalidArgumentException("Contents must be either null, callable, string or resource");
@@ -372,23 +453,182 @@ class Part extends AbstractPart
      *
      * @return resource|callback|string
      *   Content value, empty string is a valid value, null must be treated
-     *   as a valid empty string while false means there was an error while
-     *   fetching content
+     *   as a valid empty string while false means there was an error anywhere
+     *   during the process of creating this instance and content cannot be
+     *   fetched
      */
     public function getContents()
     {
-        // This could be skipped and returned implictely but it makes
-        // it more readable this way: strict false means there was an
-        // error while fetching the content, which any other case such
-        // as an empty string is a valid content
-        if (false === $this->contents) {
-            return false;
-        }
         return $this->contents;
     }
 
     /**
+     * Get content stream
+     *
+     * The given stream will be in its current state if it cannot be
+     * rewinded; Be aware you are slave of the code that set the content.
+     *
+     * @param boolean $decoded
+     *   Set this to false if you need encoded stream
+     * @param string $lf
+     *   Line endings to use if you asked for encoded contents; If content
+     *   is decoded this parameter will be ignored. If set to null no
+     *   conversion will be done
+     *
+     * @return resource
+     */
+    public function getContentStream($decoded = true, $lf = null)
+    {
+        // @todo Encode and write content at the same time with
+        // a PHP stream filter
+        if (!$decoded && null === $this->encoding) {
+            // We don't have an encoding we therefore need to check for
+            // one; This is supposed to happen only when this part has
+            // been pragmatically created and not fetched from an external
+            // server (IMAP, SMTP)
+        }
+
+        if (null === $this->contents) {
+            // Nothing to stream! Return a null stream implementation
+            // without any content there
+            return fopen("data://text/plain,", "rb");
+
+        } else if (false === $this->contents) {
+            throw new \RuntimeException("Content is false, an error happened sooner");
+
+        } else if (is_string($this->contents)) {
+            if ($this->isUri) {
+                if (false === ($resource = fopen($this->contents, "rb"))) {
+                    throw new \RuntimeException(sprintf("Could not open file '%s'", $this->contents));
+                }
+            } else {
+                // Using this hack will ensure that if PHP goes out of
+                // memory it will start pushing data into TMP files
+                // instead
+                $resource = fopen('php://memory','r+');
+                fwrite($resource, $this->contents);
+                rewind($resource);
+            }
+        } else if (is_resource($this->contents)) {
+            $resource = $this->contents;
+            rewind($resource);
+        }
+
+        if ($decoded) {
+            if ($this->isEncoded) {
+                // Stream filter to decode: here we will consider the
+                // decoded data being binary and we won't convert any line
+                // ending
+                $filter = null;
+
+                switch ($this->encoding) {
+
+                    case self::ENCODING_BASE64:
+                        $filter = "convert.base64-decode";
+                        break;
+
+                    case self::ENCODING_QUOTEDPRINTABLE:
+                        $filter = "convert.quoted-printable-decode";
+                        break;
+
+                    /*
+                    case self::ENCODING_UUENCODE:
+                    case "x-uuencode":
+                    case "x-uue":
+                    case "uue":
+                        $filter = "convert.uudecode";
+                        break;
+
+                    case "": // 7BIT
+                        $filter = "";
+                        break;
+
+                    case "": // 8BIT
+                        $filter = "";
+                        break;
+
+                    case "": // BINARY
+                        $filter = "";
+                        break;
+                     */
+
+                    default:
+                        trigger_error(sprintf("Encoding '%s' not supported, doing nothing", $this->encoding), E_USER_WARNING);
+                        break;
+                }
+
+                if (null !== $filter) {
+                    $params = array(
+                        'line-length' => 77,
+                        'line-break-chars' => null === $lf ? $lf : "\n"
+                    );
+                    stream_filter_append($resource, $filter, null, $params);
+                }
+            }
+        } else {
+            if ($this->isEncoded) {
+                if (null !== $lf && $lf !== $this->contentLf) {
+                    // @todo
+                    // We don't need to encode but we need to take care of
+                    // line endings conversion
+                }
+            } else {
+                $filter = null;
+
+                switch ($this->encoding) {
+
+                    case self::ENCODING_BASE64:
+                        $filter = "convert.base64-encode";
+                        break;
+
+                    case self::ENCODING_QUOTEDPRINTABLE:
+                        $filter = "convert.quoted-printable-encode";
+                        break;
+
+                    /*
+                    case self::ENCODING_UUENCODE:
+                    case "x-uuencode":
+                    case "x-uue":
+                    case "uue":
+                        $filter = "convert.uudecode";
+                        break;
+
+                    case "": // 7BIT
+                        $filter = "";
+                        break;
+
+                    case "": // 8BIT
+                        $filter = "";
+                        break;
+
+                    case "": // BINARY
+                        $filter = "";
+                        break;
+                     */
+
+                    default:
+                        trigger_error(sprintf("Encoding '%s' not supported, doing nothing", $this->encoding), E_USER_WARNING);
+                        break;
+                }
+
+                if (null !== $filter) {
+                    $params = array(
+                        'line-length' => 77,
+                        'line-break-chars' => null === $lf ? $lf : "\n"
+                    );
+                    stream_filter_append($resource, $filter, null, $params);
+                }
+            }
+        }
+
+        return $resource;
+    }
+
+    /**
      * Use the given content information and return the real content
+     *
+     * Using this seems dumb for files; It's up to you if you want to
+     * pollute your memory or not.
      *
      * @return string
      *   If false then an error happened, if null there is no content
@@ -404,9 +644,63 @@ class Part extends AbstractPart
         } else if (is_resource($this->contents)) {
             return stream_get_contents($this->contents);
         } else if (is_string($this->contents)) {
-            return $this->contents;
+            if ($this->isUri) {
+                return file_get_contents($this->contents);
+            } else {
+                return $this->contents;
+            }
         } else {
             return false;
-       }
+        }
+    }
+
+    public function writeEncodedMime($output, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
+    {
+        $opened = false;
+
+        if (!is_resource($output)) {
+            if (false === ($output = fopen($output, "w"))) {
+                throw new \RuntimeException(sprintf("Could not open '%s' for writing", $output));
+            }
+            $opened = true;
+        }
+
+        try {
+            if ($setMimeVersion) {
+                $this->writeLineToStream($output, "MIME-Version: 1.0", $lf);
+            }
+
+            $headers = $this->buildHeaders(false, $this->encoding, $this->getParameter("charset"));
+            foreach ($headers as $name => $value) {
+                $this->writeLineToStream($output, $name . ": " . $value, $lf);
+            }
+
+            // And yes we also are going to stream string contents because
+            // we can mutualize code this way: small contents won't hurt
+            // performances and big contents surely will benefit from being
+            // treated as a stream
+            $this->writeLineToStream($output, "", $lf);
+            $input = $this->getContentStream(false, $lf);
+
+            // Plug both streams and send until the input ending
+            if (0 !== stream_copy_to_stream($input, $output)) {
+                // Add an empty line right at the end: first ends the
+                // encoded text; Second add an empty line for fun
+                $this->writeLineToStream($output, "", $lf);
+                $this->writeLineToStream($output, "", $lf);
+            }
+
+            if ($opened) {
+                return fclose($output);
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            if ($opened) {
+                fclose($output);
+            }
+            throw $e;
+        }
     }
 }
