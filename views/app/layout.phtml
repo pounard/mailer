@@ -9,6 +9,7 @@
 <script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery.autosize-1.18.1.min.js"></script>
 <script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery.form-20131121.min.js"></script>
+<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery-magitext.js"></script>
 <script type="text/javascript" src="<?php echo $basepath; ?>asset/js/moment-2.4.0.min.js"></script>
 <script type="text/javascript" src="<?php echo $basepath; ?>asset/js/mustache-0.7.3.min.js"></script>
 <!-- Devel mode, later aggregate it -->
@@ -49,12 +50,15 @@
 </div>
 <script type="text/javascript">
 //<![CDATA[
-$(document).ready(function() {
-  $("textarea").autosize();
-  $("#messages").on("click", function () {
-    $("#messages").slideUp();
+(function (document, $) {
+  "use strict";
+  $(document).ready(function() {
+    $("textarea").autosize();
+    $("#messages").on("click", function () {
+      $("#messages").slideUp();
+    });
   });
-});
+}(document, jQuery));
 //]]>
 </script>
 </body>

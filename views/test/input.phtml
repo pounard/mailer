@@ -1,0 +1,56 @@
+<h1>Textbox test</h1>
+<div>
+  <form id="compose-full">
+    <fieldset>
+      <div class="field">
+        <label for="randomText">Random text</label>
+        <div class="control">
+          <div id="randomText" title="Le 13 octobre 1916, Toto a dit">
+            <p>
+              Nullam malesuada venenatis nunc, vel ultricies tortor luctus sit
+              amet. Nam mollis, arcu eu porttitor adipiscing, ante mi
+              condimentum mi, malesuada hendrerit erat risus sit amet
+              tortor. Proin adipiscing magna vel sagittis feugiat. Phasellus
+              congue placerat varius.
+            </p>
+            <p>
+              Cras cursus dui ut magna faucibus, nec malesuada turpis vehicula.
+              Sed non tortor a est porttitor fermentum.<br/>
+              Curabitur viverra at lectus in iaculis. Vestibulum ante ipsum
+              primis in faucibus orci luctus et ultrices posuere cubilia Curae;
+              Praesent ac placerat orci. Aliquam sagittis vehicula mi, non
+              placerat metus ornare vel.
+           </p>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <div class="actions">
+            <button class="quote" rel="randomText">
+              Quote
+            </button>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="inputTest">Input test</label>
+        <div class="control">
+          <textarea name="inputTest" class="default"></textarea>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+(function (document, $) {
+  "use strict";
+  $(document).ready(function() {
+    $("textarea[name=inputTest]").magicTextarea();
+    $("button.quote").magicQuoteButton();
+  });
+}(document, jQuery));
+//]]>
+</script>
