@@ -120,6 +120,22 @@ interface MailReaderInterface extends ServerInterface
     public function getMailSource($name, $uid, $charset = null, $maxBytes = 0);
 
     /**
+     * Save mail
+     *
+     * @param Mail $mail
+     *   Mail the user can and has edited
+     *,@param string[] $headers
+     *   Because we want the backend to be the simplest possible in order to
+     *   be easy to swap out, and because we want the headers to be built in
+     *   a reproductible manner, the upper layer will give you this one you
+     *   lucky guy!
+     *
+     * @return Mail
+     *   The new mail being saved
+     */
+    public function saveMail(Mail $mail, array $headers);
+
+    /**
      * Flag or unflag a mail
      *
      * @param int $uid

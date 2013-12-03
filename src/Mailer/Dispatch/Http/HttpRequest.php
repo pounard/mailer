@@ -53,6 +53,8 @@ class HttpRequest extends DefaultRequest
     static public function createFromGlobals()
     {
         $content = null;
+        $charset = "UTF-8"; // FIXME
+        $contentType = null;
 
         if (isset($_SERVER['CONTENT_TYPE'])) {
             $contentType = $_SERVER['CONTENT_TYPE'];
@@ -104,6 +106,7 @@ class HttpRequest extends DefaultRequest
 
         $request = new self($_GET['resource'], $content, $_GET, $method, $variant);
         $request->setInputContentType($contentType);
+        $request->setCharset($charset);
 
         return $request;
     }

@@ -322,6 +322,11 @@ class RcubeImapMailReader extends AbstractServer implements
             ->handlePartBody($name, $uid, true, null, null, null, null, true, $maxBytes);
     }
 
+    public function saveMail(Mail $mail, array $headers)
+    {
+        throw new \Mailer\Error\NotImplementedError();
+    }
+
     public function flagMail($name, $uid, $flag, $toggle = true)
     {
         $client = $this->getClient();

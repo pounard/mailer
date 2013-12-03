@@ -13,6 +13,10 @@ class Envelope extends AbstractItem
 
     protected $charset = null;
 
+    protected $priority = null;
+
+    protected $organization = "";
+
     protected $encoding = null;
 
     protected $messageId = '';
@@ -78,6 +82,52 @@ class Envelope extends AbstractItem
     public function getCharset()
     {
         return $this->charset;
+    }
+
+    /**
+     * Get priority
+     *
+     * @return int
+     *   Int between 0 and 5, 3 being the normal priority
+     */
+    public function getPriority()
+    {
+       return $this->priority;
+    }
+
+    /**
+     * Get priority header string
+     *
+     * @return string
+     */
+    public function getPriorityHeaderString()
+    {
+        if (null !== $this->priority) {
+            switch ($this->priority) { // @todo Move this out into constants or static method
+
+                case 1:
+                    return "1 (Highest)";
+
+                case 2:
+                    return "2 (High)";
+
+                case 4:
+                    return "4 (Low)";
+
+                case 5:
+                    return "5 (Lowest)";
+            }
+        }
+    }
+
+    /**
+     * Get organization
+     *
+     * @return string
+     */
+    public function getOrganization()
+    {
+        return $this->organization;
     }
 
     /**
@@ -198,20 +248,22 @@ class Envelope extends AbstractItem
     public function toArray()
     {
         return parent::toArray() + array(
-            'cc'         => $this->cc,
-            'bcc'        => $this->bcc,
-            'encoding'   => $this->encoding,
-            'charset'    => $this->charset,
-            'messageId'  => $this->messageId,
-            'references' => $this->references,
-            'replyTo'    => $this->replyTo,
-            'inReplyTo'  => $this->inReplyTo,
-            'size'       => $this->size,
-            'seq'        => $this->seq,
-            'isRecent'   => $this->isRecent,
-            'isAnswered' => $this->isAnswered,
-            'isSeen'     => $this->isSeen,
-            'isDraft'    => $this->isDraft,
+            'cc'           => $this->cc,
+            'bcc'          => $this->bcc,
+            'encoding'     => $this->encoding,
+            'charset'      => $this->charset,
+            'priority'     => $this->priority,
+            'organization' => $this->organization,
+            'messageId'    => $this->messageId,
+            'references'   => $this->references,
+            'replyTo'      => $this->replyTo,
+            'inReplyTo'    => $this->inReplyTo,
+            'size'         => $this->size,
+            'seq'          => $this->seq,
+            'isRecent'     => $this->isRecent,
+            'isAnswered'   => $this->isAnswered,
+            'isSeen'       => $this->isSeen,
+            'isDraft'      => $this->isDraft,
         );
     }
 
@@ -221,19 +273,21 @@ class Envelope extends AbstractItem
 
         parent::fromArray($array);
 
-        $this->cc         = $array['cc'];
-        $this->bcc        = $array['bcc'];
-        $this->encoding   = $array['encoding'];
-        $this->charset    = $array['charset'];
-        $this->messageId  = $array['messageId'];
-        $this->references = $array['references'];
-        $this->replyTo    = $array['replyTo'];
-        $this->inReplyTo  = $array['inReplyTo'];
-        $this->size       = (int)$array['size'];
-        $this->seq        = (int)$array['seq'];
-        $this->isRecent   = (bool)$array['isRecent'];
-        $this->isAnswered = (bool)$array['isAnswered'];
-        $this->isSeen     = (bool)$array['isSeen'];
-        $this->isDraft    = (bool)$array['isDraft'];
+        $this->cc           = $array['cc'];
+        $this->bcc          = $array['bcc'];
+        $this->encoding     = $array['encoding'];
+        $this->charset      = $array['charset'];
+        $this->priority     = (int)$array['priority'];
+        $this->organization = $array['organization'];
+        $this->messageId    = $array['messageId'];
+        $this->references   = $array['references'];
+        $this->replyTo      = $array['replyTo'];
+        $this->inReplyTo    = $array['inReplyTo'];
+        $this->size         = (int)$array['size'];
+        $this->seq          = (int)$array['seq'];
+        $this->isRecent     = (bool)$array['isRecent'];
+        $this->isAnswered   = (bool)$array['isAnswered'];
+        $this->isSeen       = (bool)$array['isSeen'];
+        $this->isDraft      = (bool)$array['isDraft'];
     }
 }

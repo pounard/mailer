@@ -7,12 +7,14 @@ use Mailer\Core\Message;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
 use Mailer\Form\Form;
+use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Model\SentMail;
 use Mailer\Validator\EmailAddress;
 use Mailer\View\View;
 
 use Zend\Validator\Digits as DigitsValidator;
+use Mailer\Mime\Part;
+use Mailer\Mime\Multipart;
 
 class ComposeController extends AbstractController
 {
@@ -60,11 +62,20 @@ class ComposeController extends AbstractController
 
         if ($form->validate($values)) {
 
-            $mail = new SentMail();
+            $multipart = new Multipart();
+
+            $part = new Part();
+            $part->setType('text');
+            $part->setSubtype('plain');
+            $part->setParameters(array('charset' => $request->getCharset()));
+            $part->setContents($values['body']);
+            $multipart->appendPart($part);
+
+            $mail = new Mail();
             $mail->fromArray(array(
                 'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
                 'subject' => $values['subject'],
-                'bodyPlain' => $values['body'],
+                'structure' => $multipart,
             ));
 
             $this

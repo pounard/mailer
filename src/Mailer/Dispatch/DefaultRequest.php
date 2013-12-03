@@ -40,6 +40,11 @@ class DefaultRequest implements RequestInterface
     protected $variant;
 
     /**
+     * @var string
+     */
+    protected $charset;
+
+    /**
      * Default constructor
      *
      * @param string $path
@@ -133,5 +138,15 @@ class DefaultRequest implements RequestInterface
     public function getVariant()
     {
         return $this->variant;
+    }
+
+    public function setCharset($charset)
+    {
+        $this->charset = $charset;
+    }
+
+    public function getCharset()
+    {
+        return $this->charset;
     }
 }

@@ -2,7 +2,10 @@
 
 namespace Mailer\Server\Smtp\Impl;
 
-use Mailer\Model\SentMail;
+use Mailer\Mime\AbstractPart;
+use Mailer\Mime\Multipart;
+use Mailer\Mime\Part;
+use Mailer\Model\Mail;
 use Mailer\Server\AbstractServer;
 use Mailer\Server\Smtp\MailSenderInterface;
 
@@ -50,7 +53,68 @@ class PhpMailerMailSender extends AbstractServer implements
         return $client;
     }
 
-    public function sendMail(SentMail $mail)
+    private function parseStructure(\PHPMailer $client, AbstractPart $part)
+    {
+        $charset = null;
+
+        if ($part instanceof Multipart) {
+            foreach ($part as $child) {
+                $this->parseStructure($client, $child);
+            }
+        } else if ($part instanceof Part) {
+
+            $charset = $part->getParameter('charset');
+
+            switch ($part->getType()) {
+
+                case 'text':
+                    switch ($part->getSubtype()) {
+
+                        case 'plain':
+                            if ($client->isHTML()) {
+                                if (empty($client->AltBody)) {
+                                     $client->AltBody = $part->getContentsReal();
+                                } // Else sorry but this sender allows only one body
+                            } else {
+                                if (empty($client->Body)) {
+                                    $client->Body = $part->getContentsReal();
+                                } // Else sorry but this sender allows only one body
+                            }
+                            break;
+
+                        case 'html';
+                            if ('text/html' === $client->ContentType) {
+                                if (empty($client->Body)) {
+                                    $client->Body = $part->getContentsReal();
+                                } // Else sorry but this sender allows only one body
+                            } else {
+                                // Moves out current body and put into AltBody
+                                if (!empty($client->Body)) {
+                                    $client->AltBody = $client->Body;
+                                }
+                                $client->Body = $part->getContentsReal();
+                                $client->isHTML(true);
+                            }
+                            break;
+
+                        default:
+                            // @todo What to do with this?
+                    }
+                    break;
+
+                default:
+                    // Consider all other parts as file attachements
+                    // @todo
+                    break;
+            }
+        }
+
+        if (empty($client->CharSet) && null !== $charset) {
+            $client->CharSet = $charset;
+        }
+    }
+
+    public function sendMail(Mail $mail, array $headers)
     {
         $client = $this->getClient();
 
@@ -86,12 +150,11 @@ class PhpMailerMailSender extends AbstractServer implements
         foreach ($mail->getBcc() as $person) {
             $client->addBCC($person->getMail(), $person->getDisplayName());
         }
-        foreach ($mail->getAttachements() as $filename) {
-            $client->addAttachment($filename);
-        }
-        $client->isHTML(false);
         $client->Subject = $mail->getSubject();
-        $client->Body = $mail->getBodyPlain();
+
+        if ($structure = $mail->getStructure()) {
+            $this->parseStructure($client, $structure);
+        }
 
         $client->send();
     }
