@@ -349,41 +349,45 @@ class Index extends AbstractContainerAware
         $headers['Date'] = $date->format('r');
         $headers['From'] = $mail->getFrom()->getCompleteMail();
 
-        if ($to = $mail->getTo()) {
+        if ($to = $mail->getTo()) { // Mail addresses
             $headers['To'] = implode(", ", $mail->getTo());
         } else {
             $headers['To'] = "undisclosed-recipients:;";
         }
-        if ($cc = $mail->getCc()) {
+        if ($cc = $mail->getCc()) { // Mail addresses
             $headers['Cc'] = implode(", ", $cc);
         }
-        if ($bcc = $mail->getBcc()) {
+        if ($bcc = $mail->getBcc()) { // Mail addresses
             $headers['Bcc'] = implode(", ", $bcc);
         }
 
         $headers['Subject'] = trim($mail->getSubject());
 
-        /*
-        if (!empty($identity_arr['organization'])) {
-          $headers['Organization'] = $identity_arr['organization'];
+        if ($organization = $mail->getOrganization()) {
+          $headers['Organization'] = $organization;
         }
-        if (!empty($_POST['_replyto'])) {
-          $headers['Reply-To'] = rcmail_email_input_format(get_input_value('_replyto', RCUBE_INPUT_POST, TRUE, $message_charset));
+        if ($replyTo = $mail->getReplyTo()) { // Mail addresses
+          $headers['Reply-To'] = $replyTo;
         }
-        if (!empty($headers['Reply-To'])) {
+        if (!empty($headers['Reply-To'])) { // Mail addresses
           $headers['Mail-Reply-To'] = $headers['Reply-To'];
         }
-        if (!empty($_POST['_followupto'])) {
+        /*
+        if (!empty($_POST['_followupto'])) { // Mail addresses
           $headers['Mail-Followup-To'] = rcmail_email_input_format(get_input_value('_followupto', RCUBE_INPUT_POST, TRUE, $message_charset));
         }
+         */
 
         /*
+        // A dawn good idea from Rouncube:
         // remember reply/forward UIDs in special headers
         if (!empty($COMPOSE['reply_uid']) && $savedraft) {
-          $headers['X-Draft-Info'] = array('type' => 'reply', 'uid' => $COMPOSE['reply_uid']);
-        }
-        else if (!empty($COMPOSE['forward_uid']) && $savedraft) {
+            $headers['X-Draft-Info'] = array('type' => 'reply', 'uid' => $COMPOSE['reply_uid']);
+        } else if (!empty($COMPOSE['forward_uid']) && $savedraft) {
           $headers['X-Draft-Info'] = array('type' => 'forward', 'uid' => $COMPOSE['forward_uid']);
+        }
+        if (is_array($headers['X-Draft-Info'])) {
+          $headers['X-Draft-Info'] = rcmail_draftinfo_encode($headers['X-Draft-Info'] + array('folder' => $COMPOSE['mailbox']));
         }
          */
 
@@ -407,11 +411,6 @@ class Index extends AbstractContainerAware
         $headers['Message-ID'] = $messageId;
         $headers['X-Sender']   = $mail->getFrom()->getCompleteMail();
 
-        /*
-        if (is_array($headers['X-Draft-Info'])) {
-          $headers['X-Draft-Info'] = rcmail_draftinfo_encode($headers['X-Draft-Info'] + array('folder' => $COMPOSE['mailbox']));
-        }
-         */
         if ($config['displayUserAgent']) {
             $headers['User-Agent'] = $config['useragent'];
         }
