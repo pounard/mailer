@@ -50,7 +50,7 @@ class MailController extends AbstractController
         }
     }
 
-    public function deleteAction($request, $args)
+    public function deleteAction(RequestInterface $request, array $args)
     {
         switch (count($args)) {
 

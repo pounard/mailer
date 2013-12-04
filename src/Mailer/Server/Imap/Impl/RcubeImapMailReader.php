@@ -378,7 +378,9 @@ class RcubeImapMailReader extends AbstractServer implements
 
     public function moveMail($name, $uid, $destName)
     {
-        $this->getClient()->move(array($uid), $name, $destName);
+        if (false === @$this->getClient()->move(array($uid), $name, $destName)) {
+            throw new LogicError(sprintf("IMAP error: %d %s", $client->errornum, $client->error));
+        }
     }
 
     public function deleteMail($name, $uid)
