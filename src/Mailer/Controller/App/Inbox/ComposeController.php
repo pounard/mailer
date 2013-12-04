@@ -69,6 +69,7 @@ class ComposeController extends AbstractController
             $part->setSubtype('plain');
             $part->setParameters(array('charset' => $request->getCharset()));
             $part->setContents($values['body']);
+            $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
             $multipart->appendPart($part);
 
             $mail = new Mail();

@@ -6,6 +6,7 @@ use Mailer\Core\AbstractContainerAware;
 use Mailer\Core\Container;
 use Mailer\Core\ContainerAwareInterface;
 use Mailer\Error\NotImplementedError;
+use Mailer\Mime\Part;
 use Mailer\Model\Envelope;
 use Mailer\Model\Folder;
 use Mailer\Model\Mail;
@@ -281,8 +282,20 @@ class Index extends AbstractContainerAware
         $mailbox = $this->getMailboxIndex($name);
         $headers = $this->buildMailHeaders($mail);
 
-        $this->sender->sendMail($mail, $headers);
+        if (false === ($resource = tmpfile())) {
+            throw new \Exception("Cannot create temporary file");
+        }
+        $lineEnding = Part::DEFAULT_LINE_ENDING;
+        foreach ($headers as $name => $value) {
+            fwrite($resource, $name . ": " . $value . $lineEnding);
+        }
+        $mimeEncoded = $mail->getStructure()->writeEncodedMime($resource);
+        rewind($resource);
+
+        // Save before sending to ensure that the user can edit back his
+        // mail if something wrong happened
         $this->reader->saveMail($mail, $headers);
+        $this->sender->sendMail($mail, $headers);
     }
 
     /**
@@ -316,6 +329,8 @@ class Index extends AbstractContainerAware
     /**
      * Build mail headers from what's inside and add missing considering
      * we are supposdly sending or editing this mail ourselves
+     *
+     * @todo Encore headers with special chars
      *
      * @param Envelope $mail
      *

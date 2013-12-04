@@ -324,7 +324,41 @@ class RcubeImapMailReader extends AbstractServer implements
 
     public function saveMail(Mail $mail, array $headers)
     {
-        throw new \Mailer\Error\NotImplementedError();
+        /*
+         *     public function save_message($folder, &$message, $headers='', $is_file=false, $flags = array(), $date = null, $binary = false)
+    {
+        if (!strlen($folder)) {
+            $folder = $this->folder;
+        }
+
+        if (!$this->check_connection()) {
+            return false;
+        }
+
+        // make sure folder exists
+        if (!$this->folder_exists($folder)) {
+            return false;
+        }
+
+        $date = $this->date_format($date);
+
+        if ($is_file) {
+            $saved = $this->conn->appendFromFile($folder, $message, $headers, $flags, $date, $binary);
+        }
+        else {
+            $saved = $this->conn->append($folder, $message, $flags, $date, $binary);
+        }
+
+        if ($saved) {
+            // increase messagecount of the target folder
+            $this->set_messagecount($folder, 'ALL', 1);
+        }
+
+        return $saved;
+    }
+
+        $this->getClient()->save_message($store_target, $msg, $headers, $mailbody_file ? true : false, array('SEEN'));
+         */
     }
 
     public function flagMail($name, $uid, $flag, $toggle = true)
