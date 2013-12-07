@@ -45,7 +45,7 @@ class Multipart extends AbstractPart implements
                 // i.e. MIXED, DIGEST, PARALLEL, ALTERNATIVE, ...
                 // @todo But it could be not present (is that valid?)
                 if (isset($part)) {
-                    $this->setType("multipart");
+                    $instance->setType("multipart");
                     $instance->setSubtype(strtolower((string)$part));
                 }
 
