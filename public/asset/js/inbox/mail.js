@@ -102,6 +102,9 @@ var Mail;
           self.refresh(true);
         }
       },
+      group1: {
+          spacer: true
+      },
       read: {
         title: "Mark as read",
         type: "get",
@@ -117,7 +120,18 @@ var Mail;
         success: function () {
           self.refresh(true);
         }
-      }
+      },
+      group2: {
+        spacer: true
+      },
+      source: {
+        title: "View source",
+        type: "get",
+        url: this.getUrl(),
+        success: function () {
+          self.refresh(true);
+        }
+      },
     };
   };
 

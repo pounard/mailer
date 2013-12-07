@@ -20,6 +20,9 @@ var Template;
     return Mustache.render(Template[template], data);
   };
 
+  Template.actionspacer =
+    '<li><hr/></li>';
+
   Template.action =
         '<li><a class="{{id}}" href="#">{{title}}</a></li>';
 

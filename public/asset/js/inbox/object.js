@@ -240,6 +240,7 @@ var InboxObject;
    *     - success : function
    *     - blocking: boolean
    *     - refresh : boolean
+   *     - spacer: boolean
    */
   InboxObject.prototype.getActions = function () {
     // Override me.
@@ -263,20 +264,24 @@ var InboxObject;
 
     for (k in actions) {
       action = actions[k];
-      item = $(Template.render('action', {
-        title: action.title,
-        id: k
-      }));
-      item.find("a").on("click", function (e) {
-        // Prepare variables for the dispatcher
-        if (action.blocking) {
-          el = self.element;
-        } else {
-          el = undefined;
-        }
-        // Where the magic actually happen
-        self.inbox.dispatcher.send(action, el);
-      });
+      if (action.spacer) {
+        item = $(Template.render('actionspacer'));
+      } else {
+        item = $(Template.render('action', {
+          title: action.title,
+          id: k
+        }));
+        item.find("a").on("click", function (e) {
+          // Prepare variables for the dispatcher
+          if (action.blocking) {
+            el = self.element;
+          } else {
+            el = undefined;
+          }
+          // Where the magic actually happen
+          self.inbox.dispatcher.send(action, el);
+        });
+      }
       items.push(item);
     }
 

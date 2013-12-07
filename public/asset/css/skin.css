@@ -194,8 +194,9 @@ textarea[disabled]
 div.actions > a {
     display: block;
     background: transparent url(../img/icons/gear-14.png) no-repeat center center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    margin: 2px;
     /* Move out text */
     color: transparent;
     overflow: hidden;
@@ -206,8 +207,8 @@ div.actions ul {
     display: none;
     list-style: none;
     position: absolute;
-    top: 22px;
-    right: 0px;
+    right: 5px;
+    top: 30px;
     background-color: #fff;
     border: 1px solid #ccc;
     padding: 0.5em 0px;
@@ -219,12 +220,17 @@ div.actions li {
     padding: 0px 1em;
 }
 
+div.actions li hr {
+    margin: 0.5em 0em;
+}
+
 div.actions li a {
     line-height: 30px;
     padding-left: 20px;
     background-repeat: no-repeat;
     background-position: left center;
     white-space: nowrap;
+    display: block;
 }
 div.actions li:hover {
     background-color: #ffffcc;
@@ -236,16 +242,19 @@ div.actions li a.refresh {
     background-image: url(../img/icons/rotation-14.png);
 }
 div.actions li a.read {
-    background-image: url(../img/icons/mail-closed-14.png);
+    background-image: url(../img/icons/mail-close-14.png);
 }
 div.actions li a.unread {
     background-image: url(../img/icons/mail-open-14.png);
 }
 div.actions li a.star {
-    background-image: url(../img/icons/starred-on-14.png);
+    background-image: url(../img/icons/starred-off-14.png);
 }
 div.actions li a.unstar {
-    background-image: url(../img/icons/starred-off-14.png);
+    background-image: url(../img/icons/starred-on-14.png);
+}
+div.actions li a.source {
+    background-image: url(../img/icons/file-empty-14.png);
 }
 
 /*****************************************************************************
@@ -613,6 +622,10 @@ div.actions li a.unstar {
 
 .mail {
     border-bottom: 1px solid #ccc;
+}
+
+.mail .date {
+    top: 1px;
 }
 
 .mail div.actions {
