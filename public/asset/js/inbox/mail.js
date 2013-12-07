@@ -14,10 +14,10 @@ var Mail;
 
   Mail.prototype.render = function () {
     var date = undefined, body = undefined;
+
     if ("string" === typeof this.created) {
       date = Inbox.formatDate(this.created, true);
     }
-    // Compute a few classes
 
     // Which body to display: using
     // this.bodyPlain || this.bodyHtml || this.summary
@@ -29,6 +29,7 @@ var Mail;
     } else {
       body = this.summary;
     }
+
     return Template.render("mail", {
       persons: this.inbox.renderPersonImages([this.from]),
       from:    this.inbox.renderPersonLink(this.from),
@@ -80,6 +81,44 @@ var Mail;
         self.seen(true);
       }, 1000);
     }
+  };
+
+  Mail.prototype.getActions = function () {
+    var self = this;
+    return {
+      "delete": {
+        title: "Delete",
+        type: "delete",
+        url: this.getUrl(),
+        success: function () {
+          self.detach(true);
+        }
+      },
+      refresh: {
+        title: "Refresh",
+        type: "get",
+        url: this.getUrl(),
+        success: function () {
+          self.refresh(true);
+        }
+      },
+      read: {
+        title: "Mark as read",
+        type: "get",
+        url: this.getUrl(),
+        success: function () {
+          self.refresh(true);
+        }
+      },
+      star: {
+        title: "Star",
+        type: "get",
+        url: this.getUrl(),
+        success: function () {
+          self.refresh(true);
+        }
+      }
+    };
   };
 
   /**

@@ -14,6 +14,9 @@ var Dispatcher;
   Dispatcher = function (options) {
     options = options || {};
 
+    this.pipeline = false;
+    this.commands = [];
+
     // Server parameters
     this.basepath = options.basepath || "/";
 
@@ -28,6 +31,39 @@ var Dispatcher;
       contentType: "application/json",
       dataType: "json"
     };
+  };
+
+  /**
+   * Set the dispatcher into pipeline mode
+   */
+  Dispatcher.prototype.start = function (reset) {
+    this.pipeline = true;
+    if (reset && this.commands.length) {
+      this.commands = [];
+    }
+  };
+
+  /**
+   * Cancel current pipeline
+   */
+  Dispatcher.prototype.cancel = function () {
+    if (reset && this.commands.length) {
+      this.commands = [];
+    }
+    this.pipeline = false;
+  };
+
+  /**
+   * Send all pipelined commands and reset state
+   */
+  Dispatcher.prototype.exec = function () {
+    var k = 0;
+    if (this.commands.length) {
+      for (k in this.commands) {
+        $.ajax(this.commands[k]);
+      }
+    }
+    this.cancelPipeline();
   };
 
   /**
@@ -83,7 +119,11 @@ var Dispatcher;
     };
     $element.addClass('loading');
     options.url = this.basepath + options.url;
-    $.ajax(options);
+    if (this.pipeline) {
+      this.commands.push(options);
+    } else {
+      $.ajax(options);
+    }
   };
 
   /**
@@ -95,7 +135,7 @@ var Dispatcher;
    *   Options for jQuery.ajax() call
    */
   Dispatcher.prototype.del = function (options, element) {
-    options = this.getOptions(options);
+    options = options || {};
     options.type = "delete";
     this.send(options, element);
   };
@@ -109,7 +149,6 @@ var Dispatcher;
    *   Options for jQuery.ajax() call
    */
   Dispatcher.prototype.get = function (options, element) {
-    options = this.getOptions(options);
     this.send(options, element);
   };
 
@@ -122,7 +161,7 @@ var Dispatcher;
    *   Content to send
    */
   Dispatcher.prototype.post = function (options, content, element) {
-    options = this.getOptions(options);
+    options = options || {};
     options.type = "post";
     if (!content) {
       throw "Cannot POST without content";
@@ -140,7 +179,7 @@ var Dispatcher;
    *   Content to send
    */
   Dispatcher.prototype.patch = function (options, content, element) {
-    options = this.getOptions(options);
+    options = options || {};
     options.type = "patch";
     if (!content) {
       throw "Cannot PATCH without content";

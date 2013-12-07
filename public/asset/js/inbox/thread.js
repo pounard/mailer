@@ -46,6 +46,28 @@ var Thread;
     });
   };
 
+  Thread.prototype.getActions = function () {
+    var self = this;
+    return {
+      "delete": {
+        title: "Delete",
+        type: "delete",
+        url: this.getUrl(),
+        success: function () {
+          self.detach(true);
+        }
+      },
+      refresh: {
+        title: "Refresh",
+        type: "get",
+        url: this.getUrl(),
+        success: function () {
+          self.refresh(true);
+        }
+      }
+    };
+  };
+
   /**
    * Load thread data
    */

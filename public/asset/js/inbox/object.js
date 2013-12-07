@@ -128,7 +128,7 @@ var InboxObject;
    * The object is being attached to the DOM
    */
   InboxObject.prototype.attach = function (container, force) {
-    var output = "", defClasses = [], k = 0;
+    var output = "", defClasses = [], k = 0, actions;
     if (!this.rendered || force) {
       output = $(this.render());
       // Attach all classes
@@ -161,6 +161,10 @@ var InboxObject;
         // We cannot attach the element
         throw "Nowhere to attach";
       }
+      actions = this.buildActions();
+      if (actions) {
+        output.append(actions);
+      }
       this.element = output.get(0);
     }
   };
@@ -174,6 +178,9 @@ var InboxObject;
    */
   InboxObject.prototype.detach = function (remove) {
     $(this.element).remove();
+    if (remove) {
+      // @todo Refresh related
+    }
   };
 
   /**
@@ -219,6 +226,80 @@ var InboxObject;
         delete this.classes[k];
         return;
       }
+    }
+  };
+
+  /**
+   * Get object actions
+   *
+   * @return Array
+   *   Each value must be a object containing the following keys:
+   *     - url : String
+   *     - type : String ("get", "put", "patch", "delete", "post")
+   *     - title : String
+   *     - success : function
+   *     - blocking: boolean
+   *     - refresh : boolean
+   */
+  InboxObject.prototype.getActions = function () {
+    // Override me.
+    return [];
+  };
+
+  /**
+   * Build the action links for the object
+   */
+  InboxObject.prototype.buildActions = function () {
+    var
+      actions = this.getActions(),
+      k = 0,
+      item,
+      items = [],
+      output,
+      el,
+      self = this,
+      displayed = false,
+      action;
+
+    for (k in actions) {
+      action = actions[k];
+      item = $(Template.render('action', {
+        title: action.title,
+        id: k
+      }));
+      item.find("a").on("click", function (e) {
+        // Prepare variables for the dispatcher
+        if (action.blocking) {
+          el = self.element;
+        } else {
+          el = undefined;
+        }
+        // Where the magic actually happen
+        self.inbox.dispatcher.send(action, el);
+      });
+      items.push(item);
+    }
+
+    if (items.length) {
+
+      output = $(Template.render('actions'));
+      item = output.find("ul");
+      for (k in items) {
+        item.append(items[k]);
+      }
+
+      // Hide/show on click
+      output.find("> a").on("click", function () {
+        if (displayed) {
+          item.hide();
+          displayed = false;
+        } else {
+          item.show();
+          displayed = true;
+        }
+      });
+
+      return output;
     }
   };
 

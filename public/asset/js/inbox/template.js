@@ -20,6 +20,16 @@ var Template;
     return Mustache.render(Template[template], data);
   };
 
+  Template.action =
+        '<li><a class="{{id}}" href="#">{{title}}</a></li>';
+
+  Template.actions =
+        '<div class="actions">'
+      + '<a href="#">Open</a>'
+      + '<ul>'
+      + '</ul>'
+      + '</div>';
+
   Template.folder =
          '<li>'
        + '<a href="#">'
@@ -45,7 +55,7 @@ var Template;
       + '</div>'
       + '<div class="clear"></div>'
       + '<div class="from">'
-      + '<div class="star {{starred-class}}"><a href="#" title="Star this mail">&nbsp;&nbsp;&nbsp;</a></div>'
+      + '<div class="star-shortcut {{starred-class}}"><a href="#" title="Star this mail">&nbsp;&nbsp;&nbsp;</a></div>'
       + 'From {{{from}}}'
       + '</div>'
       + '<div class="body">{{{body}}}</div>'

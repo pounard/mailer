@@ -187,6 +187,69 @@ textarea[disabled]
 
 /*****************************************************************************
  *
+ * Action links
+ *
+ *****************************************************************************/
+
+div.actions > a {
+    display: block;
+    background: transparent url(../img/icons/gear-14.png) no-repeat center center;
+    width: 32px;
+    height: 32px;
+    /* Move out text */
+    color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+div.actions ul {
+    display: none;
+    list-style: none;
+    position: absolute;
+    top: 22px;
+    right: 0px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 0.5em 0px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+div.actions li {
+    list-style: none;
+    padding: 0px 1em;
+}
+
+div.actions li a {
+    line-height: 30px;
+    padding-left: 20px;
+    background-repeat: no-repeat;
+    background-position: left center;
+    white-space: nowrap;
+}
+div.actions li:hover {
+    background-color: #ffffcc;
+}
+div.actions li a.delete {
+    background-image: url(../img/icons/trash-14.png);
+}
+div.actions li a.refresh {
+    background-image: url(../img/icons/rotation-14.png);
+}
+div.actions li a.read {
+    background-image: url(../img/icons/mail-closed-14.png);
+}
+div.actions li a.unread {
+    background-image: url(../img/icons/mail-open-14.png);
+}
+div.actions li a.star {
+    background-image: url(../img/icons/starred-on-14.png);
+}
+div.actions li a.unstar {
+    background-image: url(../img/icons/starred-off-14.png);
+}
+
+/*****************************************************************************
+ *
  * Login page
  *
  *****************************************************************************/
@@ -436,6 +499,16 @@ textarea[disabled]
     right: 7px;
 }
 
+.thread div.actions {
+    position: absolute;
+    top: 0px;
+    right: 9em; /* Moves it side of the date */
+    display: none;
+}
+.thread:hover div.actions {
+    display: block;
+}
+
 /*****************************************************************************
  *
  * Inbox: various
@@ -476,7 +549,7 @@ textarea[disabled]
     margin-top: 1em;
 }
 
-.mail .star {
+.mail .star-shortcut {
     /* Move out text */
     color: transparent;
     height: 14px;
@@ -491,38 +564,14 @@ textarea[disabled]
     float: left;
     margin: 0 1em;
 }
-.mail .star:hover {
+.mail .star-shortcut:hover {
     background-image: url(../img/icons/starred-on-14.png);
 }
-.mail-flagged .star {
+.mail-flagged .star-shortcut {
     background-image: url(../img/icons/starred-on-14.png);
 }
-.mail-flagged .star:hover {
+.mail-flagged .star-shortcut:hover {
     background-image: url(../img/icons/starred-off-14.png);
-}
-
-.mail .delete, .mail .source {
-    /* Move out text */
-    color: transparent;
-    height: 14px;
-    width: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    /* Background image */
-    background-image: url(../img/icons/trash-14.png);
-    background-repeat: no-repeat;
-    background-position: center center;
-    /* Position */
-    top: 1px;
-    /* Hide when not hovering */
-    display: none;
-}
-.mail:hover .delete, .mail:hover .source {
-    display: inline;
-}
-
-.mail .source {
-    background-image: url(../img/icons/file-14.png);
 }
 
 .mail .body p {
@@ -539,7 +588,7 @@ textarea[disabled]
 .mail .date {
     float: right;
     color: #808080;
-    margin-right: 0.5em;
+    margin-right: 30px;
 }
 
 .mail .from {
@@ -564,4 +613,10 @@ textarea[disabled]
 
 .mail {
     border-bottom: 1px solid #ccc;
+}
+
+.mail div.actions {
+    position: absolute;
+    top: 0px;
+    right: 0.5em;
 }
