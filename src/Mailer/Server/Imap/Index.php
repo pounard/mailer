@@ -282,23 +282,27 @@ class Index extends AbstractContainerAware
         $mailbox = $this->getMailboxIndex($name);
         $headers = $this->buildMailHeaders($mail);
 
-        if (false === ($resource = tmpfile())) {
+        if (false === ($tmpfile = tempnam(sys_get_temp_dir(), 'mailermailer')) ||
+            false === ($resource = fopen($tmpfile, 'wb')))
+        {
             throw new \Exception("Cannot create temporary file");
         }
         $lineEnding = Part::DEFAULT_LINE_ENDING;
-        foreach ($headers as $name => $value) {
-            fwrite($resource, $name . ": " . $value . $lineEnding);
+        foreach ($headers as $key => $value) {
+            fwrite($resource, $key . ": " . $value . $lineEnding);
         }
-        $mail->getStructure()->writeEncodedMime($resource);
+        $mail->getStructure()->writeEncodedMime($resource, true);
 
         // Save before sending to ensure that the user can edit back his
         // mail if something wrong happened
-        rewind($resource);
-        $this->reader->saveMail($mail, $headers, $resource);
+        $resource = fopen($tmpfile, "rb");
+        $this->reader->saveMail($name, $mail, $headers, $resource);
+        @fclose($resource);
 
         // Magic!
-        rewind($resource);
+        $resource = fopen($tmpfile, "rb");
         $this->sender->sendMail($mail, $headers, $resource);
+        @fclose($resource);
     }
 
     /**

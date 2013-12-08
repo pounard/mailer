@@ -21,7 +21,7 @@ var Template;
   };
 
   Template.actionspacer =
-    '<li><hr/></li>';
+        '<li><hr/></li>';
 
   Template.action =
         '<li><a class="{{id}}" target="{{target}}" href="{{href}}">{{title}}</a></li>';
@@ -53,8 +53,6 @@ var Template;
       + '<div class="date">{{{date}}}</div>'
       + '<div class="subject">'
       + '{{subject}}'
-      + '<a class="delete hover-link" href="#" title="Delete">Delete</a>'
-      // + '<div class="source hover-link"><a href="#" title="View source">View source</a></div>'
       + '</div>'
       + '<div class="clear"></div>'
       + '<div class="from">'

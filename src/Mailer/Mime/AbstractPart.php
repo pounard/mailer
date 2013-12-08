@@ -147,6 +147,8 @@ abstract class AbstractPart
      * Generate MIME content and save into given file or resource
      *
      * @param resource|string $output
+     * @param boolean $close
+     *   If set to false do not close the stream after write
      * @param string $lf
      * @param boolean $setMimeVersion
      *
@@ -157,5 +159,5 @@ abstract class AbstractPart
      *   chances it has been written anyway and you probably can get
      *   its contents anyway
      */
-    abstract public function writeEncodedMime($output, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true);
+    abstract public function writeEncodedMime($output, $close = true, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true);
 }

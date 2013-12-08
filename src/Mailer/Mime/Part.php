@@ -654,7 +654,7 @@ class Part extends AbstractPart
         }
     }
 
-    public function writeEncodedMime($output, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
+    public function writeEncodedMime($output, $close = true, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
     {
         $opened = false;
 
@@ -690,7 +690,7 @@ class Part extends AbstractPart
                 $this->writeLineToStream($output, "", $lf);
             }
 
-            if ($opened) {
+            if ($opened && $close) {
                 return fclose($output);
             }
 

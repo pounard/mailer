@@ -388,7 +388,7 @@ class Multipart extends AbstractPart implements
         return new \ArrayIterator($this->parts);
     }
 
-    public function writeEncodedMime($output, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
+    public function writeEncodedMime($output, $close = true, $lf = Part::DEFAULT_LINE_ENDING, $setMimeVersion = true)
     {
         $opened = false;
 
@@ -434,7 +434,7 @@ class Multipart extends AbstractPart implements
             // all anyway (we are not responsible for dumb users)
             foreach ($this->parts as $part) {
                 $this->writeLineToStream($output, "--" . $this->getBoundary(), $lf);
-                $part->writeEncodedMime($output, $lf, false);
+                $part->writeEncodedMime($output, false, $lf, false);
             }
 
             if (!empty($this->parts)) {
@@ -443,7 +443,7 @@ class Multipart extends AbstractPart implements
                 $this->writeToStream($output, "--" . $this->getBoundary() . "--");
             }
 
-            if ($opened) {
+            if ($opened && $close) {
                 return fclose($output);
             }
 

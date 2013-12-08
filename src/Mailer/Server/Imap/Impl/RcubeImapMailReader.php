@@ -324,56 +324,44 @@ class RcubeImapMailReader extends AbstractServer implements
 
     public function saveMail($name, Mail $mail, array $headers, $resource = null)
     {
-        $client = $this->getClient();
+        $client  = $this->getClient();
+        $updates = array();
 
-        // @todo Format date
+        if (null === $resource) {
+            throw new \NotImplementedError();
+        } else {
+            // Mail is binary if we have a resource (this means that Roundcube
+            // client does not have to change all line endings basically)
+            $binary = true;
+        }
 
-        $client->append(
+        if (null === ($date = $mail->getCreationDate())) {
+            $date = new \DateTime();
+            $updates['created'] = $date;
+        }
+
+        $ret = $client->append(
             $name,
-            $message,         // Resource just built
-            $flags = array(),
-            $date = null,
-            true              // Mail is binary if we have a resource
+            $resource, // Resource just built
+            array(), // @todo Flags
+            $date->format('d-M-Y H:i:s O'), // @todo Date
+            $binary
         );
-        /*
-        $client->appendFromFile($mailbox, $path, $headers, $flags = array(), $date = null, $binary = false)
-         */
 
-        /*
-         *     public function save_message($folder, &$message, $headers='', $is_file=false, $flags = array(), $date = null, $binary = false)
-    {
-        if (!strlen($folder)) {
-            $folder = $this->folder;
+        if (false === $ret) {
+            // Do not let this method being blocking
+            trigger_error(sprintf(
+                "Could not save mail to IMAP server: %d, '%s'",
+                $this->client->errornum,
+                $this->client->error
+            ));
+
+            return;
         }
 
-        if (!$this->check_connection()) {
-            return false;
+        if (!empty($updates)) {
+            $mail->toArray($updates);
         }
-
-        // make sure folder exists
-        if (!$this->folder_exists($folder)) {
-            return false;
-        }
-
-        $date = $this->date_format($date);
-
-        if ($is_file) {
-            $saved = $this->conn->appendFromFile($folder, $message, $headers, $flags, $date, $binary);
-        }
-        else {
-            $saved = $this->conn->append($folder, $message, $flags, $date, $binary);
-        }
-
-        if ($saved) {
-            // increase messagecount of the target folder
-            $this->set_messagecount($folder, 'ALL', 1);
-        }
-
-        return $saved;
-    }
-
-        $this->getClient()->save_message($store_target, $msg, $headers, $mailbody_file ? true : false, array('SEEN'));
-         */
     }
 
     public function flagMail($name, $uid, $flag, $toggle = true)
