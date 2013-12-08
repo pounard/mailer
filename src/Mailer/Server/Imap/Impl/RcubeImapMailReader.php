@@ -322,8 +322,23 @@ class RcubeImapMailReader extends AbstractServer implements
             ->handlePartBody($name, $uid, true, null, null, null, null, true, $maxBytes);
     }
 
-    public function saveMail(Mail $mail, array $headers)
+    public function saveMail($name, Mail $mail, array $headers, $resource = null)
     {
+        $client = $this->getClient();
+
+        // @todo Format date
+
+        $client->append(
+            $name,
+            $message,         // Resource just built
+            $flags = array(),
+            $date = null,
+            true              // Mail is binary if we have a resource
+        );
+        /*
+        $client->appendFromFile($mailbox, $path, $headers, $flags = array(), $date = null, $binary = false)
+         */
+
         /*
          *     public function save_message($folder, &$message, $headers='', $is_file=false, $flags = array(), $date = null, $binary = false)
     {

@@ -114,7 +114,7 @@ class PhpMailerMailSender extends AbstractServer implements
         }
     }
 
-    public function sendMail(Mail $mail, array $headers)
+    public function sendMail(Mail $mail, array $headers, $resource = null)
     {
         $client = $this->getClient();
 

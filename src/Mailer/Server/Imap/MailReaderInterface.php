@@ -122,6 +122,8 @@ interface MailReaderInterface extends ServerInterface
     /**
      * Save mail
      *
+     * @param string $name
+     *   Mailbox name
      * @param Mail $mail
      *   Mail the user can and has edited
      *,@param string[] $headers
@@ -129,11 +131,14 @@ interface MailReaderInterface extends ServerInterface
      *   be easy to swap out, and because we want the headers to be built in
      *   a reproductible manner, the upper layer will give you this one you
      *   lucky guy!
+     * @param resource $resource
+     *   If mail already has been built for any reason a resource toward the
+     *   fully built mime data will be given here
      *
      * @return Mail
      *   The new mail being saved
      */
-    public function saveMail(Mail $mail, array $headers);
+    public function saveMail($name, Mail $mail, array $headers, $resource = null);
 
     /**
      * Flag or unflag a mail

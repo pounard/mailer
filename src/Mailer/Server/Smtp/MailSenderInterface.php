@@ -31,6 +31,9 @@ interface MailSenderInterface extends ServerInterface
      *   be easy to swap out, and because we want the headers to be built in
      *   a reproductible manner, the upper layer will give you this one you
      *   lucky guy!
+     * @param resource $resource
+     *   If mail already has been built for any reason a resource toward the
+     *   fully built mime data will be given here
      */
-    public function sendMail(Mail $mail, array $headers);
+    public function sendMail(Mail $mail, array $headers, $resource = null);
 }
