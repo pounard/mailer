@@ -22,6 +22,11 @@ class Mail extends Envelope
     private $bodyHtml = array();
 
     /**
+     * @var string[]
+     */
+    private $attachments = array();
+
+    /**
      * Get the mail structure
      *
      * @return Multipart
@@ -38,7 +43,7 @@ class Mail extends Envelope
      * from the mail; For being able to fetch the original data use the
      * structure property instead
      *
-     * @return string[]
+     * @return Attachment[]
      */
     public function getBodyPlain()
     {
@@ -59,14 +64,28 @@ class Mail extends Envelope
         return $this->bodyHtml;
     }
 
+    /**
+     * Get list of attached files
+     *
+     * This will give you a preprocessed list of file attachments
+     * that cannot be modified
+     *
+     * @return
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
+    }
+
     public function toArray()
     {
         $array = parent::toArray();
 
         $array += array(
-            'structure' => $this->structure,
-            'bodyPlain' => $this->bodyPlain,
-            'bodyHtml'  => $this->bodyHtml,
+            'structure'   => $this->structure,
+            'bodyPlain'   => $this->bodyPlain,
+            'bodyHtml'    => $this->bodyHtml,
+            'attachments' => $this->attachments,
         );
 
         return $array;
@@ -78,8 +97,9 @@ class Mail extends Envelope
 
         parent::fromArray($array);
 
-        $this->structure = $array['structure'];
-        $this->bodyPlain = $array['bodyPlain'];
-        $this->bodyHtml  = $array['bodyHtml'];
+        $this->structure   = $array['structure'];
+        $this->bodyPlain   = $array['bodyPlain'];
+        $this->bodyHtml    = $array['bodyHtml'];
+        $this->attachments = $array['attachments'];
     }
 }

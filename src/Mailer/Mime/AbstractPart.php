@@ -80,6 +80,16 @@ abstract class AbstractPart
     }
 
     /**
+     * Get mimetype built from type and subtype concatenation
+     *
+     * @return string
+     */
+    public function getMimeType()
+    {
+        return $this->type . '/' . $this->subtype;
+    }
+
+    /**
      * Build headers
      *
      * @param string $setMimeVersion
@@ -89,7 +99,7 @@ abstract class AbstractPart
         $ret = array();
 
         // Content-Type: text/plain; charset="ISO-8859-1"
-        $ret["Content-Type"] = $this->type . '/' . $this->subtype;
+        $ret["Content-Type"] = $this->getMimeType();
         if (null !== $charset) {
             $ret["Content-Type"] .= "; charset=\"" . $charset . "\"";
         }

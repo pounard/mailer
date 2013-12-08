@@ -13,6 +13,7 @@ use Mailer\Model\Thread;
 
 use Doctrine\Common\Cache\Cache;
 use Mailer\Error\LogicError;
+use Mailer\Model\Attachment;
 
 /**
  * Mailbox index
@@ -182,49 +183,63 @@ class MailboxIndex
     private function buildMail(Mail $mail)
     {
         $uid     = $mail->getUid();
-        $parts   = $mail->getStructure()->findPartAll('text');
+        $parts   = $mail->getStructure()->getAllPartsFlatList();
         $charset = $this->index->getContainer()->getDefaultCharset();
         $updates = array();
         $matches = array();
 
         foreach ($parts as $index => $part) {
 
-            $body = $this
-                ->index
-                ->getMailReader()
-                ->getPart($this->name, $uid, $index, $part->getEncoding());
+            if ('text' === $part->getType()) {
 
-            if (!empty($body)) {
+                $body = $this
+                    ->index
+                    ->getMailReader()
+                    ->getPart($this->name, $uid, $index, $part->getEncoding());
 
-                // Catch HTML documents internal encoding and switch it with
-                // the real one while we're converting it
-                if (preg_match('/charset=([^\s"]+)"/', $body, $matches)) {
-                    $from = $matches[1];
-                    // If we happen to change the encoding of an HTML document
-                    // we also need to change it into the document itself in
-                    // order for later document alterations using libxml to use
-                    // the correct encoding. I know the following is ugly like
-                    // hell and might case false positives, but until it does
-                    // not why the hell bother about it...
-                    if (strtolower($from) !== strtolower($charset)) {
-                        $body = str_replace(
-                            "charset=" . $from . "\"",
-                            "charset=" . $charset . "\"",
-                            $body
-                        );
+                if (!empty($body)) {
+
+                    // Catch HTML documents internal encoding and switch it with
+                    // the real one while we're converting it
+                    if (preg_match('/charset=([^\s"]+)"/', $body, $matches)) {
+                        $from = $matches[1];
+                        // If we happen to change the encoding of an HTML document
+                        // we also need to change it into the document itself in
+                        // order for later document alterations using libxml to use
+                        // the correct encoding. I know the following is ugly like
+                        // hell and might case false positives, but until it does
+                        // not why the hell bother about it...
+                        if (strtolower($from) !== strtolower($charset)) {
+                            $body = str_replace(
+                                "charset=" . $from . "\"",
+                                "charset=" . $charset . "\"",
+                                $body
+                            );
+                        }
+                    } else {
+                        $from = $part->getParameter('charset', null);
                     }
-                } else {
-                    $from = $part->getParameter('charset', null);
-                }
-                if (null === $from) {
-                    $from = "US-ASCII"; // Fallback to stupid
-                }
+                    if (null === $from) {
+                        $from = "US-ASCII"; // Fallback to stupid
+                    }
 
-                if (strtolower($charset) !== strtolower($from)) {
-                    $updates[$part->getSubtype()][] = Charset::convert($body, $from, $charset);
-                } else { // Avoid useless conversion
-                    $updates[$part->getSubtype()][] = $body;
+                    if (strtolower($charset) !== strtolower($from)) {
+                        $updates[$part->getSubtype()][] = Charset::convert($body, $from, $charset);
+                    } else { // Avoid useless conversion
+                        $updates[$part->getSubtype()][] = $body;
+                    }
                 }
+            } else {
+                // For everything else, attach it as a file
+                $attachment = new Attachment();
+                $attachment->fromArray(array(
+                    'name'     => $part->getParameter("name"),
+                    'mimetype' => $part->getMimeType(),
+                    'size'     => $part->getSize(),
+                    'index'    => $part->getIndex(),
+                    'uid'      => $mail->getUid(),
+                ));
+                $updates['attachments'][] = $attachment;
             }
         }
 

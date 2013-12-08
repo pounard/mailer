@@ -358,6 +358,26 @@ class Multipart extends AbstractPart implements
         return $ret;
     }
 
+    /**
+     * Get all parts flat list
+     *
+     * @return Part[]
+     */
+    public function getAllPartsFlatList()
+    {
+        $ret = array();
+
+        foreach ($this->parts as $part) {
+            if ($part instanceof Multipart) {
+                $ret += $part->getAllPartsFlatList();
+            } else {
+                $ret[$part->index] = $part;
+            }
+        }
+
+        return $ret;
+    }
+
     public function count()
     {
         return count($this->parts);
