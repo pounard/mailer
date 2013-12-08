@@ -35,7 +35,7 @@
  *  Output filtering
      *  <del>Factory for filters</del>
      *  <del>Configuration for factory</del>
-     *  HTML security fixer
+     *  <del>HTML security fixer</del>
  *  Basic features
      * 	Copy mail
      *  Move mail
