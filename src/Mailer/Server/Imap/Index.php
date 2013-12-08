@@ -289,13 +289,16 @@ class Index extends AbstractContainerAware
         foreach ($headers as $name => $value) {
             fwrite($resource, $name . ": " . $value . $lineEnding);
         }
-        $mimeEncoded = $mail->getStructure()->writeEncodedMime($resource);
-        rewind($resource);
+        $mail->getStructure()->writeEncodedMime($resource);
 
         // Save before sending to ensure that the user can edit back his
         // mail if something wrong happened
-        $this->reader->saveMail($mail, $headers);
-        $this->sender->sendMail($mail, $headers);
+        rewind($resource);
+        $this->reader->saveMail($mail, $headers, $resource);
+
+        // Magic!
+        rewind($resource);
+        $this->sender->sendMail($mail, $headers, $resource);
     }
 
     /**
