@@ -256,6 +256,9 @@ div.actions li a.unstar {
 div.actions li a.source {
     background-image: url(../img/icons/file-empty-14.png);
 }
+div.actions li a.reply {
+    background-image: url(../img/icons/reply-14.png);
+}
 
 /*****************************************************************************
  *

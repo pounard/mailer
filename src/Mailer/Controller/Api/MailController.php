@@ -79,7 +79,29 @@ class MailController extends AbstractController
 
                 $updates = array();
                 foreach ($request->getContent() as $flag => $toggle) {
-                    $mailbox->flag($args[1], $flag, (bool)$toggle);
+                    switch ($flag) {
+
+                        case 'seen':
+                        case 'isSeen':
+                            $flag = 'seen';
+                            break;
+
+                        case 'starred':
+                        case 'isFlagged':
+                        case 'flagged':
+                            $flag = 'flagged';
+                            break;
+
+                        default: // FIXME Find the right error code to apply
+                            throw new NotImplementedError("Cannot proceed with flag '%s'", $flag);
+                    }
+                    $updates[$flag] = $this->parseBoolean($toggle);
+                }
+
+                if (!empty($updates)) {
+                    foreach ($updates as $flag => $toggle) {
+                        $mailbox->flag($args[1], $flag, $toggle);
+                    }
                 }
                 break;
 

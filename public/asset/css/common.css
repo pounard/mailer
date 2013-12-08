@@ -100,8 +100,9 @@ a, a:hover {
     background-position: center center !important;
     background-color: #f1f1f1;
 }
-.loading.inverse {
+.loading.inverse, .inverse .loading {
     background-image: url(../img/loader-inverse.gif) !important;
+    background-color: transparent;
 }
 
 .content {

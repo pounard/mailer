@@ -87,9 +87,10 @@ var InboxObject;
   /**
    * Force the object refresh
    */
-  InboxObject.prototype.refresh = function (overlay) {
+  InboxObject.prototype.refresh = function (overlay, doRelated) {
     var self = this, url = this.getUrl(), element = undefined;
     if (url) {
+      this.inbox.dispatcher.start();
       if (overlay) {
         element = this.element;
       }
@@ -120,6 +121,10 @@ var InboxObject;
           }
         }
       }, element);
+      if (doRelated) {
+        this.change(overlay);
+      }
+      this.inbox.dispatcher.exec();
     }
     return false;
   };
@@ -172,14 +177,15 @@ var InboxObject;
   /**
    * The object is being detached from the DOM
    *
-   * @param boolean remove
-   *   If set to true this will force a refresh of all related
-   *   components
+   * @param boolean doRelated
+   * @param boolean overlay
    */
-  InboxObject.prototype.detach = function (remove) {
+  InboxObject.prototype.detach = function (doRelated, overlay) {
     $(this.element).remove();
-    if (remove) {
-      // @todo Refresh related
+    if (doRelated) {
+      this.inbox.dispatcher.start();
+      this.change(overlay, doRelated);
+      this.inbox.dispatcher.exec();
     }
   };
 
@@ -192,7 +198,7 @@ var InboxObject;
     var k = 0;
     for (k in this.related) {
       if ("function" === typeof this.related[k].refresh) {
-        this.related[k].refresh(overlay);
+        this.related[k].refresh(overlay, true);
       }
     }
   };
@@ -236,15 +242,29 @@ var InboxObject;
    *   Each value must be a object containing the following keys:
    *     - url : String
    *     - type : String ("get", "put", "patch", "delete", "post")
+   *       but also can be specific options: "open" or "blank" for
+   *       non ajax links (where "blank" means a new window)
    *     - title : String
    *     - success : function
    *     - blocking: boolean
    *     - refresh : boolean
-   *     - spacer: boolean
+   *     - spacer: boolean if this value is set all others are being
+   *       ignored
    */
   InboxObject.prototype.getActions = function () {
     // Override me.
     return [];
+  };
+
+  /**
+   * Get real URL from path
+   *
+   * @param path
+   *
+   * @return string
+   */
+  InboxObject.prototype.pathToUrl = function (path) {
+    return this.inbox.dispatcher.pathToUrl(path);
   };
 
   /**
@@ -259,31 +279,51 @@ var InboxObject;
       output,
       el,
       self = this,
-      displayed = false,
-      action;
+      displayed = false;
 
-    for (k in actions) {
+    // Using a for () will make our action variable being
+    // overwritten in the loop and all actions will do the
+    // same as the last one (which is delete): bad idea...
+    // $.each() isolate the k and the value variables and
+    // reduce their scope to the function
+    $.each(actions, function (k, action) {
       action = actions[k];
       if (action.spacer) {
         item = $(Template.render('actionspacer'));
       } else {
-        item = $(Template.render('action', {
-          title: action.title,
-          id: k
-        }));
-        item.find("a").on("click", function (e) {
-          // Prepare variables for the dispatcher
-          if (action.blocking) {
-            el = self.element;
-          } else {
-            el = undefined;
-          }
-          // Where the magic actually happen
-          self.inbox.dispatcher.send(action, el);
-        });
+        if ("blank" === action.type) {
+          item = $(Template.render('action', {
+            title: action.title,
+            href: self.pathToUrl(action.url),
+            target: "blank",
+            id: k
+          }));
+        } else if ("open" === action.type) {
+          item = $(Template.render('action', {
+            title: action.title,
+            href: self.pathToUrl(action.url),
+            id: k
+          }));
+        } else {
+          item = $(Template.render('action', {
+            title: action.title,
+            href: "#",
+            id: k
+          }));
+          item.find("a").on("click", function (e) {
+            // Prepare variables for the dispatcher
+            if (action.blocking) {
+              el = self.element;
+            } else {
+              el = undefined;
+            }
+            // Where the magic actually happen
+            self.inbox.dispatcher.send(action, el);
+          });
+        };
       }
       items.push(item);
-    }
+    });
 
     if (items.length) {
 

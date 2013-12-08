@@ -76,63 +76,98 @@ var Mail;
     $(context).find(".star > a").on("click", function () {
       self.star(!self.isFlagged);
     });
-    if (!this.isSeen) {
+    /* if (!this.isSeen) {
       setTimeout(function () {
         self.seen(true);
       }, 1000);
-    }
+    } */
   };
 
   Mail.prototype.getActions = function () {
-    var self = this;
-    return {
-      "delete": {
-        title: "Delete",
-        type: "delete",
-        url: this.getUrl(),
-        success: function () {
-          self.detach(true);
-        }
-      },
-      refresh: {
-        title: "Refresh",
-        type: "get",
-        url: this.getUrl(),
-        success: function () {
-          self.refresh(true);
-        }
-      },
-      group1: {
-          spacer: true
-      },
-      read: {
-        title: "Mark as read",
-        type: "get",
-        url: this.getUrl(),
-        success: function () {
-          self.refresh(true);
-        }
-      },
-      star: {
-        title: "Star",
-        type: "get",
-        url: this.getUrl(),
-        success: function () {
-          self.refresh(true);
-        }
-      },
-      group2: {
-        spacer: true
-      },
-      source: {
-        title: "View source",
-        type: "get",
-        url: this.getUrl(),
-        success: function () {
-          self.refresh(true);
-        }
-      },
+    var self = this, actions = {};
+    actions.reply = {
+      title: "Reply",
+      type: "open",
+      url: "app/inbox/reply/" + this.folder.path + "/" + this.getId(),
     };
+    actions.group1 = {
+      spacer: true
+    };
+    if (!this.isSeen) {
+      actions.read = {
+        title: "Mark as read",
+        type: "patch",
+        url: this.getUrl(),
+        data: {
+          isSeen: true
+        },
+        success: function () {
+          self.refresh(true, true);
+        }
+      };
+    } else {
+      actions.unread = {
+        title: "Mark as unread",
+        type: "patch",
+        url: this.getUrl(),
+        data: {
+          isSeen: false
+        },
+        success: function () {
+          self.refresh(true, true);
+        }
+      };
+    }
+    if (this.isFlagged) {
+      actions.unstar = {
+        title: "Unstar",
+        type: "patch",
+        url: this.getUrl(),
+        data: {
+          isFlagged: false
+        },
+        success: function () {
+          self.refresh(true);
+        }
+      };
+    } else {
+      actions.star = {
+        title: "Star",
+        type: "patch",
+        url: this.getUrl(),
+        data: {
+          isFlagged: true
+        },
+        success: function () {
+          self.refresh(true);
+        }
+      };
+    }
+    actions.group2 = {
+      spacer: true
+    };
+    actions.source = {
+      title: "View source",
+      type: "blank",
+      url: "app/inbox/source/" + this.folder.path + "/" + this.getId(),
+    };
+    actions.refresh = {
+      title: "Refresh",
+      type: "get",
+      url: this.getUrl(),
+      success: function () {
+        self.refresh(true);
+      }
+    };
+    actions["delete"] = {
+      title: "Delete",
+      type: "delete",
+      url: this.getUrl(),
+      success: function () {
+        self.detach(true);
+      }
+    };
+    return actions;
   };
 
   /**

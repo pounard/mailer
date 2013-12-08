@@ -24,7 +24,7 @@ var Template;
     '<li><hr/></li>';
 
   Template.action =
-        '<li><a class="{{id}}" href="#">{{title}}</a></li>';
+        '<li><a class="{{id}}" target="{{target}}" href="{{href}}">{{title}}</a></li>';
 
   Template.actions =
         '<div class="actions">'

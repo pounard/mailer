@@ -46,6 +46,17 @@ var Inbox, inboxInstance;
   };
 
   /**
+   * Log a debug entry
+   *
+   * @param value
+   */
+  Inbox.debug = function (value) {
+    if (console && console.log) {
+      console.log(value);
+    }
+  };
+
+  /**
    * Format a date using configuration
    *
    * @param string|Date date

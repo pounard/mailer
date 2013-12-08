@@ -29,6 +29,21 @@ abstract class AbstractController extends AbstractContainerAware implements
         );
     }
 
+    /**
+     * Get boolean value from arbitrary value
+     *
+     * @param mixed $value
+     *
+     * @return boolean
+     */
+    public function parseBoolean($value)
+    {
+        if (is_string($value)) {
+            return in_array(strtolower(trim($value)), array("yes", "y", "true"));
+        }
+        return (bool)(int)$value;
+    }
+
     public function dispatch(RequestInterface $request, array $args)
     {
         if (!$this->isAuthorized($request, $args)) {

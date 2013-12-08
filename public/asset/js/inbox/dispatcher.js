@@ -34,9 +34,21 @@ var Dispatcher;
   };
 
   /**
+   * Get real URL from path
+   *
+   * @param path
+   *
+   * @return string
+   */
+  Dispatcher.prototype.pathToUrl = function (path) {
+    return this.basepath + path;
+  };
+
+  /**
    * Set the dispatcher into pipeline mode
    */
   Dispatcher.prototype.start = function (reset) {
+    Inbox.debug("Starting pipeline");
     this.pipeline = true;
     if (reset && this.commands.length) {
       this.commands = [];
@@ -47,7 +59,8 @@ var Dispatcher;
    * Cancel current pipeline
    */
   Dispatcher.prototype.cancel = function () {
-    if (reset && this.commands.length) {
+    Inbox.debug("Canceling pipeline");
+    if (this.commands.length) {
       this.commands = [];
     }
     this.pipeline = false;
@@ -58,12 +71,14 @@ var Dispatcher;
    */
   Dispatcher.prototype.exec = function () {
     var k = 0;
+    Inbox.debug("Exec pipeline");
     if (this.commands.length) {
       for (k in this.commands) {
         $.ajax(this.commands[k]);
       }
     }
-    this.cancelPipeline();
+    this.commands = [];
+    this.pipeline = false;
   };
 
   /**
@@ -118,7 +133,7 @@ var Dispatcher;
       $element.removeClass('loading');
     };
     $element.addClass('loading');
-    options.url = this.basepath + options.url;
+    options.url = this.pathToUrl(options.url);
     if (this.pipeline) {
       this.commands.push(options);
     } else {
