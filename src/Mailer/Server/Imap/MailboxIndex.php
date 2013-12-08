@@ -358,7 +358,7 @@ class MailboxIndex
                 // be able to compute a summary for threads
                 $this->buildMail($mail);
 
-                $key = $this->index->getCacheKey('m', $uid);
+                $key = $this->index->getCacheKey('m', $mail->getUid());
                 $cache->save($key, $mail);
             }
         }
@@ -386,7 +386,13 @@ class MailboxIndex
         $unseen      = 0;
         $persons     = array();
 
+        /*
+         * This is actually faster loading directly all emails because most
+         * threads have only one element
+         *
         foreach ($this->getEnvelopes(array_keys($uidMap), $refresh) as $envelope) {
+         */
+        foreach ($this->getMails(array_keys($uidMap), $refresh) as $envelope) {
 
             // @todo Make comparaison (using date or arrival) configurable
             if (null === $first || $envelope->isBefore($first)) {
@@ -431,9 +437,11 @@ class MailboxIndex
             $lastUnread = $last;
         }
 
+        /*
         if (!$firstUnread instanceof Mail) {
             $firstUnread = $this->getMail($firstUnread->getUid());
         }
+         */
 
         $thread = new Thread();
         $thread->fromArray(array(
