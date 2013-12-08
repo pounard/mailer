@@ -244,6 +244,9 @@ class Index extends AbstractContainerAware
      *   Mail to send
      * @param string $name
      *   Where to copy the mail, defaults to configured sent mailbox
+     *
+     * @return string
+     *   The folder it has been saved too
      */
     public function sendMail(Mail $mail, $name = null)
     {
@@ -251,7 +254,13 @@ class Index extends AbstractContainerAware
         $updates = array();
 
         if (null === $name) {
-            $name = $config['mailboxes/sent'];
+            if ($key = $config['compose/copyTo']) {
+                if (isset($config['mailboxes/' . $key])) {
+                    $name = $config['mailboxes/' . $key];
+                }
+            } else {
+                $name = $config['mailboxes/sent'];
+            }
         }
 
         if (!$mail->getFrom()) {
@@ -303,6 +312,11 @@ class Index extends AbstractContainerAware
         $resource = fopen($tmpfile, "rb");
         $this->sender->sendMail($mail, $headers, $resource);
         @fclose($resource);
+
+        // Empty some bits of cache
+        $this->cache->delete($this->getCacheKey('f', $name));
+
+        return $name;
     }
 
     /**

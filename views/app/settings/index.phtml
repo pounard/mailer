@@ -1,5 +1,7 @@
 <h1>Preferences</h1>
 <form  action="<?php echo $url; ?>" method="POST" id="settings">
+
+  <!-- Identity settings -->
   <fieldset>
     <legend>Identity</legend>
     <div class="field">
@@ -53,6 +55,22 @@
       </div>
     </div>
   </fieldset>
+
+  <!-- Compose settings -->
+  <fieldset>
+    <legend>Compose</legend>
+    <div class="field">
+      <label for="to">Copy sent mails to</label>
+      <div class="control">
+        <select name="login">
+          <option value="inbox">Inbox</option>
+          <option value="sent">Sent mail folder</option>
+          <option value="">Nowhere</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
   <div class="field">
     <div class="control">
       <div class="actions">

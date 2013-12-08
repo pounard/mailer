@@ -27,6 +27,13 @@ class Envelope extends AbstractItem
 
     protected $inReplyTo = '';
 
+    /**
+     * This is not an IMAP field but might be fetched somehow
+     *
+     * @var int
+     */
+    protected $inReplyToUid = null;
+
     protected $size = -1;
 
     protected $seq = -1;
@@ -258,6 +265,7 @@ class Envelope extends AbstractItem
             'references'   => $this->references,
             'replyTo'      => $this->replyTo,
             'inReplyTo'    => $this->inReplyTo,
+            'inReplyToUid' => $this->inReplyToUid,
             'size'         => $this->size,
             'seq'          => $this->seq,
             'isRecent'     => $this->isRecent,
@@ -283,6 +291,7 @@ class Envelope extends AbstractItem
         $this->references   = $array['references'];
         $this->replyTo      = $array['replyTo'];
         $this->inReplyTo    = $array['inReplyTo'];
+        $this->inReplyToUid = $array['inReplyToUid'];
         $this->size         = (int)$array['size'];
         $this->seq          = (int)$array['seq'];
         $this->isRecent     = (bool)$array['isRecent'];

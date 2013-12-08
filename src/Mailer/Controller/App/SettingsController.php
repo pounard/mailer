@@ -22,6 +22,8 @@ class SettingsController extends AbstractController
         $defaultAddress = $container->getInternalContainer()->offsetGet('defaultAddress');
 
         $form = new Form();
+
+        // Identity
         $form->addElement(array(
             'name'        => 'displayName',
             'default'     => $config['identity/displayName'],
@@ -43,6 +45,13 @@ class SettingsController extends AbstractController
             'validators'  => new EmailAddress(),
             'default'     => $config['identity/replyTo'],
             'placeholder' => "Same as your mail address",
+        ));
+
+        // Compose settings
+        $form->addElement(array(
+            'name'        => 'copyTo',
+            'validators'  => new EmailAddress(),
+            'default'     => $config['compose/copyTo'],
         ));
 
         return $form;

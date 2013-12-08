@@ -15,10 +15,11 @@ use Mailer\View\View;
 use Zend\Validator\Digits as DigitsValidator;
 use Mailer\Mime\Part;
 use Mailer\Mime\Multipart;
+use Mailer\Error\NotFoundError;
 
 class ComposeController extends AbstractController
 {
-    private function getForm()
+    protected function getForm()
     {
         $form = new Form();
         $form->addElement(array(
@@ -40,6 +41,15 @@ class ComposeController extends AbstractController
             'name' => 'subject',
         ));
         $form->addElement(array(
+            'name' => 'mailbox',
+        ));
+        $form->addElement(array(
+            'name' => 'inReplyToUid',
+        ));
+        $form->addElement(array(
+            'name' => 'inReplyTo',
+        ));
+        $form->addElement(array(
             'name' => 'body',
         ));
         $form->addElement(array(
@@ -50,15 +60,13 @@ class ComposeController extends AbstractController
         return $form;
     }
 
-    public function getAction(RequestInterface $request, array $args)
-    {
-        return new View(array('form' => $request->getContent()), 'app/inbox/compose');
-    }
-
     public function postAction(RequestInterface $request, array $args)
     {
-        $form = $this->getForm();
-        $values = $request->getContent();
+        $form     = $this->getForm();
+        $values   = $request->getContent();
+        $index    = $this->getContainer()->getIndex();
+        $messager = $this->getContainer()->getMessager();
+        $folder   = null;
 
         if ($form->validate($values)) {
 
@@ -72,27 +80,48 @@ class ComposeController extends AbstractController
             $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
             $multipart->appendPart($part);
 
-            $mail = new Mail();
-            $mail->fromArray(array(
+            $mailValues = array(
                 'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
                 'subject' => $values['subject'],
                 'structure' => $multipart,
-            ));
+            );
 
-            $this
-                ->getContainer()
-                ->getIndex()
-                ->sendMail($mail);
+            // Ensure the folder exists
+            if (!empty($values['mailbox'])) {
+                $mailbox = $values['mailbox'];
+                try {
+                    $folder = $index->getMailboxIndex($mailbox);
+                } catch (NotFoundError $e) {
+                    $messager->addMessage(sprintf("Mailbox '%s' does not exist", $mailbox), Message::TYPE_WARNING);
+                    $mailbox = null;
+                }
+            } else {
+                $mailbox = null;
+            }
 
-            $messager = $this
-                ->getContainer()
-                ->getMessager()
-                ->addMessage("Mail writen into " . "somewhere" /* $name */, Message::TYPE_SUCCESS);
+            // There are still some missing bits
+            if (!empty($values['inReplyToUid'])) {
+                $mailValues['inReplyToUid'] = $values['inReplyToUid'];
+                if ($folder && empty($values['inReplyTo'])) {
+                    // Attempt to load the original message from uid and folder
+                    // in order to set the correct message identifier, if we cant
+                    // I am so sorry for you...
+                    try {
+                        $original = $folder->getMail($values['inReplyToUid']);
+                        $values['inReplyTo'] = $original->getMessageId();
+                    } catch (NotFoundError $e) {}
+                }
+            }
+            if (!empty($values['inReplyTo'])) {
+                $mailValues['inReplyTo'] = $values['inReplyTo'];
+            }
 
-            $messager = $this
-                ->getContainer()
-                ->getMessager()
-                ->addMessage("Your message has been sent", Message::TYPE_SUCCESS);
+            $mail = new Mail();
+            $mail->fromArray($mailValues);
+
+            $mailbox = $index->sendMail($mail, $mailbox);
+            $messager->addMessage(sprintf("Mail writen into '%s'", $mailbox), Message::TYPE_SUCCESS);
+            $messager->addMessage("Your message has been sent", Message::TYPE_SUCCESS);
 
             return new RedirectResponse('app/inbox');
 
