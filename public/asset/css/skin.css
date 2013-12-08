@@ -214,6 +214,7 @@ div.actions ul {
     padding: 0.5em 0px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
+    z-index: 1001;
 }
 div.actions li {
     list-style: none;
@@ -515,9 +516,11 @@ div.actions li a.reply {
     position: absolute;
     top: 0px;
     right: 9em; /* Moves it side of the date */
+}
+.thread div.actions > a {
     display: none;
 }
-.thread:hover div.actions {
+.thread:hover div.actions > a {
     display: block;
 }
 
