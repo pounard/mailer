@@ -225,8 +225,8 @@ class Form implements ElementInterface
         return $ret;
     }
 
-    public function filter($value)
+    public function filter($values)
     {
-        return array_intersect_key($value, $this->elements);
+        return array_intersect_key($values, $this->elements);
     }
 }

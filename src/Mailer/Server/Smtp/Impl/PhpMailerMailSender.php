@@ -118,39 +118,42 @@ class PhpMailerMailSender extends AbstractServer implements
     {
         $client = $this->getClient();
 
-        /*
-         * Example from https://github.com/PHPMailer/PHPMailer
-         *
-        $mail->From = 'from@example.com';
-        $mail->FromName = 'Mailer';
-        $mail->addAddress('josh@example.net', 'Josh Adams');  // Add a recipient
-        $mail->addAddress('ellen@example.com');               // Name is optional
-        $mail->addReplyTo('info@example.com', 'Information');
-        $mail->addCC('cc@example.com');
-        $mail->addBCC('bcc@example.com');
+        foreach ($headers as $name => $value) {
 
-        $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
-        $mail->addAttachment('/var/tmp/file.tar.gz');         // Add attachments
-        $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    // Optional name
-        $mail->isHTML(true);                                  // Set email format to HTML
+            // This is absolutely stupid by PHPMailer will raise
+            // error if some headers have not been explictely set:
+            // seriously fuck you. Some others will be duplicated
+            // or empty if not set explicitly (even worse).
+            switch ($name) {
 
-        $mail->Subject = 'Here is the subject';
-        $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-        $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
-         */
+                case 'From':
+                    $client->From = $value;
+                    break;
 
-        $client->From = $mail->getFrom()->getMail();
-        $client->FromName = $mail->getFrom()->getDisplayName();
-        foreach ($mail->getTo() as $person) {
-            $client->AddAddress($person->getMail(), $person->getDisplayName());
+                case 'To':
+                    $client->addAddress($value);
+                    break;
+
+                case 'Message-ID':
+                    $client->MessageID = $value;
+                    break;
+
+                case 'Subject':
+                    $client->Subject = $value;
+                    break;
+
+                default:
+                    // We can't use addCustomHeader() method because
+                    // it will break our headers if they are empty
+                    // values
+                    if (empty($value)) {
+                        $client->addCustomHeader($name . ":");
+                    } else {
+                        $client->addCustomHeader($name, $value);
+                    }
+                    break;
+            }
         }
-        foreach ($mail->getCc() as $person) {
-            $client->addCC($person->getMail(), $person->getDisplayName());
-        }
-        foreach ($mail->getBcc() as $person) {
-            $client->addBCC($person->getMail(), $person->getDisplayName());
-        }
-        $client->Subject = $mail->getSubject();
 
         if ($structure = $mail->getStructure()) {
             $this->parseStructure($client, $structure);

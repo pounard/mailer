@@ -19,6 +19,11 @@ use Mailer\Error\NotFoundError;
 
 class ComposeController extends AbstractController
 {
+    /**
+     * Get form
+     *
+     * @return \Mailer\Form\Form
+     */
     protected function getForm()
     {
         $form = new Form();
@@ -44,12 +49,6 @@ class ComposeController extends AbstractController
             'name' => 'mailbox',
         ));
         $form->addElement(array(
-            'name' => 'inReplyToUid',
-        ));
-        $form->addElement(array(
-            'name' => 'inReplyTo',
-        ));
-        $form->addElement(array(
             'name' => 'body',
         ));
         $form->addElement(array(
@@ -58,6 +57,43 @@ class ComposeController extends AbstractController
         ));
 
         return $form;
+    }
+
+    public function getAction(RequestInterface $request, array $args)
+    {
+        $form = $this->getForm();
+
+        return new View(
+            array(
+                'defaults'     => $form->getDefaultValues(),
+                'placeholders' => $form->getPlaceHolders(),
+            ),
+            'app/inbox/compose'
+        );
+    }
+
+    protected function getMailFromValues(RequestInterface $request, $values)
+    {
+        $multipart = new Multipart();
+
+        $part = new Part();
+        $part->setType('text');
+        $part->setSubtype('plain');
+        $part->setParameters(array('charset' => $request->getCharset()));
+        $part->setContents($values['body']);
+        $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
+        $multipart->appendPart($part);
+
+        $mailValues = array(
+            'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
+            'subject' => $values['subject'],
+            'structure' => $multipart,
+        ) + $values;
+
+        $mail = new Mail();
+        $mail->fromArray($mailValues);
+
+        return $mail;
     }
 
     public function postAction(RequestInterface $request, array $args)
@@ -70,21 +106,7 @@ class ComposeController extends AbstractController
 
         if ($form->validate($values)) {
 
-            $multipart = new Multipart();
-
-            $part = new Part();
-            $part->setType('text');
-            $part->setSubtype('plain');
-            $part->setParameters(array('charset' => $request->getCharset()));
-            $part->setContents($values['body']);
-            $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
-            $multipart->appendPart($part);
-
-            $mailValues = array(
-                'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
-                'subject' => $values['subject'],
-                'structure' => $multipart,
-            );
+            $mail = $this->getMailFromValues($request, $form->filter($values));
 
             // Ensure the folder exists
             if (!empty($values['mailbox'])) {
@@ -98,26 +120,6 @@ class ComposeController extends AbstractController
             } else {
                 $mailbox = null;
             }
-
-            // There are still some missing bits
-            if (!empty($values['inReplyToUid'])) {
-                $mailValues['inReplyToUid'] = $values['inReplyToUid'];
-                if ($folder && empty($values['inReplyTo'])) {
-                    // Attempt to load the original message from uid and folder
-                    // in order to set the correct message identifier, if we cant
-                    // I am so sorry for you...
-                    try {
-                        $original = $folder->getMail($values['inReplyToUid']);
-                        $values['inReplyTo'] = $original->getMessageId();
-                    } catch (NotFoundError $e) {}
-                }
-            }
-            if (!empty($values['inReplyTo'])) {
-                $mailValues['inReplyTo'] = $values['inReplyTo'];
-            }
-
-            $mail = new Mail();
-            $mail->fromArray($mailValues);
 
             $mailbox = $index->sendMail($mail, $mailbox);
             $messager->addMessage(sprintf("Mail writen into '%s'", $mailbox), Message::TYPE_SUCCESS);

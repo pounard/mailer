@@ -1,0 +1,51 @@
+<h1>Compose mail</h1>
+<a href="<?php echo $basepath . 'app/inbox'; ?>" title="Return to inbox">Return to inbox</a>
+<div>
+  <form action="<?php echo $url; ?>" method="POST" id="compose-full">
+    <fieldset>
+      <div class="field">
+        <label for="to">To</label>
+        <div class="control">
+          <input type="text" name="to"/>
+        </div>
+      </div>
+      <!--
+      <div class="field">
+        <label for="cc">CC</label>
+        <div class="control">
+          <input type="text" name="cc"/>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bcc">BCC</label>
+        <div class="control">
+          <input type="text" name="bcc"/>
+        </div>
+      </div>
+       -->
+      <div class="field">
+        <label for="subject">Subject</label>
+        <div class="control">
+          <input type="text" name="subject"/>
+        </div>
+      </div>
+      <div class="field">
+        <label for="body">Body</label>
+        <div class="control">
+          <textarea name="body"></textarea>
+        </div>
+      </div>
+      <input type="hidden" name="inReplyToUid" value=""/>
+      <input type="hidden" name="inReplyTo" value=""/>
+      <div class="field">
+        <div class="control">
+          <div class="actions">
+            <input type="submit" value="Send"/>
+            <input class="cancel" type="submit" value="Cancel"/>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+</div>

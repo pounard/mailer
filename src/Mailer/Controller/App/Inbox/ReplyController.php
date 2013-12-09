@@ -6,61 +6,77 @@ use Mailer\Controller\AbstractController;
 use Mailer\Core\Message;
 use Mailer\Dispatch\Http\RedirectResponse;
 use Mailer\Dispatch\RequestInterface;
+use Mailer\Error\NotFoundError;
 use Mailer\Form\Form;
+use Mailer\Mime\Part;
+use Mailer\Mime\Multipart;
 use Mailer\Model\Mail;
 use Mailer\Model\Person;
-use Mailer\Validator\EmailAddress;
 use Mailer\View\View;
 
 use Zend\Validator\Digits as DigitsValidator;
-use Mailer\Mime\Part;
-use Mailer\Mime\Multipart;
 
 class ReplyController extends ComposeController
 {
     public function getAction(RequestInterface $request, array $args)
     {
-        return new View(array('form' => $request->getContent()), 'app/inbox/reply');
+        $form = $this->getForm();
+
+        if (count($args) !== 2) {
+            throw new NotFoundError();
+        }
+
+        // Run a 404 if mail is not found
+        $origin = $this
+            ->getContainer()
+            ->getIndex()
+            ->getMailboxIndex($args[0])
+            ->getMail($args[1]);
+
+        return new View(
+            array(
+                'defaults'     => $form->getDefaultValues(),
+                'placeholders' => $form->getPlaceHolders(),
+                'origin'       => $origin,
+            ),
+            'app/inbox/reply'
+        );
     }
 
     public function postAction(RequestInterface $request, array $args)
     {
-        $form = $this->getForm();
-        $values = $request->getContent();
+        $form     = $this->getForm();
+        $values   = $request->getContent();
+        $index    = $this->getContainer()->getIndex();
+        $messager = $this->getContainer()->getMessager();
+        $folder   = null;
 
         if ($form->validate($values)) {
 
-            $multipart = new Multipart();
-
-            $part = new Part();
-            $part->setType('text');
-            $part->setSubtype('plain');
-            $part->setParameters(array('charset' => $request->getCharset()));
-            $part->setContents($values['body']);
-            $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
-            $multipart->appendPart($part);
-
-            $mail = new Mail();
-            $mail->fromArray(array(
-                'to' => array(Person::fromMailAddress($values['to'])), // FIXME Multiple recipients
-                'subject' => $values['subject'],
-                'structure' => $multipart,
-            ));
-
-            $this
+            // Run a 404 if mail is not found
+            $origin = $this
                 ->getContainer()
                 ->getIndex()
-                ->sendMail($mail);
+                ->getMailboxIndex($args[0])
+                ->getMail($args[1]);
 
-            $messager = $this
-                ->getContainer()
-                ->getMessager()
-                ->addMessage("Mail writen into " . "somewhere" /* $name */, Message::TYPE_SUCCESS);
+            $default = array(
+                'inReplyToUid' => $args[1],
+                'inReplyTo'    => $origin->getMessageId(),
+            );
 
-            $messager = $this
-                ->getContainer()
-                ->getMessager()
-                ->addMessage("Your message has been sent", Message::TYPE_SUCCESS);
+            $mail = $this
+                ->getMailFromValues(
+                    $request,
+                    array_merge(
+                        $form->filter($values),
+                        $default
+                    )
+                );
+
+            $mailbox = $index->sendMail($mail, $args[0]);
+            $messager->addMessage(sprintf("Mail writen into '%s'", $mailbox), Message::TYPE_SUCCESS);
+            $messager->addMessage("Your message has been sent", Message::TYPE_SUCCESS);
 
             return new RedirectResponse('app/inbox');
 

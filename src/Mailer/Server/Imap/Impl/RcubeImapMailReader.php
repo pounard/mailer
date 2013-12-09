@@ -164,6 +164,29 @@ class RcubeImapMailReader extends AbstractServer implements
     }
 
     /**
+     * Get list of message headers
+     *
+     * @param string $name
+     * @param array $uidList
+     *
+     * return \rcube_message_header[]
+     */
+    protected function fetchHeaders($name, array $uidList, $withBody = false)
+    {
+        return @$this
+            ->getClient()
+            ->fetchHeaders(
+                $name,
+                $uidList,
+                true,
+                $withBody,
+                array(
+                    'MESSAGE-ID',
+                )
+            );
+    }
+
+    /**
      * Build envelope array from header
      *
      * @param \rcube_message_header $header
@@ -185,7 +208,7 @@ class RcubeImapMailReader extends AbstractServer implements
             'created'    => DateHelper::fromRfc2822(@$header->get('date')),
             'encoding'   => @$header->encoding,
             'charset'    => @$header->charset,
-            'id'         => @$header->messageID,
+            'messageId'  => @$header->messageID,
             'references' => @$header->get('references'),
             'replyTo'    => @$header->get('replyto'),
             'inReplyTo'  => @$header->get('in_reply_to'),
@@ -231,7 +254,7 @@ class RcubeImapMailReader extends AbstractServer implements
 
     public function getEnvelopes($name, array $uidList)
     {
-        $ret = @$this->getClient()->fetchHeaders($name, $uidList, true);
+        $ret = $this->fetchHeaders($name, $uidList);
 
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
@@ -269,8 +292,8 @@ class RcubeImapMailReader extends AbstractServer implements
     public function getMails($name, array $uidList)
     {
         $client = $this->getClient();
-        $self = $this;
-        $ret = @$client->fetchHeaders($name, $uidList, true);
+        $self   = $this;
+        $ret    = $this->fetchHeaders($name, $uidList, true);
 
         if (false === $ret) {
             throw new NotFoundError("Mailbox or mail(s) have not been found");
@@ -282,20 +305,10 @@ class RcubeImapMailReader extends AbstractServer implements
                 $array = $this->buildMailArray($header, $name);
                 $uid = $array['uid'];
 
-                // Roundcube in certain cases seems to be able to drop the body
-                // structure raw array here, I never happened to fall into this
-                // case but their own code takes it into account, for safety
-                // let's do it too
                 if (empty($header->bodystructure)) {
-                    $bodyStructure = @$client->getStructure($name, $uid, true);
-                } else {
-                    $bodyStructure = $header->bodystructure;
-                }
-
-                if (empty($bodyStructure)) {
                     trigger_error(sprintf("Mail with uid '%s' has no body structure", $uid));
                 } else {
-                    $array['structure'] = Multipart::createInstanceFromArray($bodyStructure);
+                    $array['structure'] = Multipart::createInstanceFromArray($header->bodystructure);
                 }
 
                 $mail = new Mail();
