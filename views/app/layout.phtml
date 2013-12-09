@@ -3,23 +3,23 @@
 <head>
 <title><?php if ($pagetitle): echo $pagetitle . ' | '; endif; ?><?php echo $title; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="<?php echo $basepath; ?>asset/css/normalize.css" rel="stylesheet" type="text/css"/>
-<link href="<?php echo $basepath; ?>asset/css/common.css" rel="stylesheet" type="text/css"/>
-<link href="<?php echo $basepath; ?>asset/css/skin.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery-2.0.3.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery.autosize-1.18.1.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery.form-20131121.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/jquery-magitext.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/moment-2.4.0.min.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/mustache-0.7.3.min.js"></script>
+<link href="<?php echo $this->url("asset/css/normalize.css"); ?>" rel="stylesheet" type="text/css"/>
+<link href="<?php echo $this->url("asset/css/common.css"); ?>" rel="stylesheet" type="text/css"/>
+<link href="<?php echo $this->url("asset/css/skin.css"); ?>" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/jquery-2.0.3.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/jquery.autosize-1.18.1.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/jquery.form-20131121.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/jquery-magitext.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/moment-2.4.0.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/mustache-0.7.3.min.js"); ?>"></script>
 <!-- Devel mode, later aggregate it -->
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/template.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/object.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/dispatcher.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/folder.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/thread.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/mail.js"></script>
-<script type="text/javascript" src="<?php echo $basepath; ?>asset/js/inbox/main.js"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/template.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/object.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/dispatcher.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/folder.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/thread.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/mail.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->url("asset/js/inbox/main.js"); ?>"></script>
 </head>
 <body>
 <nav id="nav" role="navigation">
@@ -28,10 +28,10 @@
   </span>
   <ul class="nav-right">
     <?php if ($isAuthenticated): ?>
-    <li><a class="compose" href="/app/inbox/compose">Compose</a></li>
-    <li><a href="/app/logout">Logout</a></li>
-    <li><a href="/app/settings">Preferences</a></li>
-    <li><a href="/app/inbox">Inbox</a></li>
+    <li><a class="compose" href="<?php echo $this->url("app/inbox/compose"); ?>">Compose</a></li>
+    <li><a href="<?php echo $this->url("app/logout"); ?>">Logout</a></li>
+    <li><a href="<?php echo $this->url("app/settings"); ?>">Preferences</a></li>
+    <li><a href="<?php echo $this->url("app/inbox"); ?>">Inbox</a></li>
     <?php endif; ?>
   </ul>
 </nav>
