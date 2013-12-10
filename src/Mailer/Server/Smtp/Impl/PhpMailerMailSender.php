@@ -71,7 +71,7 @@ class PhpMailerMailSender extends AbstractServer implements
                     switch ($part->getSubtype()) {
 
                         case 'plain':
-                            if ($client->isHTML()) {
+                            if ('text/html' === $client->ContentType) {
                                 if (empty($client->AltBody)) {
                                      $client->AltBody = $part->getContentsReal();
                                 } // Else sorry but this sender allows only one body
@@ -131,7 +131,7 @@ class PhpMailerMailSender extends AbstractServer implements
                     break;
 
                 case 'To':
-                    $client->addAddress($value);
+                    // Just ignore it, we will set it manually
                     break;
 
                 case 'Message-ID':
@@ -155,8 +155,19 @@ class PhpMailerMailSender extends AbstractServer implements
             }
         }
 
+        foreach ($mail->getTo() as $person) {
+            $client->addAddress(
+                $person->getMail(),
+                $person->getDisplayName()
+            );
+        }
+
         if ($structure = $mail->getStructure()) {
             $this->parseStructure($client, $structure);
+        }
+
+        if (null === $client->CharSet) {
+            $client->CharSet = $this->getContainer()->getDefaultCharset();
         }
 
         $client->send();

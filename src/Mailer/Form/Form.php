@@ -5,7 +5,7 @@ namespace Mailer\Form;
 /**
  * This implementation of form is very simple and fits with basic needs.
  *
- * It does not include rendering, its only job is validation from values.
+ * It does not include rendering, its only job is validation of values.
  */
 class Form implements ElementInterface
 {

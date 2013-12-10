@@ -317,9 +317,9 @@ var Inbox, inboxInstance;
     for (k in types) {
       this.$replyForm.find(types[k]).removeAttr("disabled");
     }
-    this.$replyForm.find("input[name=inReplyToUid]").val(target.uid);
+    this.$replyForm.find("input[name=mailbox]").val(target.folder.path);
+    this.$replyForm.find("input[name=threadUid]").val(target.uid);
     this.$replyForm.find("input[name=subject]").val("Re: " + target.subject);
-    this.$replyForm.find("input[name=to]").val(target.from.name + " <" + target.from.mail + ">");
   };
 
   /**

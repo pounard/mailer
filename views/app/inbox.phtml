@@ -26,11 +26,11 @@
         </div>
       </div>
       <div class="reply-form">
-        <form id="reply-form" action="<?php echo $this->url('app/inbox/compose'); ?>" method="POST">
+        <form id="reply-form" action="<?php echo $this->url('app/inbox/threadreply'); ?>" method="POST">
           <textarea name="body" disabled="disabled"></textarea>
-          <input type="hidden" name="inReplyToUid"/>
+          <input type="hidden" name="threadUid"/>
+          <input type="hidden" name="mailbox"/>
           <input type="hidden" name="subject"/>
-          <input type="hidden" name="to"/>
           <br/>
           <div class="actions">
             <input type="submit" disabled="disabled" value="To all"/>
