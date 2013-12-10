@@ -81,7 +81,9 @@ class ComposeController extends AbstractController
         $part->setSubtype('plain');
         $part->setParameters(array('charset' => $request->getCharset()));
         $part->setContents($values['body']);
-        $part->setEncoding(Part::ENCODING_QUOTEDPRINTABLE);
+        // 8bit is a good default used with UTF-8
+        // http://stackoverflow.com/questions/2265579/php-e-mail-encoding
+        $part->setEncoding(Part::ENCODING_8BIT);
         $multipart->appendPart($part);
 
         $mailValues = array(

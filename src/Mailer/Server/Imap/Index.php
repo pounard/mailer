@@ -300,7 +300,7 @@ class Index extends AbstractContainerAware
         foreach ($headers as $key => $value) {
             fwrite($resource, $key . ": " . $value . $lineEnding);
         }
-        $mail->getStructure()->writeEncodedMime($resource, true);
+        $mail->getStructure()->writeEncodedMime($resource, true, "\n");
 
         // Save before sending to ensure that the user can edit back his
         // mail if something wrong happened

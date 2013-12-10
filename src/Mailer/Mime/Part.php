@@ -33,6 +33,16 @@ class Part extends AbstractPart
     const ENCODING_QUOTEDPRINTABLE = "quoted-printable";
 
     /**
+     * 7-bits
+     */
+    const ENCODING_7BIT = "7bit";
+
+    /**
+     * 8-bits
+     */
+    const ENCODING_8BIT = "8bit";
+
+    /**
      * UUEncode
      */
     const ENCODING_UUENCODE = "uuencode";
@@ -614,7 +624,7 @@ class Part extends AbstractPart
                 if (null !== $filter) {
                     $params = array(
                         'line-length' => 77,
-                        'line-break-chars' => null === $lf ? $lf : "\n"
+                        'line-break-chars' => (null === $lf ? "\n" : $lf),
                     );
                     stream_filter_append($resource, $filter, null, $params);
                 }

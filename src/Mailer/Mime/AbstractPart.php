@@ -101,7 +101,8 @@ abstract class AbstractPart
         // Content-Type: text/plain; charset="ISO-8859-1"
         $ret["Content-Type"] = $this->getMimeType();
         if (null !== $charset) {
-            $ret["Content-Type"] .= "; charset=\"" . $charset . "\"";
+            // Most mailers seems to send a lowercased value for encoding
+            $ret["Content-Type"] .= "; charset=" . strtolower($charset);
         }
         // Content-Type: multipart/alternative; boundary="----=_NextPart_002_001C_00003477.529DE69E"
         if ($withBoundary) {

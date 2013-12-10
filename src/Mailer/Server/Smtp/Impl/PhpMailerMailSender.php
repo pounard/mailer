@@ -109,7 +109,7 @@ class PhpMailerMailSender extends AbstractServer implements
             }
         }
 
-        if (empty($client->CharSet) && null !== $charset) {
+        if (null !== $charset) {
             $client->CharSet = $charset;
         }
     }
