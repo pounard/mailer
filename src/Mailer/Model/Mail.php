@@ -79,16 +79,12 @@ class Mail extends Envelope
 
     public function toArray()
     {
-        $array = parent::toArray();
-
-        $array += array(
+        return parent::toArray() + array(
             'structure'   => $this->structure,
             'bodyPlain'   => $this->bodyPlain,
             'bodyHtml'    => $this->bodyHtml,
             'attachments' => $this->attachments,
         );
-
-        return $array;
     }
 
     public function fromArray(array $array)

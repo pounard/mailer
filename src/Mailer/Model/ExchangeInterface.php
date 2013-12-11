@@ -8,6 +8,18 @@ namespace Mailer\Model;
 interface ExchangeInterface
 {
     /**
+     * Get unique object checksum for cache perishing computing
+     *
+     * @return string
+     */
+    public function getChecksum();
+
+    /**
+     * Regenerate random checksum
+     */
+    public function regenerateChecksum();
+
+    /**
      * Convert the current object to array
      *
      * @return array

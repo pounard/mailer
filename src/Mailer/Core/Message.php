@@ -2,9 +2,10 @@
 
 namespace Mailer\Core;
 
+use Mailer\Model\AbstractObject;
 use Mailer\Model\ExchangeInterface;
 
-class Message implements ExchangeInterface
+class Message extends AbstractObject
 {
     /**
      * Information/notice
@@ -151,7 +152,7 @@ class Message implements ExchangeInterface
 
     public function toArray()
     {
-        return array(
+        return parent::toArray() + array(
             'type'    => $this->getTypeString(),
             'message' => $this->message,
             'date'    => $this->date,
@@ -161,6 +162,8 @@ class Message implements ExchangeInterface
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->type    = self::getTypeFromString($array['type']);
         $this->message = $array['message'];

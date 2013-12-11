@@ -2,7 +2,7 @@
 
 namespace Mailer\Model;
 
-class Attachment implements ExchangeInterface
+class Attachment extends AbstractObject
 {
     private $name;
 
@@ -16,7 +16,7 @@ class Attachment implements ExchangeInterface
 
     public function toArray()
     {
-        return array(
+        return parent::toArray($array) + array(
             'name'     => $this->name,
             'mimetype' => $this->mimetype,
             'size'     => $this->size,
@@ -28,6 +28,8 @@ class Attachment implements ExchangeInterface
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->name     = $array['name'];
         $this->mimetype = $array['mimetype'];

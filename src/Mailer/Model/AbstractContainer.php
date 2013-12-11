@@ -2,7 +2,7 @@
 
 namespace Mailer\Model;
 
-abstract class AbstractContainer
+abstract class AbstractContainer extends AbstractObject
 {
     protected $created;
 
@@ -41,7 +41,7 @@ abstract class AbstractContainer
 
     public function toArray()
     {
-        return array(
+        return parent::toArray() + array(
             'created' => $this->created,
             'updated' => $this->updated,
             'total'   => $this->total,
@@ -53,6 +53,8 @@ abstract class AbstractContainer
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->created = $array['created'];
         $this->updated = $array['updated'];

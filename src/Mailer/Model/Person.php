@@ -2,7 +2,7 @@
 
 namespace Mailer\Model;
 
-class Person implements ExchangeInterface
+class Person extends AbstractObject
 {
     /**
      * Build value array from formatted mail address
@@ -118,7 +118,7 @@ class Person implements ExchangeInterface
 
     public function toArray()
     {
-        return array(
+        return parent::toArray() + array(
             'mail'  => $this->mail,
             'name'  => $this->name,
             'image' => $this->image,
@@ -134,6 +134,8 @@ class Person implements ExchangeInterface
     public function fromArray(array $array)
     {
         $array += $this->toArray();
+
+        parent::fromArray($array);
 
         $this->mail  = $array['mail'];
         $this->name  = $array['name'];
